@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SysAdminIQ — AI-Powered Infrastructure Troubleshooting</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><div class="logo">IQ</div><div><h1>SysAdminIQ</h1><p>AI-Powered Infrastructure Troubleshooting</p></div></div>
+  <div class="top-actions"><button class="icon-btn" id="themeBtn" title="Toggle theme">◐</button><button class="header-btn primary" id="exportBtn">Export case</button></div>
+</header>
+<div class="notice hero-strip">⚡ <b>SysAdminIQ</b> — one workspace for <b>VMware, Windows, Linux, AWS and Azure</b>. Diagnose faster, follow evidence-first runbooks, and keep your operational knowledge in one place.</div>
+<div class="layout">
+<aside>
+  <div class="side-label">WORKSPACE</div>
+  <button class="nav active" data-view="dashboard"><span class="nav-ico">◫</span> Dashboard</button>
+  <button class="nav" data-view="assistant"><span class="nav-ico">✦</span> AI Assistant</button>
+  <button class="nav" data-view="knowledge"><span class="nav-ico">⌕</span> Knowledge</button>
+  <button class="nav" data-view="internet"><span class="nav-ico">◎</span> Research</button>
+  <button class="nav" data-view="logs"><span class="nav-ico">☷</span> Logs</button>
+  <div class="side-label">MAIN CATEGORIES</div>
+  <button class="platform-nav" data-platform="VMware"><span>VM</span> VMware</button>
+  <button class="platform-nav" data-platform="Windows"><span>W</span> Windows</button>
+  <button class="platform-nav" data-platform="Linux"><span>L</span> Linux</button>
+  <button class="platform-nav" data-platform="AWS"><span>A</span> AWS</button>
+  <button class="platform-nav" data-platform="Azure"><span>AZ</span> Azure</button>
+  <div class="side-label">TOOLS</div>
+  <button class="nav" data-view="commands"><span class="nav-ico">⌘</span> Commands</button>
+  <button class="nav" data-view="scripts"><span class="nav-ico">↯</span> Automation</button>
+  <button class="nav" data-view="resources"><span class="nav-ico">↗</span> Resources</button>
+  <div class="side-label">MANAGEMENT</div>
+  <button class="nav admin-nav" data-view="admin"><span class="nav-ico">⚙</span> Administration</button>
+  <hr><div class="side-label">FILTERS</div><div id="categoryFilters"></div>
+</aside>
+<main>
+<section id="dashboard" class="view active">
+  <div class="enterprise-hero">
+    <div class="hero-content">
+      <span class="hero-badge">Enterprise Infrastructure Intelligence</span>
+      <h2>AI-Powered Operations Center</h2>
+      <p>Centralized troubleshooting, automation, cloud operations, and knowledge management for modern enterprise infrastructure.</p>
+      <div class="hero-search">
+        <input id="globalSearch" aria-label="Search SysAdminIQ" placeholder="Search incidents, logs, runbooks, commands...">
+        <button id="searchBtn">Search</button>
+      </div>
+      <div class="hero-meta"><span>Evidence-first guidance</span><span>Multi-platform knowledge</span><span>Local and server modes</span></div>
+    </div>
+  </div>
+
+  <div class="stats executive-grid" id="stats"></div>
+
+  <div class="copilot-panel">
+    <div class="copilot-heading">
+      <div class="copilot-mark">AI</div>
+      <div><span class="eyebrow">OPERATIONAL ASSISTANCE</span><h3>Start with the right workflow</h3></div>
+    </div>
+    <div class="insight-grid">
+      <button class="insight-action" onclick="nav('assistant')"><b>Analyze an issue</b><span>Turn symptoms and error text into a prioritized investigation plan.</span></button>
+      <button class="insight-action" onclick="nav('logs')"><b>Inspect log evidence</b><span>Identify known infrastructure components in pasted log excerpts.</span></button>
+      <button class="insight-action" onclick="nav('knowledge')"><b>Search runbooks</b><span>Find checks, commands, likely causes, and verification steps.</span></button>
+    </div>
+  </div>
+
+  <div class="section-intro"><div><span class="eyebrow">TECHNOLOGY COVERAGE</span><h3>Main platforms</h3><p>Choose your environment and jump directly into focused operational knowledge.</p></div><span class="pill">5 platforms</span></div>
+  <div class="platform-grid" id="platformCards"></div>
+
+  <div class="section-intro"><div><span class="eyebrow">OPERATIONS TOOLKIT</span><h3>Knowledge at the point of action</h3><p>Common troubleshooting content, automation, and reusable operational guidance.</p></div></div>
+  <div class="grid" id="quickCards"></div>
+
+  <div class="section-intro"><div><span class="eyebrow">CURATED CONTENT</span><h3>Featured runbooks</h3><p>Practical troubleshooting workflows you can open and adapt.</p></div><button class="secondary" onclick="nav('knowledge')">View all knowledge →</button></div>
+  <div id="recentArticles" class="article-grid"></div>
+</section>
+<section id="assistant" class="view"><div class="panel"><h2>✦ Troubleshooting Assistant</h2><p>Describe the issue or paste an error/log excerpt. The assistant correlates symptoms with your local knowledge base and creates a prioritized investigation plan.</p><textarea id="issueInput" rows="9" placeholder="Example: ESXi host is pingable but shows Not Responding in vCenter. host web UI is slow. vpxa errors appear in logs."></textarea><div class="assistant-controls"><select id="versionSelect"><option>Auto detect version</option><option>vSphere 6.7</option><option>vSphere 7.x</option><option>vSphere 8.x</option><option>Windows Server</option><option>Linux</option><option>AWS</option><option>Azure</option></select><select id="severitySelect"><option>Production impact unknown</option><option>Critical / outage</option><option>High impact</option><option>Low impact</option></select><button id="analyzeBtn">Analyze issue</button></div></div><div id="analysisOutput"></div></section>
+<section id="knowledge" class="view"><div class="page-head"><div><div class="eyebrow">KNOWLEDGE</div><h2>Knowledge Base</h2><p>Search curated system administration troubleshooting articles and runbooks.</p></div></div><div class="toolbar"><input id="kbSearch" placeholder="Search title, symptom, error, log, command..."><select id="kbPlatform"><option value="all">All platforms</option><option>VMware</option><option>Windows</option><option>Linux</option><option>AWS</option><option>Azure</option></select><select id="kbCategory"><option value="all">All subcategories</option></select></div><div id="kbResults" class="article-grid"></div></section>
+<section id="internet" class="view"><div class="panel"><h2>🌐 Internet Troubleshooting Search</h2><p>Search the web directly from the portal. Results are displayed below — no new Chrome tab is required.</p><div class="toolbar"><input id="internetSearch" placeholder="Example: ESXi host not responding vCenter 8.0"><select id="internetScope"><option value="official">Official Broadcom / VMware sources</option><option value="all">General internet search</option></select><button id="internetSearchBtn">Search Internet</button></div><div class="notice">Tip: include the exact error, product and version. Official mode searches Broadcom Knowledge Base content.</div><div id="internetStatus" class="internet-status"></div><div id="internetResults" class="internet-results"></div></div></section>
+<section id="logs" class="view"><div class="panel"><h2>Log Explorer</h2><p>Paste a relevant excerpt. Pattern matching highlights common infrastructure components and likely next checks.</p><textarea id="logInput" rows="12" placeholder="Paste vpxd.log, hostd.log, vpxa.log, vmkernel.log, Windows event text or Linux log lines here..."></textarea><button id="inspectLogBtn">Inspect logs</button></div><div id="logOutput"></div><div class="panel"><h3>Log map</h3><div id="logMap"></div></div></section>
+<section id="commands" class="view"><div class="page-head"><div><div class="eyebrow">TOOLS</div><h2>Command Library</h2><p>Fast access to common VMware, Windows, Linux and cloud administration commands.</p></div></div><div class="toolbar"><input id="commandSearch" placeholder="Find a command..."></div><div id="commandResults" class="command-list"></div></section>
+<section id="scripts" class="view"><div class="panel"><h2>Automation & Scripts</h2><p>Store PowerCLI, PowerShell, Bash and cloud CLI scripts. Validate in a non-production environment before use.</p></div><div id="scriptResults" class="article-grid"></div></section>
+<section id="resources" class="view"><div class="page-head"><div><div class="eyebrow">REFERENCE</div><h2>Resources</h2><p>Keep trusted vendor documentation and internal runbooks in one place.</p></div></div><div class="toolbar"><input id="resourceSearch" placeholder="Search resources..."><select id="resourceCategory"><option value="all">All categories</option></select></div><div id="resourceResults" class="article-grid"></div></section>
+<section id="admin" class="view"><div class="panel"><div class="admin-head"><div><div class="eyebrow">ADMINISTRATION</div><h2>⚙ Content Manager</h2><p>Manage articles, scripts, commands and resources without editing code.</p></div><div class="admin-actions"><button class="secondary" id="backupBtn">Export KB backup</button><button class="secondary" id="importBtn">Import KB backup</button><input id="importFile" type="file" accept="application/json" hidden></div></div><div class="backend-status" id="backendStatus"><span class="status-dot offline"></span> Checking storage...</div><div class="tabs"><button class="tab active" data-admin="articles">Knowledge Articles</button><button class="tab" data-admin="scripts">Scripts</button><button class="tab" data-admin="commands">Commands</button><button class="tab" data-admin="resources">Resources</button></div><div id="adminContent"></div></div></section>
+
+<footer class="enterprise-footer"><div><b>SysAdminIQ Enterprise Edition</b><span>AI-assisted infrastructure intelligence</span></div><div>Version 4.0 UI</div></footer>
+</main></div>
+<div id="articleModal" class="modal hidden"><div class="modal-card"><button class="close" id="closeModal">×</button><div id="modalContent"></div></div></div>
+<script src="data.js"></script><script src="app.js"></script>
+</body></html>
