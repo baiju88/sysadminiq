@@ -1,5 +1,5 @@
-// Embedded full SysAdminIQ v3.2.1 knowledge base fallback.
-const KB_ARTICLES = [
+// Embedded SysAdminIQ data for Cloudflare Pages.
+const KB_ARTICLES=[
   {
     "id": "host-not-responding",
     "category": "ESXi",
@@ -394,12 +394,11 @@ const KB_ARTICLES = [
     "verification": [
       "Report generated",
       "Snapshot growth is under control"
-    ],
-    "platform": "VMware"
+    ]
   },
   {
     "id": "cisco-ucs-blade-diagnostics",
-    "category": "Cisco UCS",
+    "category": "Hardware",
     "title": "Cisco UCS Blade Hardware Diagnostics",
     "keywords": [
       "UCS",
@@ -437,7 +436,7 @@ const KB_ARTICLES = [
       "No recurring hardware faults",
       "Blade passes diagnostics"
     ],
-    "platform": "VMware"
+    "platform": "Cisco UCS"
   },
   {
     "id": "windows-service-down",
@@ -1359,10 +1358,228 @@ const KB_ARTICLES = [
     "resolution": "Assign appropriate least-privilege role at correct scope",
     "verification": "Operation succeeds with intended identity",
     "platform": "Azure"
+  },
+  {
+    "id": "cisco-ucs-fabric-interconnect-health",
+    "platform": "Cisco UCS",
+    "category": "Fabric Interconnects",
+    "title": "Cisco UCS Fabric Interconnect Health Check",
+    "keywords": [
+      "Cisco UCS",
+      "Fabric Interconnects",
+      "Cisco UCS Fabric Interconnect Health Check"
+    ],
+    "symptoms": [
+      "Fabric Interconnect cluster, uplink and fault health"
+    ],
+    "causes": [
+      "Configuration mismatch",
+      "Connectivity or compatibility issue",
+      "Hardware or firmware condition"
+    ],
+    "checks": [
+      "Review faults",
+      "confirm cluster state",
+      "validate uplinks and server ports"
+    ],
+    "commands": "# Review UCS Manager faults, events, inventory and the relevant FSM before making changes",
+    "logs": [
+      "UCS Manager faults and events",
+      "Relevant FSM details",
+      "Tech-support bundle when required"
+    ],
+    "resolution": [
+      "Address the identified connectivity, configuration, firmware or hardware condition under change control"
+    ],
+    "verification": [
+      "The original fault is cleared",
+      "Expected redundant paths and services are healthy"
+    ]
+  },
+  {
+    "id": "cisco-ucs-service-profile-association",
+    "platform": "Cisco UCS",
+    "category": "Service Profiles",
+    "title": "Cisco UCS Service Profile Association Failure",
+    "keywords": [
+      "Cisco UCS",
+      "Service Profiles",
+      "Cisco UCS Service Profile Association Failure"
+    ],
+    "symptoms": [
+      "Service profile association, pools and policy dependencies"
+    ],
+    "causes": [
+      "Configuration mismatch",
+      "Connectivity or compatibility issue",
+      "Hardware or firmware condition"
+    ],
+    "checks": [
+      "Review association FSM",
+      "validate server qualification and identity pools",
+      "confirm vNIC and vHBA dependencies"
+    ],
+    "commands": "# Review UCS Manager faults, events, inventory and the relevant FSM before making changes",
+    "logs": [
+      "UCS Manager faults and events",
+      "Relevant FSM details",
+      "Tech-support bundle when required"
+    ],
+    "resolution": [
+      "Correct the failed pool, policy, dependency or qualification condition and retry"
+    ],
+    "verification": [
+      "The original fault is cleared",
+      "Expected redundant paths and services are healthy"
+    ]
+  },
+  {
+    "id": "cisco-ucs-firmware-upgrade-planning",
+    "platform": "Cisco UCS",
+    "category": "Firmware",
+    "title": "Cisco UCS Firmware Upgrade Planning",
+    "keywords": [
+      "Cisco UCS",
+      "Firmware",
+      "Cisco UCS Firmware Upgrade Planning"
+    ],
+    "symptoms": [
+      "Infrastructure and server firmware lifecycle planning"
+    ],
+    "causes": [
+      "Configuration mismatch",
+      "Connectivity or compatibility issue",
+      "Hardware or firmware condition"
+    ],
+    "checks": [
+      "Record current versions",
+      "validate compatibility",
+      "review faults and redundancy",
+      "back up configuration"
+    ],
+    "commands": "# Review UCS Manager faults, events, inventory and the relevant FSM before making changes",
+    "logs": [
+      "UCS Manager faults and events",
+      "Relevant FSM details",
+      "Tech-support bundle when required"
+    ],
+    "resolution": [
+      "Follow the approved upgrade sequence and validate every stage"
+    ],
+    "verification": [
+      "The original fault is cleared",
+      "Expected redundant paths and services are healthy"
+    ]
+  },
+  {
+    "id": "cisco-ucs-blade-discovery",
+    "platform": "Cisco UCS",
+    "category": "Hardware",
+    "title": "Cisco UCS Blade Discovery Issue",
+    "keywords": [
+      "Cisco UCS",
+      "Hardware",
+      "Cisco UCS Blade Discovery Issue"
+    ],
+    "symptoms": [
+      "Blade absent, stuck in discovery or showing inventory faults"
+    ],
+    "causes": [
+      "Configuration mismatch",
+      "Connectivity or compatibility issue",
+      "Hardware or firmware condition"
+    ],
+    "checks": [
+      "Review discovery FSM",
+      "check chassis, IOM, server power, inventory and both fabrics"
+    ],
+    "commands": "# Review UCS Manager faults, events, inventory and the relevant FSM before making changes",
+    "logs": [
+      "UCS Manager faults and events",
+      "Relevant FSM details",
+      "Tech-support bundle when required"
+    ],
+    "resolution": [
+      "Correct the identified power, seating, connectivity or firmware condition"
+    ],
+    "verification": [
+      "The original fault is cleared",
+      "Expected redundant paths and services are healthy"
+    ]
+  },
+  {
+    "id": "cisco-ucs-vnic-uplink-connectivity",
+    "platform": "Cisco UCS",
+    "category": "Networking",
+    "title": "Cisco UCS vNIC and Uplink Connectivity",
+    "keywords": [
+      "Cisco UCS",
+      "Networking",
+      "Cisco UCS vNIC and Uplink Connectivity"
+    ],
+    "symptoms": [
+      "vNIC, VLAN, uplink, port-channel and fabric pinning"
+    ],
+    "causes": [
+      "Configuration mismatch",
+      "Connectivity or compatibility issue",
+      "Hardware or firmware condition"
+    ],
+    "checks": [
+      "Validate vNIC state, VLANs, uplinks, port channels and both fabric paths"
+    ],
+    "commands": "# Review UCS Manager faults, events, inventory and the relevant FSM before making changes",
+    "logs": [
+      "UCS Manager faults and events",
+      "Relevant FSM details",
+      "Tech-support bundle when required"
+    ],
+    "resolution": [
+      "Correct the VLAN, uplink, pinning or host configuration mismatch"
+    ],
+    "verification": [
+      "The original fault is cleared",
+      "Expected redundant paths and services are healthy"
+    ]
+  },
+  {
+    "id": "cisco-ucs-san-boot",
+    "platform": "Cisco UCS",
+    "category": "SAN / Boot",
+    "title": "Cisco UCS SAN Boot Failure",
+    "keywords": [
+      "Cisco UCS",
+      "SAN / Boot",
+      "Cisco UCS SAN Boot Failure"
+    ],
+    "symptoms": [
+      "Boot policy, vHBA, WWPN, VSAN, zoning and LUN visibility"
+    ],
+    "causes": [
+      "Configuration mismatch",
+      "Connectivity or compatibility issue",
+      "Hardware or firmware condition"
+    ],
+    "checks": [
+      "Validate boot order, target and LUN",
+      "verify vHBAs, VSANs, zoning and storage masking"
+    ],
+    "commands": "# Review UCS Manager faults, events, inventory and the relevant FSM before making changes",
+    "logs": [
+      "UCS Manager faults and events",
+      "Relevant FSM details",
+      "Tech-support bundle when required"
+    ],
+    "resolution": [
+      "Correct the boot policy, VSAN, zoning, masking or target issue"
+    ],
+    "verification": [
+      "The original fault is cleared",
+      "Expected redundant paths and services are healthy"
+    ]
   }
 ];
-
-const SCRIPTS = [
+const SCRIPTS=[
   {
     "title": "Snapshot inventory report",
     "category": "PowerCLI",
@@ -1476,8 +1693,7 @@ const SCRIPTS = [
     "platform": "Azure"
   }
 ];
-
-const COMMANDS = [
+const COMMANDS=[
   {
     "name": "Check ESXi storage filesystems",
     "category": "ESXi / Storage",
@@ -1577,10 +1793,8 @@ const COMMANDS = [
     "platform": "Azure"
   }
 ];
-
-const RESOURCES = [];
-
-const LOG_MAP = [
+const RESOURCES=[];
+const LOG_MAP=[
   [
     "hostd.log",
     "ESXi host management service and VM/host operations"
@@ -1606,13 +1820,4 @@ const LOG_MAP = [
     "vCenter service lifecycle and supervisor events"
   ]
 ];
-
-
-
-// Expose the embedded data explicitly on window. Top-level const declarations are not guaranteed to become window properties.
-window.KB_ARTICLES = KB_ARTICLES;
-window.SCRIPTS = SCRIPTS;
-window.COMMANDS = COMMANDS;
-window.RESOURCES = RESOURCES;
-window.LOG_MAP = LOG_MAP;
-window.SYSADMINIQ_DATA_VERSION = "3.2.2";
+window.KB_ARTICLES=KB_ARTICLES;window.SCRIPTS=SCRIPTS;window.COMMANDS=COMMANDS;window.RESOURCES=RESOURCES;window.LOG_MAP=LOG_MAP;window.SYSADMINIQ_DATA_VERSION="4.2.0";

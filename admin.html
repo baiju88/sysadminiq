@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8"/><meta content="width=device-width,initial-scale=1" name="viewport"/>
-<title>SysAdminIQ — AI-Powered Infrastructure Troubleshooting</title>
+<title>SysAdminIQ Administration</title>
 <link href="style.css" rel="stylesheet"/>
 </head>
 <body>
@@ -14,7 +14,7 @@
 <div class="layout">
 <aside>
 <div class="side-label">WORKSPACE</div>
-<button class="nav active" data-view="dashboard"><span class="nav-ico">◫</span> Dashboard</button>
+<button class="nav" data-view="dashboard"><span class="nav-ico">◫</span> Dashboard</button>
 <button class="nav" data-view="assistant"><span class="nav-ico">✦</span> AI Assistant</button>
 <button class="nav" data-view="knowledge"><span class="nav-ico">⌕</span> Knowledge</button>
 <button class="nav" data-view="internet"><span class="nav-ico">◎</span> Research</button>
@@ -31,11 +31,11 @@
 <button class="nav" data-view="scripts"><span class="nav-ico">↯</span> Automation</button>
 <button class="nav" data-view="resources"><span class="nav-ico">↗</span> Resources</button>
 <div class="side-label">MANAGEMENT</div>
-<a class="nav admin-nav" href="/admin.html">⚙ Administration</a>
+<a class="nav" href="/">← Public portal</a><button class="nav admin-nav active" data-view="admin"><span class="nav-ico">⚙</span> Administration</button>
 <hr/><div class="side-label">FILTERS</div><div id="categoryFilters"></div>
 </aside>
 <main>
-<section class="view active" id="dashboard">
+<section class="view" id="dashboard">
 <div class="enterprise-hero">
 <div class="hero-content">
 <span class="hero-badge">Enterprise Infrastructure Intelligence</span>
@@ -74,7 +74,7 @@
 <section class="view" id="commands"><div class="page-head"><div><div class="eyebrow">TOOLS</div><h2>Command Library</h2><p>Fast access to common VMware, Windows, Linux and cloud administration commands.</p></div></div><div class="toolbar"><input id="commandSearch" placeholder="Find a command..."/></div><div class="command-list" id="commandResults"></div></section>
 <section class="view" id="scripts"><div class="panel"><h2>Automation &amp; Scripts</h2><p>Store PowerCLI, PowerShell, Bash and cloud CLI scripts. Validate in a non-production environment before use.</p></div><div class="article-grid" id="scriptResults"></div></section>
 <section class="view" id="resources"><div class="page-head"><div><div class="eyebrow">REFERENCE</div><h2>Resources</h2><p>Keep trusted vendor documentation and internal runbooks in one place.</p></div></div><div class="toolbar"><input id="resourceSearch" placeholder="Search resources..."/><select id="resourceCategory"><option value="all">All categories</option></select></div><div class="article-grid" id="resourceResults"></div></section>
-
+<section class="view active" id="admin"><div class="panel"><div class="admin-head"><div><div class="eyebrow">ADMINISTRATION</div><h2>⚙ Content Manager</h2><p>Manage articles, scripts, commands and resources without editing code.</p></div><div class="admin-actions"><button class="secondary" id="backupBtn">Export KB backup</button><button class="secondary" id="importBtn">Import KB backup</button><input accept="application/json" hidden="" id="importFile" type="file"/></div></div><div class="backend-status" id="backendStatus"><span class="status-dot offline"></span> Checking storage...</div><div class="tabs"><button class="tab active" data-admin="articles">Knowledge Articles</button><button class="tab" data-admin="scripts">Scripts</button><button class="tab" data-admin="commands">Commands</button><button class="tab" data-admin="resources">Resources</button></div><div id="adminContent"></div></div></section>
 <footer class="enterprise-footer"><div><b>SysAdminIQ Enterprise Edition</b><span>AI-assisted infrastructure intelligence</span></div><div>Version 4.2 Secure Admin Edition</div></footer>
 </main></div>
 <div class="modal hidden" id="articleModal"><div class="modal-card"><button class="close" id="closeModal">×</button><div id="modalContent"></div></div></div>
