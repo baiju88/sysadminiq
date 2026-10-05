@@ -108,12 +108,20 @@ function openArticle(a){
 
             <h3>Article Content</h3>
 
-            <pre style="
-                white-space:pre-wrap;
-                padding:15px;
-                background:#f5f5f5;
-                border-radius:6px;
-            ">${esc(a.content || '')}</pre>
+<pre style="
+white-space:pre-wrap;
+padding:15px;
+background:#f8f9fb;
+color:#1f2937;
+border:1px solid #dcdcdc;
+border-radius:6px;
+font-size:14px;
+line-height:1.6;
+max-height:500px;
+overflow:auto;
+">
+${esc(a.content || '')}
+</pre>
 
         </div>
         `;
