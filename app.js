@@ -30,21 +30,47 @@ async function api(url,opt={}){
   }
 }
 async function loadDB(){
-  const fallback=embeddedDB();
+
+  const fallback = embeddedDB();
+
   try{
-    const d=await api('/api/content');
-    const server=normalizeDB(d.content||d);
-    DB=server.articles.length ? server : fallback;
+
+    const response =
+      await fetch(
+        'https://sysadminiq-api.baijucm.workers.dev'
+      );
+
+    const d1Articles =
+      await response.json();
+
+    DB = {
+      ...fallback,
+      articles: d1Articles
+    };
+
     saveLocal(DB);
-  }catch(e){
-    const local=localDB();
-    // Prefer the embedded v3.2.1 data if the browser has an older or nearly empty cache.
-    DB=fallback.articles.length?fallback:local;
-    saveLocal(DB);
-    console.warn(e);
+
+    BACKEND_ONLINE = true;
+
   }
-  renderAll(); updateBackendStatus();
+  catch(e){
+
+    DB = fallback;
+
+    saveLocal(DB);
+
+    BACKEND_ONLINE = false;
+
+    console.warn(e);
+
+  }
+
+  renderAll();
+
+  updateBackendStatus();
+
 }
+
 function updateBackendStatus(){
   const el=$('#backendStatus');
   if(el) el.innerHTML=BACKEND_ONLINE?'<span class="status-dot online"></span> Server connected — '+DB.articles.length+' articles loaded':'<span class="status-dot offline"></span> Local mode — '+DB.articles.length+' articles loaded from the embedded knowledge base';
