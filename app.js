@@ -224,12 +224,44 @@ async function saveItem(){
 }
 function slugify(s){return String(s||'item').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'item'}
 async function deleteItem(id){
-  if(!confirm('Delete this item? This cannot be undone unless you have a backup.'))return;
+
+  if(!confirm('Delete this item?')) return;
+
   try{
-    if(BACKEND_ONLINE){try{const d=await api('/api/'+adminType+'/'+encodeURIComponent(id),{method:'DELETE'});DB=d.content}catch(e){if(!/Backend server is not running|Failed to fetch|NetworkError/i.test(e.message))throw e;BACKEND_ONLINE=false}}
-    if(!BACKEND_ONLINE){DB[adminType]=(DB[adminType]||[]).filter(x=>String(x.id)!==String(id));saveLocal(DB)}else saveLocal(DB);
-    renderAll();switchAdmin(adminType);alert(BACKEND_ONLINE?'Deleted from content.json.':'Deleted from this browser.');
-  }catch(e){alert('Delete failed: '+e.message)}
+
+    const response = await fetch(
+      'https://sysadminiq-api.baijucm.workers.dev?id=' +
+      encodeURIComponent(id),
+      {
+        method: 'DELETE'
+      }
+    );
+
+    const result = await response.json();
+
+    if(!result.success){
+      throw new Error(result.error || 'Delete failed');
+    }
+
+    DB[adminType] =
+      (DB[adminType] || []).filter(
+        x => String(x.id) !== String(id)
+      );
+
+    saveLocal(DB);
+
+    renderAll();
+
+    switchAdmin(adminType);
+
+    alert('Article deleted successfully.');
+
+  }
+  catch(e){
+
+    alert('Delete failed: ' + e.message);
+
+  }
 }
 function switchAdmin(type){adminType=type;editingId=null;$$('.tab').forEach(t=>t.classList.toggle('active',t.dataset.admin===type));renderAdmin()}
 function renderLogMap(){$('#logMap').innerHTML=(DB.log_map||[]).map(x=>`<div class="command"><b>${esc(x[0]||'')}</b><br><small>${esc(x[1]||'')}</small></div>`).join('')}
