@@ -205,8 +205,35 @@ async function saveItem(){
     const payload=formData(adminType); if(!payload.title&&!payload.name)throw Error('Title/name is required');
     if(BACKEND_ONLINE){
       try{
-        const d=wasNew?await api('/api/'+adminType,{method:'POST',body:JSON.stringify(payload)}):await api('/api/'+adminType+'/'+encodeURIComponent(editingId),{method:'PUT',body:JSON.stringify({...payload,id:editingId})});
-        DB=d.content;
+if(wasNew){
+
+  await fetch(
+    'https://sysadminiq-api.baijucm.workers.dev',
+    {
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify(payload)
+    }
+  );
+
+}else{
+
+  await fetch(
+    'https://sysadminiq-api.baijucm.workers.dev',
+    {
+      method:'PUT',
+      headers:{
+        'Content-Type':'application/json'
+      },
+      body:JSON.stringify({
+        ...payload,
+        id: editingId
+      })
+    }
+  );
+}
       }catch(e){
         if(!/Backend server is not running|Failed to fetch|NetworkError/i.test(e.message))throw e;
         BACKEND_ONLINE=false;
