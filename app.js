@@ -234,6 +234,7 @@ if(wasNew){
     }
   );
 }
+        BACKEND_ONLINE = true;
       }catch(e){
         if(!/Backend server is not running|Failed to fetch|NetworkError/i.test(e.message))throw e;
         BACKEND_ONLINE=false;
