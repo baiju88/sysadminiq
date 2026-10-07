@@ -14,7 +14,17 @@ function embeddedDB(){
   };
   return normalizeDB({articles:get('KB_ARTICLES'),scripts:get('SCRIPTS'),commands:get('COMMANDS'),resources:get('RESOURCES'),log_map:get('LOG_MAP')});
 }
-function normalizeDB(data){const out={articles:[],scripts:[],commands:[],resources:[],log_map:[],...(data||{})};for(const k of ['articles','scripts','commands','resources'])out[k]=(Array.isArray(out[k])?out[k]:[]).map(x=>({...x,platform:x.platform||'VMware'}));out.log_map=Array.isArray(out.log_map)?out.log_map:[];return out}
+function normalizeDB(data){const out={articles:[],scripts:[],commands:[],resources:[],log_map:[],...(data||{})};for(const k of ['articles','scripts','commands','resources'])out[k]=(Array.isArray(out[k])?out[k]:[]).map(x=>({
+...x,
+ 
+platform: x.platform || 'VMware',
+ 
+attachments:
+Array.isArray(x.attachments)
+? x.attachments
+: []
+}));
+out.log_map=Array.isArray(out.log_map)?out.log_map:[];return out}
 function localDB(){try{const cur=JSON.parse(localStorage.getItem(LOCAL_KEY)||'null');if(cur&&typeof cur==='object')return normalizeDB(cur);const previous=JSON.parse(localStorage.getItem(PREVIOUS_KEY)||'null');if(previous&&typeof previous==='object'){const migrated=normalizeDB(previous);saveLocal(migrated);return migrated}const legacy=JSON.parse(localStorage.getItem(LEGACY_KEY)||'null');if(legacy&&typeof legacy==='object'){const migrated=normalizeDB(legacy);saveLocal(migrated);return migrated}}catch(e){}return embeddedDB()}
 function saveLocal(data){localStorage.setItem(LOCAL_KEY,JSON.stringify(data));}
 async function api(url,opt={}){
