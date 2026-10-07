@@ -48,6 +48,7 @@
         "Logs stop showing repeated communication failures"
       ],
       "platform": "VMware"
+      "attachments": []
     },
     {
       "id": "vcsa-disk",
