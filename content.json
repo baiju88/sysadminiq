@@ -47,7 +47,7 @@
         "Tasks complete normally",
         "Logs stop showing repeated communication failures"
       ],
-      "platform": "VMware"
+      "platform": "VMware",
       "attachments": []
     },
     {
