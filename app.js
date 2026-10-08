@@ -271,9 +271,6 @@ function openAttachment(fileName){
     );
 }
 
-function renderPlatformCards(){
-   ...
-}
 function renderPlatformCards(){$('#platformCards').innerHTML=MAIN_CATEGORIES.map(c=>{const count=DB.articles.filter(a=>platformOf(a)===c.name).length;return `<div class="platform-card" data-platform-card="${esc(c.name)}"><div class="platform-icon">${esc(c.short)}</div><div><h3>${esc(c.name)}</h3><p>${esc(c.desc)}</p><b>${count} article${count===1?'':'s'}</b></div><span class="arrow">→</span></div>`}).join('');$$('[data-platform-card]').forEach(e=>e.onclick=()=>openPlatform(e.dataset.platformCard))}
 function openPlatform(platform){nav('knowledge');$('#kbPlatform').value=platform;$('#kbCategory').value='all';renderKB($('#kbSearch').value,platform,'all');$$('.platform-nav').forEach(b=>b.classList.toggle('active',b.dataset.platform===platform))}
 function renderDashboard(){renderStats();renderPlatformCards();$('#quickCards').innerHTML=DB.articles.slice(0,6).map(a=>`<div class="quick" data-article="${esc(a.id)}"><span class="tag">${esc(platformOf(a))}</span><span class="subtag">${esc(a.category||'General')}</span><h3>${esc(a.title)}</h3><p>${esc(arr(a.causes).slice(0,2).join(' • '))}</p></div>`).join('');$('#recentArticles').innerHTML=DB.articles.slice(-5).reverse().map(articleCard).join('');bindArticleCards()}
