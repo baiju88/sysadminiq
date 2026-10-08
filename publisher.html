@@ -32,6 +32,7 @@ button{
     border:none;
     padding:12px 20px;
     cursor:pointer;
+    margin-right:10px;
 }
 
 button:hover{
@@ -68,6 +69,7 @@ small{
 </style>
 
 </head>
+
 <body>
 
 <h2>SysAdminIQ Article Publisher</h2>
@@ -106,39 +108,28 @@ small{
         id="articleAttachments"
         type="file"
         multiple
-        accept="
-        .png,
-        .jpg,
-        .jpeg,
-        .pdf,
-        .docx,
-        .xlsx,
-        .pptx,
-        .txt,
-        .log,
-        .vsdx">
+        accept=".png,.jpg,.jpeg,.pdf,.docx,.xlsx,.pptx,.txt,.log,.vsdx">
 
     <small>
-
         Supported Files:
         PNG, JPG, JPEG, PDF,
         DOCX, XLSX, PPTX,
         TXT, LOG, VSDX
-
     </small>
 
     <div id="selectedFiles">
-
         No files selected.
-
     </div>
 
 </div>
 
 <button onclick="publishArticle()">
     Publish Article
-<button onclick="uploadTestFile()">
+</button>
+
+<button onclick="uploadTest()">
     Upload Test File
+</button>
 
 <div id="result"></div>
 
@@ -156,22 +147,23 @@ document
 
             document.getElementById(
                 "selectedFiles"
-            ).innerHTML = "No files selected.";
+            ).innerHTML =
+                "No files selected.";
 
             return;
         }
 
         document.getElementById(
             "selectedFiles"
-        ).innerHTML = selectedFiles
-            .map(file => `
-                <div class="file-item">
-                    📎 ${file.name}
-                    (${Math.round(file.size / 1024)} KB)
-                </div>
-            `)
-            .join('');
-
+        ).innerHTML =
+            selectedFiles
+                .map(file => `
+                    <div class="file-item">
+                        📎 ${file.name}
+                        (${Math.round(file.size / 1024)} KB)
+                    </div>
+                `)
+                .join('');
     });
 
 async function publishArticle(){
@@ -211,26 +203,27 @@ async function publishArticle(){
                     "attachments/" + file.name
 
             }))
-
     };
 
     try{
 
-        const response = await fetch(
-            "https://sysadminiq-api.baijucm.workers.dev",
-            {
-                method:"POST",
-                headers:{
-                    "Content-Type":"application/json"
-                },
-                body:JSON.stringify(article)
-            }
-        );
+        const response =
+            await fetch(
+                "https://sysadminiq-api.baijucm.workers.dev",
+                {
+                    method:"POST",
+                    headers:{
+                        "Content-Type":"application/json"
+                    },
+                    body:JSON.stringify(article)
+                }
+            );
 
-        const result = await response.json();
+        const result =
+            await response.json();
 
         document.getElementById(
-            'result'
+            "result"
         ).innerHTML =
             JSON.stringify(
                 result,
@@ -242,29 +235,29 @@ async function publishArticle(){
     catch(error){
 
         document.getElementById(
-            'result'
+            "result"
         ).innerHTML =
-            "Error: " + error.message;
-
+            "Error: " +
+            error.message;
     }
 }
-async function uploadTest() {
+
+async function uploadTest(){
 
     const file =
         document
         .getElementById("articleAttachments")
         .files[0];
 
-    if (!file) {
+    if(!file){
 
         alert("Please select a file");
 
         return;
     }
 
-}
-
-    const formData = new FormData();
+    const formData =
+        new FormData();
 
     formData.append(
         "file",
@@ -302,57 +295,7 @@ async function uploadTest() {
         );
     }
 }
-async function uploadTest() {
 
-    const file =
-        document
-        .getElementById("articleAttachments")
-        .files[0];
-
-    if (!file) {
-
-        alert("Please select a file");
-
-        return;
-    }
-    const formData = new FormData();
-
-    formData.append(
-        "file",
-        file
-    );
-
-    try {
-
-        const response =
-            await fetch(
-                "https://sysadminiq-api.baijucm.workers.dev/upload-test",
-                {
-                    method: "POST",
-                    body: formData
-                }
-            );
-
-        const result =
-            await response.json();
-
-        alert(
-            JSON.stringify(
-                result,
-                null,
-                2
-            )
-        );
-
-    }
-    catch(error){
-
-        alert(
-            "Upload failed: " +
-            error.message
-        );
-    }
-}
 </script>
 
 </body>
