@@ -19,20 +19,40 @@
 <button class="nav" data-view="knowledge"><span class="nav-ico">⌕</span> Knowledge</button>
 <button class="nav" data-view="internet"><span class="nav-ico">◎</span> Research</button>
 <button class="nav" data-view="logs"><span class="nav-ico">☷</span> Logs</button>
-<div class="side-label">MAIN CATEGORIES</div>
+<div
+    class="side-label clickable-label"
+    onclick="nav('knowledge')">
+    MAIN CATEGORIES
+</div>
 <button class="platform-nav" data-platform="VMware"><span>VM</span> VMware</button>
 <button class="platform-nav" data-platform="Windows"><span>W</span> Windows</button>
 <button class="platform-nav" data-platform="Linux"><span>L</span> Linux</button>
 <button class="platform-nav" data-platform="AWS"><span>A</span> AWS</button>
 <button class="platform-nav" data-platform="Azure"><span>AZ</span> Azure</button>
 <button class="platform-nav" data-platform="Cisco UCS"><span>UCS</span> Cisco UCS</button>
-<div class="side-label">TOOLS</div>
+<div
+    class="side-label clickable-label"
+    onclick="nav('commands')">
+    TOOLS
+</div>
 <button class="nav" data-view="commands"><span class="nav-ico">⌘</span> Commands</button>
 <button class="nav" data-view="scripts"><span class="nav-ico">↯</span> Automation</button>
 <button class="nav" data-view="resources"><span class="nav-ico">↗</span> Resources</button>
-<div class="side-label">MANAGEMENT</div>
+<div
+    class="side-label clickable-label"
+    onclick="window.location.href='/publisher'">
+    MANAGEMENT
+</div>
 <a class="nav admin-nav" href="/publisher">✍ Article Publisher</a>
-<hr/><div class="side-label">FILTERS</div><div id="categoryFilters"></div>
+<hr/>
+
+<div
+    class="side-label clickable-label"
+    onclick="document.getElementById('categoryFilters').classList.toggle('hidden')">
+    FILTERS
+</div>
+
+<div id="categoryFilters"></div>
 </aside>
 <main>
 <section class="view active" id="dashboard">
