@@ -87,7 +87,45 @@ function bindArticleCards(){$$('[data-article]').forEach(e=>e.onclick=()=>openAr
 function openArticle(a){
 
     if(!a) return;
+    const renderAttachments = (article) => {
 
+        if(
+            !article.attachments ||
+            article.attachments.length === 0
+        ){
+            return `
+                <h3>Attachments</h3>
+                <p>No attachments available.</p>
+            `;
+        }
+
+        return `
+            <h3>Attachments</h3>
+
+            <div class="attachments">
+
+                ${
+                    article.attachments.map(file => `
+
+                        <div class="attachment-item">
+
+                            📎
+                            <strong>${esc(file.name)}</strong>
+
+                            <br>
+
+                            <small>
+                                ${esc(file.type || "")}
+                            </small>
+
+                        </div>
+
+                    `).join("")
+                }
+
+            </div>
+        `;
+    };
     const isD1Article =
         a.content &&
         !a.symptoms &&
@@ -122,7 +160,7 @@ overflow:auto;
 ">
 ${esc(a.content || '')}
 </pre>
-
+   ${renderAttachments(a)}
         </div>
         `;
 
