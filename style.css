@@ -72,3 +72,17 @@ button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-vis
 .hero-search{display:flex;gap:12px;margin-top:26px;max-width:830px;padding:8px;border:1px solid rgba(255,255,255,.16);border-radius:16px;background:rgba(255,255,255,.10);backdrop-filter:blur(12px)} .hero-search input{min-width:0;flex:1;padding:14px 16px!important;border:0!important;border-radius:11px!important;background:#fff!important;color:#142033!important}.hero-search button{padding:0 25px!important;border-radius:11px!important;background:#fff!important;color:#005a9e!important;box-shadow:none!important}@media(max-width:760px){.hero-search{flex-direction:column}.hero-search button{padding:13px!important}}
 .article-card,.quick{background:var(--surface);border-radius:18px}@supports(backdrop-filter: blur(10px)){.article-card,.quick{background:rgba(255,255,255,.75);backdrop-filter:blur(14px)}}
 @media(min-width:1251px){.platform-grid{grid-template-columns:repeat(6,minmax(0,1fr))}}
+/* Clickable Sidebar Headers */
+
+.clickable-label{
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.clickable-label:hover{
+    color:#f38020;
+}
+
+.hidden{
+    display:none;
+}
