@@ -87,43 +87,7 @@ function bindArticleCards(){$$('[data-article]').forEach(e=>e.onclick=()=>openAr
 function openArticle(a){
 
     if(!a) return;
-    const renderAttachments = (article) => {
 
-        if(
-            !article.attachments ||
-            article.attachments.length === 0
-        ){
-            return `
-                <h3>Attachments</h3>
-                <p>No attachments available.</p>
-            `;
-        }
-
-        return `
-            <h3>Attachments</h3>
-
-            <div class="attachments">
-
-                ${
-                    article.attachments.map(file => `
-
-                        <div class="attachment-item">
-
-    📎
-    <a href="#"
-       onclick="openAttachment('${esc(file.name)}'); return false;">
-       ${esc(file.name)}
-    </a>
-
-    <br>
-
-    <small>
-        ${esc(file.type || "")}
-    </small>
-
-</div>
-        `;
-    };
     const isD1Article =
         a.content &&
         !a.symptoms &&
@@ -158,7 +122,7 @@ overflow:auto;
 ">
 ${esc(a.content || '')}
 </pre>
-   ${renderAttachments(a)}
+
         </div>
         `;
 
@@ -216,13 +180,6 @@ ${esc(a.content || '')}
     }
 
     $('#articleModal').classList.remove('hidden');
-}
-function openAttachment(fileName){
-
-    alert(
-        "Attachment selected: " +
-        fileName
-    );
 }
 function renderPlatformCards(){$('#platformCards').innerHTML=MAIN_CATEGORIES.map(c=>{const count=DB.articles.filter(a=>platformOf(a)===c.name).length;return `<div class="platform-card" data-platform-card="${esc(c.name)}"><div class="platform-icon">${esc(c.short)}</div><div><h3>${esc(c.name)}</h3><p>${esc(c.desc)}</p><b>${count} article${count===1?'':'s'}</b></div><span class="arrow">→</span></div>`}).join('');$$('[data-platform-card]').forEach(e=>e.onclick=()=>openPlatform(e.dataset.platformCard))}
 function openPlatform(platform){nav('knowledge');$('#kbPlatform').value=platform;$('#kbCategory').value='all';renderKB($('#kbSearch').value,platform,'all');$$('.platform-nav').forEach(b=>b.classList.toggle('active',b.dataset.platform===platform))}
