@@ -206,18 +206,7 @@ async function publishArticle(){
 
         const result =
             await response.json();
-        uploadedAttachments.push({
-
-    name: file.name,
-
-    type: file.type,
-
-    size: file.size,
-
-    key: result.key
-
-});
-
+       
         document.getElementById(
             "result"
         ).innerHTML =
@@ -271,16 +260,28 @@ async function uploadTest(){
                 }
             );
 
-        const result =
-            await response.json();
+const result =
+    await response.json();
 
-        alert(
-            JSON.stringify(
-                result,
-                null,
-                2
-            )
-        );
+uploadedAttachments.push({
+
+    name: file.name,
+
+    type: file.type,
+
+    size: file.size,
+
+    key: result.key
+
+});
+
+alert(
+    JSON.stringify(
+        result,
+        null,
+        2
+    )
+);
 
     }
     catch(error){
