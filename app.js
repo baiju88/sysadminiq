@@ -135,18 +135,17 @@ a.attachments.map(file => `
 
 <div class="attachment-item">
 
-📎 ${file.name}
+📎
+    <a href="#"
+       onclick="openAttachment('${esc(file.key)}'); return false;"
+       ${esc(file.name)}
+    </a>
 
-<br>
+    <br>
 
-<small>
-${file.type || ''}
-</small>
-
-</div>
-
-`).join('')
-}
+    <small>
+        ${esc(file.type || "")}
+    </small>
 
 </div>
 `
@@ -210,6 +209,22 @@ ${file.type || ''}
     }
 
     $('#articleModal').classList.remove('hidden');
+}
+
+function openAttachment(key){
+
+    if(!key){
+
+        alert("Attachment key missing");
+
+        return;
+    }
+
+    window.open(
+        "https://sysadminiq-api.baijucm.workers.dev/file?key=" +
+        encodeURIComponent(key),
+        "_blank"
+    );
 }
 function renderPlatformCards(){$('#platformCards').innerHTML=MAIN_CATEGORIES.map(c=>{const count=DB.articles.filter(a=>platformOf(a)===c.name).length;return `<div class="platform-card" data-platform-card="${esc(c.name)}"><div class="platform-icon">${esc(c.short)}</div><div><h3>${esc(c.name)}</h3><p>${esc(c.desc)}</p><b>${count} article${count===1?'':'s'}</b></div><span class="arrow">→</span></div>`}).join('');$$('[data-platform-card]').forEach(e=>e.onclick=()=>openPlatform(e.dataset.platformCard))}
 function openPlatform(platform){nav('knowledge');$('#kbPlatform').value=platform;$('#kbCategory').value='all';renderKB($('#kbSearch').value,platform,'all');$$('.platform-nav').forEach(b=>b.classList.toggle('active',b.dataset.platform===platform))}
