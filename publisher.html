@@ -40,7 +40,7 @@ body {
   background-color: var(--bg-dark);
   color: var(--text-primary);
   min-height: 100vh;
-  padding: 30px 20px 60px 20px;
+  padding: 24px 32px 60px 32px;
   line-height: 1.5;
   background-image: 
     radial-gradient(at 0% 0%, rgba(243, 128, 32, 0.08) 0px, transparent 50%),
@@ -49,8 +49,10 @@ body {
   background-attachment: fixed;
 }
 
+/* Full Page Fluid Container (Eliminates Empty Sides) */
 .container {
-  max-width: 1120px;
+  width: 100%;
+  max-width: 100%;
   margin: 0 auto;
 }
 
@@ -120,10 +122,10 @@ body {
   backdrop-filter: blur(12px);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 12px 18px;
+  padding: 14px 22px;
   margin-bottom: 26px;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 14px;
 }
 
 .cf-status {
@@ -154,7 +156,7 @@ body {
   gap: 6px;
   font-size: 12px;
   font-weight: 600;
-  padding: 4px 10px;
+  padding: 6px 14px;
   border-radius: 20px;
   background: rgba(16, 185, 129, 0.12);
   color: #34d399;
@@ -162,9 +164,9 @@ body {
 }
 
 .status-pill.auth-key {
-  background: rgba(0, 112, 243, 0.12);
-  color: #60a5fa;
-  border-color: rgba(0, 112, 243, 0.25);
+  background: rgba(243, 128, 32, 0.15);
+  color: #fb923c;
+  border-color: rgba(243, 128, 32, 0.3);
 }
 
 .dot {
@@ -174,15 +176,16 @@ body {
   background-color: currentColor;
 }
 
-/* Card Sections */
+/* Card Sections - Full Width Spanning */
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 24px;
+  padding: 26px 30px;
   margin-bottom: 26px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
   transition: border-color 0.2s;
+  width: 100%;
 }
 
 .card:hover {
@@ -193,53 +196,61 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 20px;
-  padding-bottom: 12px;
+  margin-bottom: 22px;
+  padding-bottom: 14px;
   border-bottom: 1px solid rgba(36, 50, 79, 0.6);
 }
 
 .card-title {
-  font-size: 17px;
+  font-size: 19px;
   font-weight: 700;
-  color: #fff;
+  color: #ffffff;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
 }
 
-/* Form Controls */
+/* Forms */
 .form-group {
-  margin-bottom: 18px;
+  margin-bottom: 20px;
 }
 
 .form-label {
   display: block;
   font-size: 13px;
   font-weight: 600;
-  color: #cbd5e1;
-  margin-bottom: 7px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
 }
 
 .form-grid-2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 20px;
 }
 
 @media (max-width: 768px) {
+  body {
+    padding: 16px 14px 40px 14px;
+  }
+  .card {
+    padding: 18px 16px;
+  }
   .form-grid-2 {
     grid-template-columns: 1fr;
   }
 }
 
-input,
+input[type="text"],
+input[type="password"],
+input[type="email"],
 select,
 textarea {
   width: 100%;
-  background: var(--bg-input);
+  background-color: var(--bg-input);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 12px 14px;
+  padding: 12px 16px;
   color: var(--text-primary);
   font-family: inherit;
   font-size: 14px;
@@ -250,9 +261,8 @@ input:focus,
 select:focus,
 textarea:focus {
   outline: none;
-  border-color: var(--cf-orange);
+  border-color: var(--border-focus);
   box-shadow: 0 0 0 3px rgba(243, 128, 32, 0.2);
-  background: #111a30;
 }
 
 textarea {
@@ -262,49 +272,48 @@ textarea {
   resize: vertical;
 }
 
-/* Attachments Zone */
+/* Dropzone */
 .dropzone {
   border: 2px dashed var(--border);
   border-radius: var(--radius-md);
-  padding: 22px;
+  padding: 32px 24px;
   text-align: center;
-  background: rgba(14, 21, 38, 0.6);
+  background-color: rgba(14, 21, 38, 0.5);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.2s ease;
   position: relative;
 }
 
 .dropzone:hover {
   border-color: var(--cf-orange);
-  background: rgba(243, 128, 32, 0.03);
+  background-color: rgba(243, 128, 32, 0.04);
 }
 
 .dropzone input[type="file"] {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  inset: 0;
   opacity: 0;
   cursor: pointer;
+  width: 100%;
+  height: 100%;
 }
 
 .dropzone-icon {
-  font-size: 28px;
-  margin-bottom: 6px;
+  font-size: 32px;
+  margin-bottom: 8px;
   display: block;
 }
 
 .dropzone-text {
-  font-size: 13px;
-  font-weight: 500;
-  color: #e2e8f0;
+  font-size: 15px;
+  font-weight: 600;
+  color: #fff;
+  margin-bottom: 4px;
 }
 
 .dropzone-hint {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--text-muted);
-  margin-top: 4px;
 }
 
 .file-list {
@@ -320,31 +329,27 @@ textarea {
   justify-content: space-between;
   background: var(--bg-input);
   border: 1px solid var(--border);
-  padding: 8px 12px;
+  padding: 10px 14px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .file-chip-name {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #e2e8f0;
-  font-weight: 500;
+  color: #cbd5e1;
 }
 
 .file-chip-remove {
-  color: #f87171;
+  color: var(--accent-red);
   cursor: pointer;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
-  padding: 2px 6px;
-  border-radius: 4px;
-  transition: background 0.15s;
 }
 
 .file-chip-remove:hover {
-  background: rgba(239, 68, 68, 0.15);
+  text-decoration: underline;
 }
 
 /* Buttons */
@@ -353,12 +358,11 @@ textarea {
   align-items: center;
   justify-content: center;
   gap: 8px;
-  font-family: inherit;
+  font-size: 13px;
   font-weight: 600;
-  font-size: 14px;
-  padding: 12px 22px;
+  padding: 11px 20px;
   border-radius: var(--radius-md);
-  border: none;
+  border: 1px solid transparent;
   cursor: pointer;
   transition: all 0.2s ease;
   text-decoration: none;
@@ -366,99 +370,92 @@ textarea {
 
 .btn-primary {
   background: linear-gradient(135deg, #f38020 0%, #fa541c 100%);
-  color: #fff;
-  box-shadow: 0 4px 14px rgba(243, 128, 32, 0.3);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(243, 128, 32, 0.3);
 }
 
 .btn-primary:hover {
   background: linear-gradient(135deg, #e06d0e 0%, #e8430b 100%);
-  box-shadow: 0 6px 18px rgba(243, 128, 32, 0.45);
   transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(243, 128, 32, 0.4);
 }
 
 .btn-secondary {
-  background: rgba(36, 50, 79, 0.6);
+  background: rgba(30, 41, 59, 0.8);
   color: #cbd5e1;
-  border: 1px solid var(--border);
+  border-color: var(--border);
 }
 
 .btn-secondary:hover {
-  background: rgba(51, 65, 85, 0.8);
-  color: #fff;
-}
-
-.btn-blue {
-  background: var(--cf-blue);
-  color: #fff;
-}
-
-.btn-blue:hover {
-  background: var(--cf-blue-hover);
+  background: #24324f;
+  color: #ffffff;
+  border-color: #3b82f6;
 }
 
 .btn-danger {
   background: rgba(239, 68, 68, 0.15);
   color: #f87171;
-  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-color: rgba(239, 68, 68, 0.3);
 }
 
 .btn-danger:hover {
-  background: #ef4444;
-  color: #fff;
+  background: rgba(239, 68, 68, 0.25);
+  color: #ffffff;
 }
 
 .btn-sm {
-  padding: 6px 12px;
+  padding: 7px 14px;
   font-size: 12px;
 }
 
-/* Actions Row */
 .action-bar {
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
   margin-top: 24px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
   flex-wrap: wrap;
   gap: 12px;
 }
 
 .back-link {
   color: var(--text-secondary);
-  font-size: 13px;
   text-decoration: none;
+  font-size: 13px;
   display: flex;
   align-items: center;
   gap: 6px;
-  transition: color 0.2s;
+  transition: color 0.15s;
 }
 
 .back-link:hover {
   color: var(--cf-orange);
 }
 
-/* Articles Management Table */
+/* Articles List Table */
 .search-box {
-  position: relative;
   margin-bottom: 16px;
-}
-
-.search-box input {
-  padding-left: 36px;
+  position: relative;
 }
 
 .search-icon {
   position: absolute;
-  left: 12px;
+  left: 14px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--text-muted);
-  font-size: 14px;
+}
+
+.search-box input {
+  padding-left: 38px;
 }
 
 .table-wrapper {
   overflow-x: auto;
-  border-radius: var(--radius-md);
   border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  width: 100%;
 }
 
 .articles-table {
@@ -469,33 +466,29 @@ textarea {
 }
 
 .articles-table th {
-  background: #0e1526;
-  color: #94a3b8;
+  background-color: rgba(14, 21, 38, 0.85);
+  color: var(--text-secondary);
   font-weight: 600;
-  padding: 12px 14px;
+  padding: 14px 18px;
   border-bottom: 1px solid var(--border);
-  text-transform: uppercase;
-  font-size: 11px;
-  letter-spacing: 0.05em;
 }
 
 .articles-table td {
-  padding: 14px;
-  border-bottom: 1px solid rgba(36, 50, 79, 0.5);
-  color: #e2e8f0;
+  padding: 15px 18px;
+  border-bottom: 1px solid rgba(36, 50, 79, 0.4);
+  vertical-align: middle;
 }
 
-.articles-table tr:hover td {
-  background: rgba(243, 128, 32, 0.03);
+.articles-table tr:hover {
+  background-color: rgba(23, 34, 59, 0.5);
 }
 
 .tag-platform {
   display: inline-block;
-  padding: 3px 8px;
+  padding: 3px 9px;
   border-radius: 4px;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.02em;
 }
 
 .tag-vmware { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
@@ -505,7 +498,7 @@ textarea {
 .tag-aws { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
 .tag-azure { background: rgba(14, 165, 233, 0.15); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.3); }
 
-/* Cloudflare Access Login Modal */
+/* Cloudflare Authorization Modal */
 .modal-overlay {
   position: fixed;
   inset: 0;
@@ -522,98 +515,40 @@ textarea {
   display: flex;
 }
 
-.cf-login-card {
-  background: #ffffff;
-  color: #111827;
+.auth-modal-card {
+  background: #131b2e;
+  border: 1px solid #24324f;
+  color: #f8fafc;
   width: 100%;
-  max-width: 440px;
-  border-radius: 12px;
-  padding: 36px 32px;
-  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  max-width: 500px;
+  border-radius: 14px;
+  padding: 30px 26px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
   position: relative;
   text-align: left;
 }
 
-.cf-login-logo {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 24px;
-}
-
-.cf-logo-svg {
-  height: 28px;
-}
-
-.cf-access-domain {
-  font-size: 12px;
-  color: #6b7280;
-  margin-bottom: 4px;
-  font-family: monospace;
-}
-
-.cf-login-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: #111827;
-  margin-bottom: 20px;
-}
-
-.cf-label {
-  display: block;
-  font-size: 13px;
-  font-weight: 600;
-  color: #374151;
-  margin-bottom: 6px;
-}
-
-.cf-input {
-  width: 100%;
-  padding: 11px 14px;
-  border: 1px solid #d1d5db;
-  border-radius: 6px;
-  background: #ffffff;
-  color: #111827;
-  font-size: 14px;
-  margin-bottom: 16px;
-}
-
-.cf-input:focus {
-  border-color: #0070f3;
-  box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.2);
-  outline: none;
-}
-
-.cf-btn-submit {
-  width: 100%;
-  background: #0070f3;
-  color: #ffffff;
-  font-weight: 600;
-  font-size: 14px;
-  padding: 12px;
-  border-radius: 6px;
-  border: none;
-  cursor: pointer;
-  transition: background 0.15s;
-}
-
-.cf-btn-submit:hover {
-  background: #0051c7;
-}
-
 .cf-close-btn {
   position: absolute;
-  top: 16px;
-  right: 16px;
-  background: none;
+  top: 18px;
+  right: 18px;
+  background: rgba(255, 255, 255, 0.08);
   border: none;
-  font-size: 20px;
-  color: #9ca3af;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  font-size: 18px;
+  color: #94a3b8;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
 }
 
 .cf-close-btn:hover {
-  color: #111827;
+  background: rgba(255, 255, 255, 0.15);
+  color: #fff;
 }
 
 /* Toast */
@@ -641,6 +576,7 @@ textarea {
 
 .toast.success { border-color: rgba(16, 185, 129, 0.5); background: #064e3b; }
 .toast.error { border-color: rgba(239, 68, 68, 0.5); background: #7f1d1d; }
+.toast.info { border-color: rgba(59, 130, 246, 0.5); background: #1e3a8a; }
 </style>
 </head>
 
@@ -661,7 +597,7 @@ textarea {
     </div>
 
     <div>
-      <a href="/index.html" class="back-link">
+      <a href="index.html" class="back-link">
         ← Back to Main Knowledge Base
       </a>
     </div>
@@ -681,14 +617,17 @@ textarea {
       </div>
     </div>
 
-    <div style="display: flex; align-items: center; gap: 10px;">
+    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
       <div id="authStatusPill" class="status-pill">
         <span class="dot"></span>
-        <span id="authStatusLabel">Authenticated via Cloudflare</span>
+        <span id="authStatusLabel">Production Access Active</span>
       </div>
-      <button type="button" class="btn btn-secondary btn-sm" onclick="openCfLoginModal()">
-        🛡️ Cloudflare Login
+      <button type="button" class="btn btn-secondary btn-sm" onclick="openKeyModal()">
+        🔑 Authorization Key
       </button>
+      <a href="https://tiny-pine-a9b7.cloudflareaccess.com" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration:none;">
+        🌐 Zero Trust Portal ↗
+      </a>
     </div>
   </div>
 
@@ -766,17 +705,17 @@ textarea {
 
       <div id="fileListContainer" class="file-list"></div>
 
-      <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px;">
-        <button type="button" class="btn btn-secondary btn-sm" onclick="uploadSelectedFiles()">
+      <div style="margin-top: 12px; display: flex; align-items: center; gap: 12px;">
+        <button type="button" class="btn btn-secondary btn-sm" id="uploadBtn" onclick="uploadSelectedFiles()">
           ⬆️ Upload Pending File(s)
         </button>
-        <span id="uploadStatusText" style="font-size: 12px; color: var(--text-muted);"></span>
+        <span id="uploadStatusText" style="font-size: 13px; color: var(--text-muted);"></span>
       </div>
     </div>
 
     <!-- Actions -->
     <div class="action-bar">
-      <div style="display: flex; gap: 10px;">
+      <div style="display: flex; gap: 12px;">
         <button id="saveBtn" class="btn btn-primary" onclick="publishOrUpdateArticle()">
           🚀 Publish Article
         </button>
@@ -785,13 +724,13 @@ textarea {
         </button>
       </div>
 
-      <span style="font-size: 12px; color: var(--text-muted);">
+      <span style="font-size: 13px; color: var(--text-muted);">
         Directly syncs to Cloudflare Worker API & D1 Database
       </span>
     </div>
   </div>
 
-  <!-- Existing Articles Table -->
+  <!-- Existing Articles Table (Full Width) -->
   <div class="card">
     <div class="card-header">
       <div class="card-title">
@@ -817,16 +756,16 @@ textarea {
       <table class="articles-table">
         <thead>
           <tr>
-            <th style="width: 120px;">Platform</th>
+            <th style="width: 140px;">Platform</th>
             <th>Title & Snippet</th>
-            <th style="width: 150px;">Category</th>
-            <th style="width: 80px;">Files</th>
-            <th style="width: 170px; text-align: right;">Actions</th>
+            <th style="width: 180px;">Category</th>
+            <th style="width: 90px;">Files</th>
+            <th style="width: 180px; text-align: right;">Actions</th>
           </tr>
         </thead>
         <tbody id="articlesTableBody">
           <tr>
-            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 24px;">
+            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 28px;">
               Loading articles from Cloudflare database...
             </td>
           </tr>
@@ -836,52 +775,66 @@ textarea {
   </div>
 </div>
 
-<!-- Cloudflare Access Login Modal (Matches Screenshot) -->
-<div id="cfLoginModal" class="modal-overlay" onclick="if(event.target === this) closeCfLoginModal()">
-  <div class="cf-login-card">
-    <button class="cf-close-btn" onclick="closeCfLoginModal()">×</button>
+<!-- Cloudflare Authorization & Zero Trust Gateway Modal -->
+<div id="authKeyModal" class="modal-overlay" onclick="if(event.target === this) closeKeyModal()">
+  <div class="auth-modal-card">
+    <button class="cf-close-btn" onclick="closeKeyModal()">×</button>
     
-    <div class="cf-login-logo">
-      <svg width="180" height="32" viewBox="0 0 200 36" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M18.8 9.5C18.1 5.9 14.9 3.2 11.1 3.2C8 3.2 5.3 4.9 4.1 7.5C1.8 7.8 0 9.7 0 12.1C0 14.7 2.1 16.8 4.7 16.8H18.9C21 16.8 22.8 15 22.8 12.9C22.8 10.9 21.2 9.7 18.8 9.5Z" fill="#F38020"/>
-        <text x="32" y="24" fill="#111827" font-family="Inter, sans-serif" font-weight="700" font-size="18">Cloudflare Access</text>
-      </svg>
+    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
+      <div class="brand-icon" style="width: 40px; height: 40px; font-size: 18px;">🔑</div>
+      <div>
+        <div style="font-size: 18px; font-weight: 700; color: #fff;">Cloudflare Authentication</div>
+        <div style="font-size: 12px; color: var(--text-secondary);">SysAdminIQ Publisher Access</div>
+      </div>
     </div>
 
-    <div class="cf-access-domain">tiny-pine-a9b7.cloudflareaccess.com</div>
-    <div class="cf-login-title">Log in to SysAdminIQ Publisher</div>
-
-    <div id="cfStep1">
-      <label class="cf-label" for="cfEmailInput">Email</label>
-      <input
-        type="email"
-        id="cfEmailInput"
-        class="cf-input"
-        placeholder="baijucm@gmail.com"
-        value="baijucm@gmail.com"
-      >
-      <button type="button" class="cf-btn-submit" onclick="sendLoginCode()">
-        Send login code
-      </button>
-    </div>
-
-    <div id="cfStep2" style="display: none;">
-      <p style="font-size: 13px; color: #4b5563; margin-bottom: 12px;">
-        A login code was sent to <b id="displayEmail"></b>. Enter it below to authenticate:
+    <!-- Section 1: Authorization Key -->
+    <div style="background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 18px;">
+      <label class="form-label" style="margin-bottom: 6px;" for="authKeyInput">Authorization Key / Token (Optional)</label>
+      <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">
+        If your Cloudflare Worker requires a secret key for writes, save it here:
       </p>
-      <label class="cf-label" for="cfCodeInput">Login Code / Authorization Key</label>
-      <input
-        type="text"
-        id="cfCodeInput"
-        class="cf-input"
-        placeholder="Enter login code from email..."
+      <div style="display: flex; gap: 8px;">
+        <input
+          type="password"
+          id="authKeyInput"
+          placeholder="Paste your Authorization Key..."
+          style="margin-bottom: 0; flex: 1;"
+        >
+        <button type="button" class="btn btn-secondary btn-sm" onclick="toggleKeyVisibility()" id="toggleKeyBtn" style="white-space: nowrap; padding: 0 12px;">
+          👁️
+        </button>
+      </div>
+      <div style="display: flex; gap: 8px; margin-top: 12px;">
+        <button type="button" class="btn btn-primary btn-sm" onclick="saveAuthKey()" style="flex: 1;">
+          💾 Save Authorization Key
+        </button>
+        <button type="button" class="btn btn-secondary btn-sm" onclick="clearAuthKey()" id="clearKeyBtn">
+          Clear
+        </button>
+      </div>
+    </div>
+
+    <!-- Section 2: Real Cloudflare Zero Trust Gateway Link -->
+    <div style="background: rgba(243, 128, 32, 0.08); border: 1px solid rgba(243, 128, 32, 0.3); border-radius: 8px; padding: 16px;">
+      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
+        <span style="color: var(--cf-orange); font-size: 16px;">🛡️</span>
+        <span style="font-size: 13px; font-weight: 700; color: var(--cf-orange);">Cloudflare Zero Trust (Email PIN Login)</span>
+      </div>
+      <p style="font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-bottom: 12px;">
+        To authenticate via Cloudflare Access and receive your PIN in Gmail, open the official portal:
+      </p>
+      <a
+        href="https://tiny-pine-a9b7.cloudflareaccess.com"
+        target="_blank"
+        class="btn btn-secondary btn-sm"
+        style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; text-decoration: none; font-weight: 600; background: rgba(243, 128, 32, 0.15); color: #fff; border-color: rgba(243, 128, 32, 0.4);"
       >
-      <button type="button" class="cf-btn-submit" onclick="verifyLoginCode()">
-        Verify & Continue
-      </button>
-      <button type="button" class="btn btn-secondary btn-sm" style="width:100%; margin-top:8px;" onclick="backToEmailStep()">
-        ← Change email
-      </button>
+        🌐 Open tiny-pine-a9b7.cloudflareaccess.com ↗
+      </a>
+      <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
+        Cloudflare will prompt for baijucm@gmail.com and deliver your one-time code to Gmail.
+      </p>
     </div>
   </div>
 </div>
@@ -895,24 +848,17 @@ textarea {
 const API_BASE = "https://sysadminiq-api.baijucm.workers.dev";
 const AUTH_STORAGE_KEY = "sysadminiq_auth_key";
 const CF_TOKEN_STORAGE_KEY = "cf_api_token";
-const CF_EMAIL_STORAGE_KEY = "cf_auth_email";
+const LEGACY_AUTH_KEY = "sysadminiq_publisher_token";
 
 let selectedFiles = [];
 let uploadedAttachments = [];
 let allArticles = [];
 let editingArticleId = null;
 
-// Return Authorization Headers (Optional key if present, credentials included)
-function getAuthHeaders() {
-  const key = localStorage.getItem(AUTH_STORAGE_KEY) || 
-              localStorage.getItem(CF_TOKEN_STORAGE_KEY) || "";
-  const headers = {};
-  if (key && key.trim()) {
-    headers["Authorization"] = "Bearer " + key.trim();
-    headers["X-Auth-Key"] = key.trim();
-    headers["X-Auth-Token"] = key.trim();
-  }
-  return headers;
+function getAuthKey() {
+  return localStorage.getItem(AUTH_STORAGE_KEY) || 
+         localStorage.getItem(CF_TOKEN_STORAGE_KEY) || 
+         localStorage.getItem(LEGACY_AUTH_KEY) || "";
 }
 
 function showToast(msg, type = "info") {
@@ -925,58 +871,66 @@ function showToast(msg, type = "info") {
   }, 4000);
 }
 
-// Cloudflare Access Modal Handlers
-function openCfLoginModal() {
-  document.getElementById("cfLoginModal").classList.add("active");
+// Authorization Modal Handlers
+function openKeyModal() {
+  const modal = document.getElementById("authKeyModal");
+  const input = document.getElementById("authKeyInput");
+  input.value = getAuthKey();
+  modal.classList.add("active");
 }
 
-function closeCfLoginModal() {
-  document.getElementById("cfLoginModal").classList.remove("active");
+function closeKeyModal() {
+  document.getElementById("authKeyModal").classList.remove("active");
 }
 
-function sendLoginCode() {
-  const email = document.getElementById("cfEmailInput").value.trim();
-  if (!email) {
-    alert("Please enter your email address.");
+function toggleKeyVisibility() {
+  const input = document.getElementById("authKeyInput");
+  const btn = document.getElementById("toggleKeyBtn");
+  if (input.type === "password") {
+    input.type = "text";
+    btn.textContent = "🔒";
+  } else {
+    input.type = "password";
+    btn.textContent = "👁️";
+  }
+}
+
+function saveAuthKey() {
+  const key = document.getElementById("authKeyInput").value.trim();
+  if (!key) {
+    alert("Please enter an Authorization Key.");
     return;
   }
-  localStorage.setItem(CF_EMAIL_STORAGE_KEY, email);
-  document.getElementById("displayEmail").textContent = email;
-  document.getElementById("cfStep1").style.display = "none";
-  document.getElementById("cfStep2").style.display = "block";
-  showToast("Login code requested for " + email, "info");
-}
-
-function backToEmailStep() {
-  document.getElementById("cfStep1").style.display = "block";
-  document.getElementById("cfStep2").style.display = "none";
-}
-
-function verifyLoginCode() {
-  const code = document.getElementById("cfCodeInput").value.trim();
-  if (!code) {
-    alert("Please enter the login code sent to your email.");
-    return;
-  }
-  localStorage.setItem(AUTH_STORAGE_KEY, code);
-  localStorage.setItem(CF_TOKEN_STORAGE_KEY, code);
-  closeCfLoginModal();
+  localStorage.setItem(AUTH_STORAGE_KEY, key);
+  localStorage.setItem(CF_TOKEN_STORAGE_KEY, key);
+  localStorage.setItem(LEGACY_AUTH_KEY, key);
+  closeKeyModal();
   updateAuthUI();
-  showToast("Authenticated successfully!", "success");
+  showToast("Authorization key saved successfully!", "success");
+}
+
+function clearAuthKey() {
+  if (confirm("Remove saved authorization key?")) {
+    localStorage.removeItem(AUTH_STORAGE_KEY);
+    localStorage.removeItem(CF_TOKEN_STORAGE_KEY);
+    localStorage.removeItem(LEGACY_AUTH_KEY);
+    document.getElementById("authKeyInput").value = "";
+    updateAuthUI();
+    showToast("Authorization key removed.", "info");
+  }
 }
 
 function updateAuthUI() {
   const pill = document.getElementById("authStatusPill");
   const label = document.getElementById("authStatusLabel");
-  const storedKey = localStorage.getItem(AUTH_STORAGE_KEY) || localStorage.getItem(CF_TOKEN_STORAGE_KEY);
-  const email = localStorage.getItem(CF_EMAIL_STORAGE_KEY);
+  const storedKey = getAuthKey();
 
   if (storedKey) {
     pill.className = "status-pill auth-key";
-    label.textContent = email ? `Authenticated (${email})` : "Authenticated with Access Token";
+    label.textContent = "Authorization Key Active";
   } else {
     pill.className = "status-pill";
-    label.textContent = "Production Cloudflare Access Active";
+    label.textContent = "Connected to Worker API";
   }
 }
 
@@ -997,7 +951,7 @@ function renderFileList() {
         <div class="file-chip-name">
           <span>📎</span>
           <span><b>${escapeHtml(f.name)}</b></span>
-          <span style="color:var(--text-muted); font-size:11px;">[Ready in Article]</span>
+          <span style="color:var(--text-muted); font-size:11px;">[Uploaded & Attached]</span>
         </div>
         <span class="file-chip-remove" onclick="removeAttachment(${i})">✕ Remove</span>
       </div>
@@ -1010,7 +964,7 @@ function renderFileList() {
         <div class="file-chip-name">
           <span>📁</span>
           <span>${escapeHtml(f.name)}</span>
-          <span style="color:var(--text-muted); font-size:11px;">(${Math.round(f.size / 1024)} KB pending upload)</span>
+          <span style="color:var(--text-muted); font-size:11px;">(${Math.round(f.size / 1024)} KB ready to upload)</span>
         </div>
       </div>
     `).join("");
@@ -1024,6 +978,7 @@ function removeAttachment(index) {
   renderFileList();
 }
 
+// Upload Selected Files (Clean CORS without blocking credentials/headers)
 async function uploadSelectedFiles() {
   if (selectedFiles.length === 0) {
     showToast("Please choose or drag a file first.", "error");
@@ -1032,30 +987,33 @@ async function uploadSelectedFiles() {
 
   const file = selectedFiles[0];
   const statusText = document.getElementById("uploadStatusText");
+  const uploadBtn = document.getElementById("uploadBtn");
+  
+  uploadBtn.disabled = true;
   statusText.textContent = `Uploading ${file.name}...`;
 
   const formData = new FormData();
   formData.append("file", file);
 
+  const authKey = getAuthKey();
+  if (authKey) {
+    formData.append("auth_key", authKey);
+  }
+
   try {
     const response = await fetch(API_BASE + "/upload-test", {
       method: "POST",
-      credentials: "include",
-      headers: {
-        ...getAuthHeaders()
-      },
       body: formData
     });
 
-    if (response.status === 401 || response.status === 403) {
-      openCfLoginModal();
-      throw new Error("Cloudflare authentication required. Please sign in.");
+    if (!response.ok) {
+      throw new Error(`Upload server responded with HTTP ${response.status}`);
     }
 
     const result = await response.json();
     uploadedAttachments.push({
       name: file.name,
-      type: file.type,
+      type: file.type || "application/octet-stream",
       size: file.size,
       key: result.key || result.fileKey || file.name
     });
@@ -1067,10 +1025,12 @@ async function uploadSelectedFiles() {
   } catch (err) {
     statusText.textContent = `Upload failed: ${err.message}`;
     showToast(`Upload failed: ${err.message}`, "error");
+  } finally {
+    uploadBtn.disabled = false;
   }
 }
 
-// Publish New or Update Existing Article
+// Publish New or Update Existing Article (Clean CORS without blocking credentials/headers)
 async function publishOrUpdateArticle() {
   const title = document.getElementById("title").value.trim();
   if (!title) {
@@ -1084,14 +1044,20 @@ async function publishOrUpdateArticle() {
   saveBtn.disabled = true;
   saveBtn.textContent = isEditing ? "Updating Article..." : "Publishing Article...";
 
+  const authKey = getAuthKey();
+
   const payload = {
     title: title,
     platform: document.getElementById("platform").value,
     category: document.getElementById("category").value.trim() || "General",
     content: document.getElementById("content").value.trim(),
-    author_email: localStorage.getItem(CF_EMAIL_STORAGE_KEY) || "baijucm@gmail.com",
+    author_email: "baijucm@gmail.com",
     attachments: uploadedAttachments
   };
+
+  if (authKey) {
+    payload.auth_key = authKey;
+  }
 
   try {
     let response;
@@ -1099,31 +1065,26 @@ async function publishOrUpdateArticle() {
       payload.id = editingArticleId;
       response = await fetch(API_BASE, {
         method: "PUT",
-        credentials: "include",
         headers: {
-          "Content-Type": "application/json",
-          ...getAuthHeaders()
+          "Content-Type": "application/json"
         },
         body: JSON.stringify(payload)
       });
     } else {
       response = await fetch(API_BASE, {
         method: "POST",
-        credentials: "include",
         headers: {
-          "Content-Type": "application/json",
-          ...getAuthHeaders()
+          "Content-Type": "application/json"
         },
         body: JSON.stringify(payload)
       });
     }
 
-    if (response.status === 401 || response.status === 403) {
-      openCfLoginModal();
-      throw new Error("Authentication required. Please authenticate via Cloudflare Access.");
+    if (!response.ok) {
+      const errText = await response.text().catch(() => "");
+      throw new Error(`Server returned HTTP ${response.status}: ${errText || 'Operation failed'}`);
     }
 
-    const result = await response.json();
     showToast(isEditing ? "Article updated successfully!" : "Article published successfully!", "success");
 
     cancelEdit();
@@ -1163,7 +1124,7 @@ function editArticle(id) {
   uploadedAttachments = Array.isArray(article.attachments) ? [...article.attachments] : [];
   renderFileList();
 
-  document.getElementById("formModeTitle").textContent = "Edit Article: " + article.title;
+  document.getElementById("formModeTitle").textContent = "Edit Article: " + (article.title || id);
   document.getElementById("formModeIcon").textContent = "✏️";
   document.getElementById("cancelEditBtn").style.display = "inline-flex";
   const saveBtn = document.getElementById("saveBtn");
@@ -1193,7 +1154,7 @@ function resetForm() {
   }
 }
 
-// Delete Article (Sends DELETE with Cloudflare credentials)
+// Delete Article (Clean CORS DELETE)
 async function deleteArticle(id) {
   const article = allArticles.find(a => String(a.id) === String(id));
   const title = article ? article.title : id;
@@ -1202,18 +1163,19 @@ async function deleteArticle(id) {
     return;
   }
 
+  const authKey = getAuthKey();
+  let url = API_BASE + "?id=" + encodeURIComponent(id);
+  if (authKey) {
+    url += "&auth_key=" + encodeURIComponent(authKey);
+  }
+
   try {
-    const response = await fetch(API_BASE + "?id=" + encodeURIComponent(id), {
-      method: "DELETE",
-      credentials: "include",
-      headers: {
-        ...getAuthHeaders()
-      }
+    const response = await fetch(url, {
+      method: "DELETE"
     });
 
-    if (response.status === 401 || response.status === 403) {
-      openCfLoginModal();
-      throw new Error("Authentication required to delete. Please sign in.");
+    if (!response.ok) {
+      throw new Error(`Delete failed with HTTP ${response.status}`);
     }
 
     allArticles = allArticles.filter(a => String(a.id) !== String(id));
@@ -1228,13 +1190,13 @@ async function deleteArticle(id) {
   }
 }
 
-// Load Existing Articles
+// Load Existing Articles (Clean CORS GET)
 async function loadExistingArticles() {
   const tbody = document.getElementById("articlesTableBody");
-  tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 24px;">Fetching articles from Cloudflare API...</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 28px;">Fetching articles from Cloudflare API...</td></tr>`;
 
   try {
-    const response = await fetch(API_BASE, { credentials: "include" });
+    const response = await fetch(API_BASE);
     if (!response.ok) throw new Error("HTTP " + response.status);
     const data = await response.json();
 
@@ -1282,7 +1244,7 @@ function renderExistingTable() {
         <td><span class="tag-platform ${tagClass}">${escapeHtml(platform)}</span></td>
         <td>
           <div style="font-weight: 600; color: #fff;">${escapeHtml(a.title || 'Untitled')}</div>
-          <div style="font-size: 12px; color: var(--text-muted); margin-top: 3px; max-width: 500px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+          <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px; max-width: 600px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
             ${escapeHtml(snippet)}
           </div>
         </td>
@@ -1315,7 +1277,7 @@ function escapeHtml(str) {
   }[m]));
 }
 
-// Initialize on DOM load (No blocking prompt!)
+// Initialize on DOM load
 window.addEventListener("DOMContentLoaded", () => {
   updateAuthUI();
   loadExistingArticles();

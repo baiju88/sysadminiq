@@ -670,7 +670,6 @@ async function loadDB() {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 3500);
     const response = await fetch('https://sysadminiq-api.baijucm.workers.dev', {
-      credentials: 'include',
       signal: controller.signal
     });
     clearTimeout(timeoutId);
