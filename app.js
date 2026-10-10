@@ -137,7 +137,7 @@ a.attachments.map(file => `
 
 📎
     <a href="#"
-       onclick="openAttachment('${esc(file.key)}'); return false;"
+       onclick="openAttachment('${esc(file.key)}'); return false;">
        ${esc(file.name)}
     </a>
 
