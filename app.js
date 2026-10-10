@@ -122,7 +122,37 @@ overflow:auto;
 ">
 ${esc(a.content || '')}
 </pre>
+${
+a.attachments && a.attachments.length
 
+? `
+<h3>Attachments</h3>
+
+<div class="attachments">
+
+${
+a.attachments.map(file => `
+
+<div class="attachment-item">
+
+📎 ${file.name}
+
+<br>
+
+<small>
+${file.type || ''}
+</small>
+
+</div>
+
+`).join('')
+}
+
+</div>
+`
+
+: ''
+}
         </div>
         `;
 
