@@ -1,299 +1,1325 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<title>SysAdminIQ Publisher</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SysAdminIQ Publisher — Content & Article Management</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 
 <style>
-
-body{
-    font-family: Arial, sans-serif;
-    max-width: 1000px;
-    margin: 40px auto;
-    padding: 20px;
+:root {
+  --bg-dark: #0b0f19;
+  --bg-card: #131b2e;
+  --bg-card-hover: #17223b;
+  --bg-input: #0e1526;
+  --border: #24324f;
+  --border-focus: #f38020;
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --cf-orange: #f38020;
+  --cf-orange-hover: #e06d0e;
+  --cf-blue: #0070f3;
+  --cf-blue-hover: #005bc5;
+  --accent-green: #10b981;
+  --accent-red: #ef4444;
+  --radius-lg: 12px;
+  --radius-md: 8px;
 }
 
-h2{
-    color:#f38020;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  min-height: 100vh;
+  padding: 30px 20px 60px 20px;
+  line-height: 1.5;
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(243, 128, 32, 0.08) 0px, transparent 50%),
+    radial-gradient(at 100% 0%, rgba(0, 112, 243, 0.08) 0px, transparent 50%),
+    radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+  background-attachment: fixed;
+}
+
+.container {
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+/* Header */
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.brand-section {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.brand-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f38020 0%, #fa541c 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 20px;
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(243, 128, 32, 0.35);
+}
+
+.brand-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.brand-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  background: rgba(243, 128, 32, 0.15);
+  color: var(--cf-orange);
+  border: 1px solid rgba(243, 128, 32, 0.3);
+  font-weight: 600;
+}
+
+.brand-sub {
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+/* Cloudflare Access Banner */
+.cf-access-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(19, 27, 46, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 12px 18px;
+  margin-bottom: 26px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.cf-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.cf-logo-icon {
+  display: flex;
+  align-items: center;
+  color: var(--cf-orange);
+}
+
+.cf-info {
+  font-size: 13px;
+}
+
+.cf-team-name {
+  color: #cbd5e1;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 20px;
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.status-pill.auth-key {
+  background: rgba(0, 112, 243, 0.12);
+  color: #60a5fa;
+  border-color: rgba(0, 112, 243, 0.25);
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+/* Card Sections */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  margin-bottom: 26px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  transition: border-color 0.2s;
+}
+
+.card:hover {
+  border-color: rgba(243, 128, 32, 0.35);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(36, 50, 79, 0.6);
+}
+
+.card-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Form Controls */
+.form-group {
+  margin-bottom: 18px;
+}
+
+.form-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #cbd5e1;
+  margin-bottom: 7px;
+}
+
+.form-grid-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 768px) {
+  .form-grid-2 {
+    grid-template-columns: 1fr;
+  }
 }
 
 input,
-textarea,
-select{
-    width:100%;
-    padding:10px;
-    margin-bottom:10px;
-    box-sizing:border-box;
+select,
+textarea {
+  width: 100%;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+  color: var(--text-primary);
+  font-family: inherit;
+  font-size: 14px;
+  transition: all 0.2s ease;
 }
 
-button{
-    background:#f38020;
-    color:white;
-    border:none;
-    padding:12px 20px;
-    cursor:pointer;
-    margin-right:10px;
+input:focus,
+select:focus,
+textarea:focus {
+  outline: none;
+  border-color: var(--cf-orange);
+  box-shadow: 0 0 0 3px rgba(243, 128, 32, 0.2);
+  background: #111a30;
 }
 
-button:hover{
-    background:#d56c14;
+textarea {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  resize: vertical;
 }
 
-.section{
-    margin-bottom:20px;
+/* Attachments Zone */
+.dropzone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius-md);
+  padding: 22px;
+  text-align: center;
+  background: rgba(14, 21, 38, 0.6);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
 }
 
-#selectedFiles{
-    background:#f8f8f8;
-    border:1px solid #ddd;
-    padding:10px;
-    margin-top:10px;
+.dropzone:hover {
+  border-color: var(--cf-orange);
+  background: rgba(243, 128, 32, 0.03);
 }
 
-.file-item{
-    padding:5px;
-    border-bottom:1px solid #eee;
+.dropzone input[type="file"] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
 }
 
-#result{
-    margin-top:20px;
-    padding:10px;
-    border:1px solid #ddd;
-    white-space:pre-wrap;
+.dropzone-icon {
+  font-size: 28px;
+  margin-bottom: 6px;
+  display: block;
 }
 
-small{
-    color:#666;
+.dropzone-text {
+  font-size: 13px;
+  font-weight: 500;
+  color: #e2e8f0;
 }
 
+.dropzone-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.file-list {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.file-chip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+}
+
+.file-chip-name {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #e2e8f0;
+  font-weight: 500;
+}
+
+.file-chip-remove {
+  color: #f87171;
+  cursor: pointer;
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  transition: background 0.15s;
+}
+
+.file-chip-remove:hover {
+  background: rgba(239, 68, 68, 0.15);
+}
+
+/* Buttons */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 12px 22px;
+  border-radius: var(--radius-md);
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #f38020 0%, #fa541c 100%);
+  color: #fff;
+  box-shadow: 0 4px 14px rgba(243, 128, 32, 0.3);
+}
+
+.btn-primary:hover {
+  background: linear-gradient(135deg, #e06d0e 0%, #e8430b 100%);
+  box-shadow: 0 6px 18px rgba(243, 128, 32, 0.45);
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: rgba(36, 50, 79, 0.6);
+  color: #cbd5e1;
+  border: 1px solid var(--border);
+}
+
+.btn-secondary:hover {
+  background: rgba(51, 65, 85, 0.8);
+  color: #fff;
+}
+
+.btn-blue {
+  background: var(--cf-blue);
+  color: #fff;
+}
+
+.btn-blue:hover {
+  background: var(--cf-blue-hover);
+}
+
+.btn-danger {
+  background: rgba(239, 68, 68, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.btn-danger:hover {
+  background: #ef4444;
+  color: #fff;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
+/* Actions Row */
+.action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 24px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.back-link {
+  color: var(--text-secondary);
+  font-size: 13px;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: color 0.2s;
+}
+
+.back-link:hover {
+  color: var(--cf-orange);
+}
+
+/* Articles Management Table */
+.search-box {
+  position: relative;
+  margin-bottom: 16px;
+}
+
+.search-box input {
+  padding-left: 36px;
+}
+
+.search-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-muted);
+  font-size: 14px;
+}
+
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.articles-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+
+.articles-table th {
+  background: #0e1526;
+  color: #94a3b8;
+  font-weight: 600;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  text-transform: uppercase;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+
+.articles-table td {
+  padding: 14px;
+  border-bottom: 1px solid rgba(36, 50, 79, 0.5);
+  color: #e2e8f0;
+}
+
+.articles-table tr:hover td {
+  background: rgba(243, 128, 32, 0.03);
+}
+
+.tag-platform {
+  display: inline-block;
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.tag-vmware { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+.tag-windows { background: rgba(6, 182, 212, 0.15); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.3); }
+.tag-linux { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+.tag-cisco { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+.tag-aws { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+.tag-azure { background: rgba(14, 165, 233, 0.15); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.3); }
+
+/* Cloudflare Access Login Modal */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(8px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+
+.modal-overlay.active {
+  display: flex;
+}
+
+.cf-login-card {
+  background: #ffffff;
+  color: #111827;
+  width: 100%;
+  max-width: 440px;
+  border-radius: 12px;
+  padding: 36px 32px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+  position: relative;
+  text-align: left;
+}
+
+.cf-login-logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+}
+
+.cf-logo-svg {
+  height: 28px;
+}
+
+.cf-access-domain {
+  font-size: 12px;
+  color: #6b7280;
+  margin-bottom: 4px;
+  font-family: monospace;
+}
+
+.cf-login-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 20px;
+}
+
+.cf-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.cf-input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: #ffffff;
+  color: #111827;
+  font-size: 14px;
+  margin-bottom: 16px;
+}
+
+.cf-input:focus {
+  border-color: #0070f3;
+  box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.2);
+  outline: none;
+}
+
+.cf-btn-submit {
+  width: 100%;
+  background: #0070f3;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 12px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.cf-btn-submit:hover {
+  background: #0051c7;
+}
+
+.cf-close-btn {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: none;
+  border: none;
+  font-size: 20px;
+  color: #9ca3af;
+  cursor: pointer;
+}
+
+.cf-close-btn:hover {
+  color: #111827;
+}
+
+/* Toast */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: #1e293b;
+  color: #fff;
+  border: 1px solid var(--border);
+  padding: 12px 18px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+  display: none;
+  align-items: center;
+  gap: 10px;
+  z-index: 2000;
+}
+
+.toast.show {
+  display: flex;
+}
+
+.toast.success { border-color: rgba(16, 185, 129, 0.5); background: #064e3b; }
+.toast.error { border-color: rgba(239, 68, 68, 0.5); background: #7f1d1d; }
 </style>
-
 </head>
 
 <body>
 
-<h2>SysAdminIQ Article Publisher</h2>
-
-<div class="section">
-
-    <input
-        id="title"
-        placeholder="Article Title">
-
-    <select id="platform">
-        <option>Cisco UCS</option>
-        <option>VMware</option>
-        <option>Windows</option>
-        <option>Linux</option>
-        <option>AWS</option>
-        <option>Azure</option>
-    </select>
-
-    <input
-        id="category"
-        placeholder="Category">
-
-    <textarea
-        id="content"
-        rows="10"
-        placeholder="Article Content"></textarea>
-
-</div>
-
-<div class="section">
-
-    <h3>Supporting Attachments</h3>
-
-    <input
-        id="articleAttachments"
-        type="file"
-        multiple
-        accept=".png,.jpg,.jpeg,.pdf,.docx,.xlsx,.pptx,.txt,.log,.vsdx">
-
-    <small>
-        Supported Files:
-        PNG, JPG, JPEG, PDF,
-        DOCX, XLSX, PPTX,
-        TXT, LOG, VSDX
-    </small>
-
-    <div id="selectedFiles">
-        No files selected.
+<div class="container">
+  <!-- Top Brand Header -->
+  <header class="header">
+    <div class="brand-section">
+      <div class="brand-icon">IQ</div>
+      <div>
+        <div class="brand-title">
+          SysAdminIQ Publisher
+          <span class="brand-badge">Production Portal</span>
+        </div>
+        <div class="brand-sub">Enterprise Playbook Authoring, Live Editing & Attachment Manager</div>
+      </div>
     </div>
 
+    <div>
+      <a href="/index.html" class="back-link">
+        ← Back to Main Knowledge Base
+      </a>
+    </div>
+  </header>
+
+  <!-- Cloudflare Access Protection Status Banner -->
+  <div class="cf-access-bar">
+    <div class="cf-status">
+      <div class="cf-logo-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4 0-2.05 1.53-3.76 3.56-3.97l1.07-.11.5-.95C8.08 7.14 9.94 6 12 6c2.62 0 4.88 1.86 5.39 4.43l.3 1.5 1.53.11c1.6.1 2.78 1.44 2.78 2.96 0 1.65-1.35 3-3 3z"/>
+        </svg>
+      </div>
+      <div class="cf-info">
+        <div style="font-weight: 600; color: #fff;">Cloudflare Access (Zero Trust)</div>
+        <div class="cf-team-name">tiny-pine-a9b7.cloudflareaccess.com</div>
+      </div>
+    </div>
+
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <div id="authStatusPill" class="status-pill">
+        <span class="dot"></span>
+        <span id="authStatusLabel">Authenticated via Cloudflare</span>
+      </div>
+      <button type="button" class="btn btn-secondary btn-sm" onclick="openCfLoginModal()">
+        🛡️ Cloudflare Login
+      </button>
+    </div>
+  </div>
+
+  <!-- Main Publisher Form (Publish New / Live Edit) -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <span id="formModeIcon">📝</span>
+        <span id="formModeTitle">Publish Knowledge Article</span>
+      </div>
+      <button id="cancelEditBtn" class="btn btn-secondary btn-sm" onclick="cancelEdit()" style="display:none;">
+        ✕ Cancel Editing
+      </button>
+    </div>
+
+    <input type="hidden" id="editArticleId">
+
+    <div class="form-group">
+      <label class="form-label" for="title">Article Title</label>
+      <input
+        type="text"
+        id="title"
+        placeholder="e.g. vCenter Server STS Signing Certificate Expired or Linux Inode Exhaustion"
+        autocomplete="off"
+      >
+    </div>
+
+    <div class="form-grid-2">
+      <div class="form-group">
+        <label class="form-label" for="platform">Primary Platform</label>
+        <select id="platform">
+          <option value="VMware">VMware (vSphere, ESXi, vCenter)</option>
+          <option value="Windows">Windows (Active Directory, Server, RPC)</option>
+          <option value="Linux">Linux (RHEL, Ubuntu, Systemd, Storage)</option>
+          <option value="Cisco UCS">Cisco UCS (Fabric Interconnect, vNIC)</option>
+          <option value="AWS">AWS (EC2, VPC, Route Table, EBS)</option>
+          <option value="Azure">Azure (Virtual Machines, Serial Console)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="category">Subcategory</label>
+        <input
+          type="text"
+          id="category"
+          placeholder="e.g. Storage, Networking, Identity & SSO, Core"
+          autocomplete="off"
+        >
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="content">Article Body & Playbook Content (Markdown)</label>
+      <textarea
+        id="content"
+        rows="12"
+        placeholder="### Overview&#10;Describe the incident or failure scenario...&#10;&#10;### Symptoms&#10;- Error code or message&#10;&#10;### Likely Causes&#10;1. Root cause description&#10;&#10;### Investigation Commands&#10;```bash&#10;esxcli network nic list&#10;```&#10;&#10;### Resolution Steps&#10;1. Step-by-step fix..."
+      ></textarea>
+    </div>
+
+    <!-- Attachments Zone -->
+    <div class="form-group">
+      <label class="form-label">Supporting Attachments (Logs, Diagrams, Scripts, Evidence)</label>
+      <div class="dropzone" id="dropzoneEl">
+        <input
+          type="file"
+          id="articleAttachments"
+          multiple
+          accept=".png,.jpg,.jpeg,.pdf,.docx,.xlsx,.pptx,.txt,.log,.vsdx"
+        >
+        <span class="dropzone-icon">📎</span>
+        <div class="dropzone-text">Click to browse or drop diagnostic files here</div>
+        <div class="dropzone-hint">Supports PNG, JPG, PDF, DOCX, XLSX, TXT, LOG, VSDX</div>
+      </div>
+
+      <div id="fileListContainer" class="file-list"></div>
+
+      <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px;">
+        <button type="button" class="btn btn-secondary btn-sm" onclick="uploadSelectedFiles()">
+          ⬆️ Upload Pending File(s)
+        </button>
+        <span id="uploadStatusText" style="font-size: 12px; color: var(--text-muted);"></span>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="action-bar">
+      <div style="display: flex; gap: 10px;">
+        <button id="saveBtn" class="btn btn-primary" onclick="publishOrUpdateArticle()">
+          🚀 Publish Article
+        </button>
+        <button type="button" class="btn btn-secondary" onclick="resetForm()">
+          Clear Form
+        </button>
+      </div>
+
+      <span style="font-size: 12px; color: var(--text-muted);">
+        Directly syncs to Cloudflare Worker API & D1 Database
+      </span>
+    </div>
+  </div>
+
+  <!-- Existing Articles Table -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <span>📚</span>
+        <span>Existing Articles in Database (<span id="articleCount">0</span>)</span>
+      </div>
+      <button class="btn btn-secondary btn-sm" onclick="loadExistingArticles()">
+        ↻ Refresh Articles
+      </button>
+    </div>
+
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        id="searchExisting"
+        placeholder="Filter existing articles by title, platform, or category..."
+        oninput="renderExistingTable()"
+      >
+    </div>
+
+    <div class="table-wrapper">
+      <table class="articles-table">
+        <thead>
+          <tr>
+            <th style="width: 120px;">Platform</th>
+            <th>Title & Snippet</th>
+            <th style="width: 150px;">Category</th>
+            <th style="width: 80px;">Files</th>
+            <th style="width: 170px; text-align: right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody id="articlesTableBody">
+          <tr>
+            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 24px;">
+              Loading articles from Cloudflare database...
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
-<button onclick="publishArticle()">
-    Publish Article
-</button>
+<!-- Cloudflare Access Login Modal (Matches Screenshot) -->
+<div id="cfLoginModal" class="modal-overlay" onclick="if(event.target === this) closeCfLoginModal()">
+  <div class="cf-login-card">
+    <button class="cf-close-btn" onclick="closeCfLoginModal()">×</button>
+    
+    <div class="cf-login-logo">
+      <svg width="180" height="32" viewBox="0 0 200 36" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M18.8 9.5C18.1 5.9 14.9 3.2 11.1 3.2C8 3.2 5.3 4.9 4.1 7.5C1.8 7.8 0 9.7 0 12.1C0 14.7 2.1 16.8 4.7 16.8H18.9C21 16.8 22.8 15 22.8 12.9C22.8 10.9 21.2 9.7 18.8 9.5Z" fill="#F38020"/>
+        <text x="32" y="24" fill="#111827" font-family="Inter, sans-serif" font-weight="700" font-size="18">Cloudflare Access</text>
+      </svg>
+    </div>
 
-<button onclick="uploadTest()">
-    Upload Test File
-</button>
+    <div class="cf-access-domain">tiny-pine-a9b7.cloudflareaccess.com</div>
+    <div class="cf-login-title">Log in to SysAdminIQ Publisher</div>
 
-<div id="result"></div>
+    <div id="cfStep1">
+      <label class="cf-label" for="cfEmailInput">Email</label>
+      <input
+        type="email"
+        id="cfEmailInput"
+        class="cf-input"
+        placeholder="baijucm@gmail.com"
+        value="baijucm@gmail.com"
+      >
+      <button type="button" class="cf-btn-submit" onclick="sendLoginCode()">
+        Send login code
+      </button>
+    </div>
+
+    <div id="cfStep2" style="display: none;">
+      <p style="font-size: 13px; color: #4b5563; margin-bottom: 12px;">
+        A login code was sent to <b id="displayEmail"></b>. Enter it below to authenticate:
+      </p>
+      <label class="cf-label" for="cfCodeInput">Login Code / Authorization Key</label>
+      <input
+        type="text"
+        id="cfCodeInput"
+        class="cf-input"
+        placeholder="Enter login code from email..."
+      >
+      <button type="button" class="cf-btn-submit" onclick="verifyLoginCode()">
+        Verify & Continue
+      </button>
+      <button type="button" class="btn btn-secondary btn-sm" style="width:100%; margin-top:8px;" onclick="backToEmailStep()">
+        ← Change email
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="toast">
+  <span id="toastMsg">Notification</span>
+</div>
 
 <script>
+const API_BASE = "https://sysadminiq-api.baijucm.workers.dev";
+const AUTH_STORAGE_KEY = "sysadminiq_auth_key";
+const CF_TOKEN_STORAGE_KEY = "cf_api_token";
+const CF_EMAIL_STORAGE_KEY = "cf_auth_email";
 
 let selectedFiles = [];
 let uploadedAttachments = [];
+let allArticles = [];
+let editingArticleId = null;
 
-document
-    .getElementById("articleAttachments")
-    .addEventListener("change", function(e){
-
-        selectedFiles = Array.from(e.target.files);
-
-        if(selectedFiles.length === 0){
-
-            document.getElementById(
-                "selectedFiles"
-            ).innerHTML =
-                "No files selected.";
-
-            return;
-        }
-
-        document.getElementById(
-            "selectedFiles"
-        ).innerHTML =
-            selectedFiles
-                .map(file => `
-                    <div class="file-item">
-                        📎 ${file.name}
-                        (${Math.round(file.size / 1024)} KB)
-                    </div>
-                `)
-                .join('');
-    });
-
-async function publishArticle(){
-
-    const article = {
-
-        title:
-            document.getElementById('title').value,
-
-        platform:
-            document.getElementById('platform').value,
-
-        category:
-            document.getElementById('category').value,
-
-        content:
-            document.getElementById('content').value,
-
-        author_email:
-            "baijucm@gmail.com",
-
-       attachments:
-    uploadedAttachments
-    };
-
-    try{
-
-        const response =
-            await fetch(
-                "https://sysadminiq-api.baijucm.workers.dev",
-                {
-                    method:"POST",
-                    headers:{
-                        "Content-Type":"application/json"
-                    },
-                    body:JSON.stringify(article)
-                }
-            );
-
-        const result =
-            await response.json();
-       
-        document.getElementById(
-            "result"
-        ).innerHTML =
-            JSON.stringify(
-                result,
-                null,
-                2
-            );
-
-    }
-    catch(error){
-
-        document.getElementById(
-            "result"
-        ).innerHTML =
-            "Error: " +
-            error.message;
-    }
+// Return Authorization Headers (Optional key if present, credentials included)
+function getAuthHeaders() {
+  const key = localStorage.getItem(AUTH_STORAGE_KEY) || 
+              localStorage.getItem(CF_TOKEN_STORAGE_KEY) || "";
+  const headers = {};
+  if (key && key.trim()) {
+    headers["Authorization"] = "Bearer " + key.trim();
+    headers["X-Auth-Key"] = key.trim();
+    headers["X-Auth-Token"] = key.trim();
+  }
+  return headers;
 }
 
-async function uploadTest(){
+function showToast(msg, type = "info") {
+  const toast = document.getElementById("toast");
+  const text = document.getElementById("toastMsg");
+  text.textContent = msg;
+  toast.className = `toast show ${type}`;
+  setTimeout(() => {
+    toast.className = "toast";
+  }, 4000);
+}
 
-    const file =
-        document
-        .getElementById("articleAttachments")
-        .files[0];
+// Cloudflare Access Modal Handlers
+function openCfLoginModal() {
+  document.getElementById("cfLoginModal").classList.add("active");
+}
 
-    if(!file){
+function closeCfLoginModal() {
+  document.getElementById("cfLoginModal").classList.remove("active");
+}
 
-        alert("Please select a file");
+function sendLoginCode() {
+  const email = document.getElementById("cfEmailInput").value.trim();
+  if (!email) {
+    alert("Please enter your email address.");
+    return;
+  }
+  localStorage.setItem(CF_EMAIL_STORAGE_KEY, email);
+  document.getElementById("displayEmail").textContent = email;
+  document.getElementById("cfStep1").style.display = "none";
+  document.getElementById("cfStep2").style.display = "block";
+  showToast("Login code requested for " + email, "info");
+}
 
-        return;
-    }
+function backToEmailStep() {
+  document.getElementById("cfStep1").style.display = "block";
+  document.getElementById("cfStep2").style.display = "none";
+}
 
-    const formData =
-        new FormData();
+function verifyLoginCode() {
+  const code = document.getElementById("cfCodeInput").value.trim();
+  if (!code) {
+    alert("Please enter the login code sent to your email.");
+    return;
+  }
+  localStorage.setItem(AUTH_STORAGE_KEY, code);
+  localStorage.setItem(CF_TOKEN_STORAGE_KEY, code);
+  closeCfLoginModal();
+  updateAuthUI();
+  showToast("Authenticated successfully!", "success");
+}
 
-    formData.append(
-        "file",
-        file
-    );
+function updateAuthUI() {
+  const pill = document.getElementById("authStatusPill");
+  const label = document.getElementById("authStatusLabel");
+  const storedKey = localStorage.getItem(AUTH_STORAGE_KEY) || localStorage.getItem(CF_TOKEN_STORAGE_KEY);
+  const email = localStorage.getItem(CF_EMAIL_STORAGE_KEY);
 
-    try {
+  if (storedKey) {
+    pill.className = "status-pill auth-key";
+    label.textContent = email ? `Authenticated (${email})` : "Authenticated with Access Token";
+  } else {
+    pill.className = "status-pill";
+    label.textContent = "Production Cloudflare Access Active";
+  }
+}
 
-        const response =
-            await fetch(
-                "https://sysadminiq-api.baijucm.workers.dev/upload-test",
-                {
-                    method: "POST",
-                    body: formData
-                }
-            );
-
-const result =
-    await response.json();
-
-uploadedAttachments.push({
-
-    name: file.name,
-
-    type: file.type,
-
-    size: file.size,
-
-    key: result.key
-
+// File Attachment Handlers
+const fileInput = document.getElementById("articleAttachments");
+fileInput.addEventListener("change", function(e) {
+  selectedFiles = Array.from(e.target.files);
+  renderFileList();
 });
 
-alert(
-    JSON.stringify(
-        result,
-        null,
-        2
-    )
-);
+function renderFileList() {
+  const container = document.getElementById("fileListContainer");
+  let html = "";
 
-    }
-    catch(error){
+  if (uploadedAttachments.length > 0) {
+    html += uploadedAttachments.map((f, i) => `
+      <div class="file-chip">
+        <div class="file-chip-name">
+          <span>📎</span>
+          <span><b>${escapeHtml(f.name)}</b></span>
+          <span style="color:var(--text-muted); font-size:11px;">[Ready in Article]</span>
+        </div>
+        <span class="file-chip-remove" onclick="removeAttachment(${i})">✕ Remove</span>
+      </div>
+    `).join("");
+  }
 
-        alert(
-            "Upload failed: " +
-            error.message
-        );
-    }
+  if (selectedFiles.length > 0) {
+    html += selectedFiles.map(f => `
+      <div class="file-chip" style="border-style:dashed;">
+        <div class="file-chip-name">
+          <span>📁</span>
+          <span>${escapeHtml(f.name)}</span>
+          <span style="color:var(--text-muted); font-size:11px;">(${Math.round(f.size / 1024)} KB pending upload)</span>
+        </div>
+      </div>
+    `).join("");
+  }
+
+  container.innerHTML = html;
 }
 
-</script>
+function removeAttachment(index) {
+  uploadedAttachments.splice(index, 1);
+  renderFileList();
+}
 
+async function uploadSelectedFiles() {
+  if (selectedFiles.length === 0) {
+    showToast("Please choose or drag a file first.", "error");
+    return;
+  }
+
+  const file = selectedFiles[0];
+  const statusText = document.getElementById("uploadStatusText");
+  statusText.textContent = `Uploading ${file.name}...`;
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  try {
+    const response = await fetch(API_BASE + "/upload-test", {
+      method: "POST",
+      credentials: "include",
+      headers: {
+        ...getAuthHeaders()
+      },
+      body: formData
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      openCfLoginModal();
+      throw new Error("Cloudflare authentication required. Please sign in.");
+    }
+
+    const result = await response.json();
+    uploadedAttachments.push({
+      name: file.name,
+      type: file.type,
+      size: file.size,
+      key: result.key || result.fileKey || file.name
+    });
+
+    selectedFiles.shift();
+    renderFileList();
+    statusText.textContent = `✓ Uploaded: ${file.name}`;
+    showToast(`File "${file.name}" uploaded successfully!`, "success");
+  } catch (err) {
+    statusText.textContent = `Upload failed: ${err.message}`;
+    showToast(`Upload failed: ${err.message}`, "error");
+  }
+}
+
+// Publish New or Update Existing Article
+async function publishOrUpdateArticle() {
+  const title = document.getElementById("title").value.trim();
+  if (!title) {
+    showToast("Please enter an Article Title.", "error");
+    document.getElementById("title").focus();
+    return;
+  }
+
+  const saveBtn = document.getElementById("saveBtn");
+  const isEditing = Boolean(editingArticleId);
+  saveBtn.disabled = true;
+  saveBtn.textContent = isEditing ? "Updating Article..." : "Publishing Article...";
+
+  const payload = {
+    title: title,
+    platform: document.getElementById("platform").value,
+    category: document.getElementById("category").value.trim() || "General",
+    content: document.getElementById("content").value.trim(),
+    author_email: localStorage.getItem(CF_EMAIL_STORAGE_KEY) || "baijucm@gmail.com",
+    attachments: uploadedAttachments
+  };
+
+  try {
+    let response;
+    if (isEditing) {
+      payload.id = editingArticleId;
+      response = await fetch(API_BASE, {
+        method: "PUT",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders()
+        },
+        body: JSON.stringify(payload)
+      });
+    } else {
+      response = await fetch(API_BASE, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          ...getAuthHeaders()
+        },
+        body: JSON.stringify(payload)
+      });
+    }
+
+    if (response.status === 401 || response.status === 403) {
+      openCfLoginModal();
+      throw new Error("Authentication required. Please authenticate via Cloudflare Access.");
+    }
+
+    const result = await response.json();
+    showToast(isEditing ? "Article updated successfully!" : "Article published successfully!", "success");
+
+    cancelEdit();
+    loadExistingArticles();
+  } catch (err) {
+    showToast(`Error: ${err.message}`, "error");
+  } finally {
+    saveBtn.disabled = false;
+    saveBtn.textContent = isEditing ? "💾 Save Changes / Update Article" : "🚀 Publish Article";
+  }
+}
+
+// Edit Existing Article
+function editArticle(id) {
+  const article = allArticles.find(a => String(a.id) === String(id));
+  if (!article) return;
+
+  editingArticleId = article.id;
+  document.getElementById("editArticleId").value = article.id;
+  document.getElementById("title").value = article.title || "";
+  document.getElementById("platform").value = article.platform || "VMware";
+  document.getElementById("category").value = article.category || "General";
+
+  let body = article.content || "";
+  if (!body && (article.symptoms || article.causes || article.checks)) {
+    body = [
+      article.description ? `### Description\n${article.description}\n` : '',
+      article.symptoms ? `### Symptoms\n${article.symptoms.join('\n')}\n` : '',
+      article.causes ? `### Likely Causes\n${article.causes.join('\n')}\n` : '',
+      article.checks ? `### Investigation Checks\n${article.checks.join('\n')}\n` : '',
+      article.commands ? `### Commands\n${article.commands}\n` : '',
+      article.resolution ? `### Resolution\n${article.resolution.join('\n')}\n` : ''
+    ].filter(Boolean).join('\n');
+  }
+  document.getElementById("content").value = body;
+
+  uploadedAttachments = Array.isArray(article.attachments) ? [...article.attachments] : [];
+  renderFileList();
+
+  document.getElementById("formModeTitle").textContent = "Edit Article: " + article.title;
+  document.getElementById("formModeIcon").textContent = "✏️";
+  document.getElementById("cancelEditBtn").style.display = "inline-flex";
+  const saveBtn = document.getElementById("saveBtn");
+  saveBtn.textContent = "💾 Save Changes / Update Article";
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function cancelEdit() {
+  editingArticleId = null;
+  document.getElementById("editArticleId").value = "";
+  document.getElementById("title").value = "";
+  document.getElementById("category").value = "";
+  document.getElementById("content").value = "";
+  uploadedAttachments = [];
+  selectedFiles = [];
+  renderFileList();
+
+  document.getElementById("formModeTitle").textContent = "Publish Knowledge Article";
+  document.getElementById("formModeIcon").textContent = "📝";
+  document.getElementById("cancelEditBtn").style.display = "none";
+  document.getElementById("saveBtn").textContent = "🚀 Publish Article";
+}
+
+function resetForm() {
+  if (confirm("Clear all form fields?")) {
+    cancelEdit();
+  }
+}
+
+// Delete Article (Sends DELETE with Cloudflare credentials)
+async function deleteArticle(id) {
+  const article = allArticles.find(a => String(a.id) === String(id));
+  const title = article ? article.title : id;
+
+  if (!confirm(`Are you sure you want to permanently delete this article?\n\n"${title}"`)) {
+    return;
+  }
+
+  try {
+    const response = await fetch(API_BASE + "?id=" + encodeURIComponent(id), {
+      method: "DELETE",
+      credentials: "include",
+      headers: {
+        ...getAuthHeaders()
+      }
+    });
+
+    if (response.status === 401 || response.status === 403) {
+      openCfLoginModal();
+      throw new Error("Authentication required to delete. Please sign in.");
+    }
+
+    allArticles = allArticles.filter(a => String(a.id) !== String(id));
+    renderExistingTable();
+    showToast(`Article "${title}" deleted successfully.`, "success");
+
+    if (editingArticleId === id) {
+      cancelEdit();
+    }
+  } catch (err) {
+    showToast(`Delete failed: ${err.message}`, "error");
+  }
+}
+
+// Load Existing Articles
+async function loadExistingArticles() {
+  const tbody = document.getElementById("articlesTableBody");
+  tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 24px;">Fetching articles from Cloudflare API...</td></tr>`;
+
+  try {
+    const response = await fetch(API_BASE, { credentials: "include" });
+    if (!response.ok) throw new Error("HTTP " + response.status);
+    const data = await response.json();
+
+    allArticles = Array.isArray(data) ? data : [];
+    renderExistingTable();
+  } catch (err) {
+    console.warn("Falling back to local knowledge base:", err);
+    try {
+      const local = JSON.parse(localStorage.getItem("sysAdminIQKB_v420") || "{}");
+      allArticles = local.articles || [];
+    } catch (e) {
+      allArticles = [];
+    }
+    renderExistingTable();
+  }
+}
+
+function renderExistingTable() {
+  const tbody = document.getElementById("articlesTableBody");
+  const countEl = document.getElementById("articleCount");
+  const q = (document.getElementById("searchExisting")?.value || "").toLowerCase().trim();
+
+  const filtered = allArticles.filter(a => {
+    if (!q) return true;
+    return (a.title && a.title.toLowerCase().includes(q)) ||
+           (a.category && a.category.toLowerCase().includes(q)) ||
+           (a.platform && a.platform.toLowerCase().includes(q));
+  });
+
+  countEl.textContent = allArticles.length;
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 28px;">No articles found matching search query.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = filtered.map(a => {
+    const snippet = a.content ? a.content.slice(0, 100) : (Array.isArray(a.symptoms) ? a.symptoms[0] : (a.description || ''));
+    const fileCount = (a.attachments && a.attachments.length) || 0;
+    const platform = a.platform || 'VMware';
+    const tagClass = getPlatformTagClass(platform);
+
+    return `
+      <tr>
+        <td><span class="tag-platform ${tagClass}">${escapeHtml(platform)}</span></td>
+        <td>
+          <div style="font-weight: 600; color: #fff;">${escapeHtml(a.title || 'Untitled')}</div>
+          <div style="font-size: 12px; color: var(--text-muted); margin-top: 3px; max-width: 500px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+            ${escapeHtml(snippet)}
+          </div>
+        </td>
+        <td><span style="color: #cbd5e1; font-weight: 500;">${escapeHtml(a.category || 'General')}</span></td>
+        <td>${fileCount > 0 ? `<span style="color:var(--cf-orange); font-weight:600;">📎 ${fileCount}</span>` : '<span style="color:var(--text-muted);">—</span>'}</td>
+        <td style="text-align: right; white-space: nowrap;">
+          <button class="btn btn-secondary btn-sm" onclick="editArticle('${escapeHtml(a.id)}')" style="margin-right: 6px;">✏️ Edit</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteArticle('${escapeHtml(a.id)}')">🗑️ Delete</button>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function getPlatformTagClass(p) {
+  switch (p) {
+    case 'VMware': return 'tag-vmware';
+    case 'Windows': return 'tag-windows';
+    case 'Linux': return 'tag-linux';
+    case 'Cisco UCS': return 'tag-cisco';
+    case 'AWS': return 'tag-aws';
+    case 'Azure': return 'tag-azure';
+    default: return 'tag-vmware';
+  }
+}
+
+function escapeHtml(str) {
+  return String(str || '').replace(/[&<>"']/g, m => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[m]));
+}
+
+// Initialize on DOM load (No blocking prompt!)
+window.addEventListener("DOMContentLoaded", () => {
+  updateAuthUI();
+  loadExistingArticles();
+});
+</script>
 </body>
 </html>
