@@ -137,7 +137,7 @@ a.attachments.map(file => `
 
 📎
     <a href="#"
-       onclick="openAttachment('${esc(file.key)}'); return false;">
+       onclick="openAttachment('${esc(file.key)}'); return false;"
        ${esc(file.name)}
     </a>
 
@@ -201,47 +201,10 @@ a.attachments.map(file => `
                 ${arr(a.resolution).map(x=>`<li>${esc(x)}</li>`).join('')}
             </ol>
 
-           <h3>Verification</h3>
-${list(a.verification)}
+            <h3>Verification</h3>
+            ${list(a.verification)}
 
-${
-a.attachments && a.attachments.length
-
-? `
-<h3>Attachments</h3>
-
-<div class="attachments">
-
-${
-a.attachments.map(file => `
-
-<div class="attachment-item">
-
-📎
-<a href="#"
-   onclick="openAttachment('${esc(file.name)}'); return false;">
-   ${esc(file.name)}
-</a>
-
-<br>
-
-<small>
-${esc(file.type || '')}
-</small>
-
-</div>
-
-`).join('')
-}
-
-</div>
-`
-
-: ''
-}
-
-</div>
-`;
+        </div>
         `;
     }
 
@@ -261,13 +224,6 @@ function openAttachment(key){
         "https://sysadminiq-api.baijucm.workers.dev/file?key=" +
         encodeURIComponent(key),
         "_blank"
-    );
-}
-function openAttachment(fileName){
-
-    alert(
-        "Attachment selected: " +
-        fileName
     );
 }
 function renderPlatformCards(){$('#platformCards').innerHTML=MAIN_CATEGORIES.map(c=>{const count=DB.articles.filter(a=>platformOf(a)===c.name).length;return `<div class="platform-card" data-platform-card="${esc(c.name)}"><div class="platform-icon">${esc(c.short)}</div><div><h3>${esc(c.name)}</h3><p>${esc(c.desc)}</p><b>${count} article${count===1?'':'s'}</b></div><span class="arrow">→</span></div>`}).join('');$$('[data-platform-card]').forEach(e=>e.onclick=()=>openPlatform(e.dataset.platformCard))}
