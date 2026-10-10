@@ -122,35 +122,19 @@ overflow:auto;
 ">
 ${esc(a.content || '')}
 </pre>
-${
-a.attachments && a.attachments.length
-
-? `
-<h3>Attachments</h3>
-
-<div class="attachments">
-
-${
-a.attachments.map(file => `
-
-<div class="attachment-item">
-
-📎
-    <a href="#"
-       onclick="openAttachment('${esc(file.key)}'); return false;"
-       ${esc(file.name)}
-    </a>
-
-    <br>
-
-    <small>
-        ${esc(file.type || "")}
-    </small>
-
-</div>
-`
-
-: ''
+${a.attachments && a.attachments.length
+  ? `<h3>Attachments</h3>
+     <div class="attachments">
+     ${a.attachments.map(file => `
+       <div class="attachment-item">
+         📎 <a href="#"
+            onclick="openAttachment('${esc(file.key)}'); return false;">
+            ${esc(file.name || 'Attachment')}
+         </a>
+       </div>
+     `).join('')}
+     </div>`
+  : ''
 }
         </div>
         `;
