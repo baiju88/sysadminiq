@@ -3,10 +3,12 @@
  * Production APP.JS
  * 
  * Features:
+ * - 0ms instant loading with self-contained built-in databases (Articles, Commands, Scripts, Resources, Logs)
+ * - Safe background sync with Cloudflare D1 API (credentials: 'include' & timeout controller)
  * - Full Navigation & Search across Knowledge Base, Analyzer, Logs, Commands, Scripts, Resources
  * - Clean Article View (Publishing, Editing, and Deletion exclusive to publisher.html / publish.html)
- * - Seamless link to publisher.html with Cloudflare authentication
- * - Rich built-in diagnostic articles including new vCenter STS Certificate and Azure Boot Recovery playbooks
+ * - Seamless link to publisher.html with Cloudflare Zero Trust authentication
+ * - Rich diagnostic articles including VMware vCenter STS Certificate, Azure Boot Recovery, and UCS playbooks
  */
 
 const $ = s => document.querySelector(s);
@@ -352,6 +354,203 @@ const BUILTIN_ARTICLES = [
   }
 ];
 
+const BUILTIN_COMMANDS = [
+  {
+    id: "cmd-1",
+    name: "ESXi: Check Host Hardware & Sensors",
+    platform: "VMware",
+    category: "Hardware Diagnostics",
+    use: "Displays detailed CPU, memory, power supply, and temperature sensor readouts from CIM/IPMI",
+    cmd: "esxcli hardware cpu global get\nesxcli hardware memory get\nesxcli hardware platform get"
+  },
+  {
+    id: "cmd-2",
+    name: "ESXi: Inspect Physical NIC Link & Drivers",
+    platform: "VMware",
+    category: "Networking",
+    use: "Lists all physical vmnics, MAC addresses, link state, speed, duplex, and driver module in use",
+    cmd: "esxcli network nic list\nesxcli network nic get -n vmnic0"
+  },
+  {
+    id: "cmd-3",
+    name: "ESXi: Check Storage Paths & All Paths Down (APD)",
+    platform: "VMware",
+    category: "Storage",
+    use: "Lists multipathing status, active storage paths, and timeouts",
+    cmd: "esxcli storage core path list\nesxcli storage core device list\nesxcli storage nfs list"
+  },
+  {
+    id: "cmd-4",
+    name: "Windows: AD Replication Summary",
+    platform: "Windows",
+    category: "Active Directory",
+    use: "Quick overview of replication health across all domain controllers in the forest",
+    cmd: "repadmin /replsummary\nrepadmin /showrepl * /csv"
+  },
+  {
+    id: "cmd-5",
+    name: "Windows: Test Port Connectivity via PowerShell",
+    platform: "Windows",
+    category: "Networking",
+    use: "Modern replacement for telnet to test TCP connection to remote services",
+    cmd: "Test-NetConnection -ComputerName remote-host.domain.local -Port 443 -InformationLevel Detailed"
+  },
+  {
+    id: "cmd-6",
+    name: "Linux: Find Top Inode-Consuming Directories",
+    platform: "Linux",
+    category: "Storage",
+    use: "Finds directories with highest number of files to resolve inode exhaustion",
+    cmd: "find / -xdev -printf '%h\\n' | sort | uniq -c | sort -k 1 -n | tail -25"
+  },
+  {
+    id: "cmd-7",
+    name: "Linux: Real-Time Network Socket Connections",
+    platform: "Linux",
+    category: "Networking",
+    use: "Displays all listening ports, established connections, and corresponding process IDs",
+    cmd: "ss -tulpn\nss -s"
+  },
+  {
+    id: "cmd-8",
+    name: "AWS: Query EC2 System Log via CLI",
+    platform: "AWS",
+    category: "Cloud Compute",
+    use: "Fetches operating system console output directly from the hypervisor",
+    cmd: "aws ec2 get-console-output --instance-id i-0123456789abcdef0 --output text"
+  }
+];
+
+const BUILTIN_SCRIPTS = [
+  {
+    id: "scr-1",
+    title: "Audit All VMs with Snapshots Older than 7 Days",
+    platform: "VMware",
+    category: "PowerCLI",
+    desc: "Connects to vCenter, finds stale VM snapshots causing storage degradation, and exports to CSV.",
+    code: `# PowerCLI: Audit snapshots older than 7 days
+Connect-VIServer -Server "vcenter.corp.local" -Credential (Get-Credential)
+
+$ThresholdDate = (Get-Date).AddDays(-7)
+$StaleSnapshots = Get-VM | Get-Snapshot | Where-Object { $_.Created -lt $ThresholdDate }
+
+$StaleSnapshots | Select-Object @{N="VM";E={$_.VM.Name}},
+                                Name,
+                                Created,
+                                @{N="SizeGB";E={[math]::Round($_.SizeGB, 2)}},
+                                Description |
+    Export-Csv -Path "C:\\Reports\\StaleSnapshots.csv" -NoTypeInformation
+
+Write-Host "Found $($StaleSnapshots.Count) stale snapshots. Report saved." -ForegroundColor Green`
+  },
+  {
+    id: "scr-2",
+    title: "Automated ESXi Scratch Partition & Coredump Verification",
+    platform: "VMware",
+    category: "PowerCLI",
+    desc: "Validates that all ESXi hosts in a cluster have valid persistent scratch directories and active coredump targets configured.",
+    code: `# PowerCLI: Verify coredump & scratch setup
+Get-VMHost | ForEach-Object {
+    $esx = $_
+    $esxcli = Get-EsxCli -VMHost $esx -V2
+    $dump = $esxcli.system.coredump.partition.get.Invoke()
+    $scratch = (Get-VMHostAdvancedConfiguration -VMHost $esx -Name "UserVars.ScratchLocation")["UserVars.ScratchLocation"]
+
+    [PSCustomObject]@{
+        HostName       = $esx.Name
+        Version        = $esx.Version
+        Build          = $esx.Build
+        ScratchPath    = $scratch
+        DumpActive     = $dump.Active
+        DumpConfigured = $dump.Configured
+    }
+} | Format-Table -AutoSize`
+  },
+  {
+    id: "scr-3",
+    title: "Windows Server: Check Inactive AD Accounts (90+ Days)",
+    platform: "Windows",
+    category: "PowerShell",
+    desc: "Queries Active Directory for stale user accounts that haven't authenticated in 90 days for compliance audits.",
+    code: `# PowerShell: Find stale active directory users
+Import-Module ActiveDirectory
+$Cutoff = (Get-Date).AddDays(-90)
+
+Get-ADUser -Filter {Enabled -eq $true -and LastLogonDate -lt $Cutoff} -Properties LastLogonDate, mail, Title, Department |
+    Select-Object SamAccountName, Name, mail, LastLogonDate, Department |
+    Sort-Object LastLogonDate |
+    Export-Csv -Path "C:\\Security\\InactiveUsers.csv" -NoTypeInformation`
+  },
+  {
+    id: "scr-4",
+    title: "Linux: Memory & Zombie Process Watchdog Bash Script",
+    platform: "Linux",
+    category: "Bash",
+    desc: "Checks for high memory usage, runaway swap, and defunct/zombie processes, logging warnings to syslog.",
+    code: `#!/bin/bash
+# Linux System Watchdog
+THRESHOLD_MEM=85
+MEM_USAGE=$(free | grep Mem | awk '{printf("%.0f"), $3/$2 * 100}')
+ZOMBIES=$(ps aux | awk '$8=="Z" {print $0}' | wc -l)
+
+if [ "$MEM_USAGE" -gt "$THRESHOLD_MEM" ]; then
+    logger -t WATCHDOG "CRITICAL: Memory usage is at \${MEM_USAGE}% (Threshold: \${THRESHOLD_MEM}%)"
+fi
+
+if [ "$ZOMBIES" -gt 0 ]; then
+    logger -t WATCHDOG "WARNING: Detected \${ZOMBIES} zombie processes on $(hostname)"
+fi`
+  }
+];
+
+const BUILTIN_RESOURCES = [
+  {
+    id: "res-1",
+    name: "VMware Compatibility Guide (HCL)",
+    platform: "VMware",
+    category: "Compatibility",
+    url: "https://www.vmware.com/resources/compatibility/search.php",
+    description: "Official hardware compatibility list for servers, storage, IO cards, and ESXi releases.",
+    notes: "Always check driver/firmware combos before updating ESXi builds."
+  },
+  {
+    id: "res-2",
+    name: "Broadcom VMware Knowledge Base",
+    platform: "VMware",
+    category: "Documentation",
+    url: "https://knowledge.broadcom.com/external/article",
+    description: "Official Broadcom / VMware support portal for knowledge articles and bulletins.",
+    notes: "Search by KB number or exact error string."
+  },
+  {
+    id: "res-3",
+    name: "Microsoft Sysinternals Suite",
+    platform: "Windows",
+    category: "Troubleshooting Tools",
+    url: "https://learn.microsoft.com/en-us/sysinternals/",
+    description: "Essential utilities including Process Explorer, Process Monitor, and TCPView for Windows deep-dive.",
+    notes: "Can be executed live via live.sysinternals.com."
+  },
+  {
+    id: "res-4",
+    name: "Linux Performance Observability (Brendan Gregg)",
+    platform: "Linux",
+    category: "Performance Analysis",
+    url: "https://www.brendangregg.com/linuxperf.html",
+    description: "Comprehensive diagrams and methodologies for CPU, memory, disk, and network profiling tools.",
+    notes: "Standard reference for sysadmins diagnosing system bottlenecks."
+  }
+];
+
+const BUILTIN_LOG_MAP = [
+  ["vpxd.log", "vCenter Server main management service. Connection errors, database queries, DRS/HA logic."],
+  ["hostd.log", "ESXi host management daemon. Virtual machine lifecycle, storage volume discovery, vSphere Client actions."],
+  ["vpxa.log", "vCenter agent running on ESXi. Communication link between vCenter vpxd and hostd."],
+  ["vmkernel.log", "ESXi core kernel log. Hardware devices, SCSI sense codes, NIC link transitions, PSOD dumps."],
+  ["fdm.log", "Fault Domain Manager for vSphere HA. Heartbeat loss, master election, failover triggering."],
+  ["vmon.log", "vCenter Service Lifecycle Manager. Tracks service crashes, timeouts, and automated restarts."]
+];
+
 function getAuthKey() {
   return localStorage.getItem(AUTH_STORAGE_KEY) || 
          localStorage.getItem(CF_TOKEN_KEY) || 
@@ -389,18 +588,23 @@ function promptAuth() {
 function embeddedDB() {
   const get = (name) => {
     try {
-      return (typeof window !== "undefined" && window[name] !== undefined) ? window[name] : [];
+      return (typeof window !== "undefined" && window[name] !== undefined) ? window[name] : null;
     } catch (e) {
-      return [];
+      return null;
     }
   };
   const articles = get('KB_ARTICLES');
+  const scripts = get('SCRIPTS');
+  const commands = get('COMMANDS');
+  const resources = get('RESOURCES');
+  const log_map = get('LOG_MAP');
+
   return normalizeDB({
     articles: Array.isArray(articles) && articles.length > 0 ? articles : BUILTIN_ARTICLES,
-    scripts: get('SCRIPTS'),
-    commands: get('COMMANDS'),
-    resources: get('RESOURCES'),
-    log_map: get('LOG_MAP')
+    scripts: Array.isArray(scripts) && scripts.length > 0 ? scripts : BUILTIN_SCRIPTS,
+    commands: Array.isArray(commands) && commands.length > 0 ? commands : BUILTIN_COMMANDS,
+    resources: Array.isArray(resources) && resources.length > 0 ? resources : BUILTIN_RESOURCES,
+    log_map: Array.isArray(log_map) && log_map.length > 0 ? log_map : BUILTIN_LOG_MAP
   });
 }
 
@@ -412,7 +616,16 @@ function normalizeDB(data) {
   if (!out.articles.length) {
     out.articles = [...BUILTIN_ARTICLES];
   }
-  out.log_map = Array.isArray(out.log_map) ? out.log_map : [];
+  if (!out.commands.length) {
+    out.commands = [...BUILTIN_COMMANDS];
+  }
+  if (!out.scripts.length) {
+    out.scripts = [...BUILTIN_SCRIPTS];
+  }
+  if (!out.resources.length) {
+    out.resources = [...BUILTIN_RESOURCES];
+  }
+  out.log_map = Array.isArray(out.log_map) && out.log_map.length > 0 ? out.log_map : BUILTIN_LOG_MAP;
   return out;
 }
 
@@ -447,28 +660,36 @@ function saveLocal(data) {
 }
 
 async function loadDB() {
-  const fallback = localDB();
-
-  try {
-    const response = await fetch('https://sysadminiq-api.baijucm.workers.dev', { credentials: 'include' });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const d1Articles = await response.json();
-
-    DB = {
-      ...fallback,
-      articles: Array.isArray(d1Articles) && d1Articles.length > 0 ? d1Articles : fallback.articles
-    };
-
-    saveLocal(DB);
-    BACKEND_ONLINE = true;
-  } catch (e) {
-    DB = fallback;
-    BACKEND_ONLINE = false;
-    console.warn('Remote API unavailable, using local knowledge base:', e);
-  }
-
+  // 1. Immediately render local database with zero latency
+  DB = localDB();
   renderAll();
   updateBackendStatus();
+
+  // 2. Fetch live Cloudflare D1 articles in background with timeout
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
+    const response = await fetch('https://sysadminiq-api.baijucm.workers.dev', {
+      credentials: 'include',
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+
+    if (response.ok) {
+      const d1Articles = await response.json();
+      if (Array.isArray(d1Articles) && d1Articles.length > 0) {
+        DB.articles = d1Articles;
+        saveLocal(DB);
+        BACKEND_ONLINE = true;
+        renderAll();
+        updateBackendStatus();
+      }
+    }
+  } catch (e) {
+    BACKEND_ONLINE = false;
+    updateBackendStatus();
+    console.log('Using local knowledge base playbooks:', e.message);
+  }
 }
 
 function updateBackendStatus() {
@@ -532,8 +753,10 @@ function findMatches(text) {
 function articleCard(a) {
   return `
     <div class="article-card" data-article="${esc(a.id)}">
-      <span class="tag">${esc(platformOf(a))}</span>
-      <span class="subtag">${esc(a.category || 'General')}</span>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+        <span class="tag">${esc(platformOf(a))}</span>
+        <span class="subtag">${esc(a.category || 'General')}</span>
+      </div>
       <h3>${esc(a.title)}</h3>
       <p>${esc(arr(a.symptoms)[0] || a.description || (a.content ? a.content.slice(0, 120) + '...' : 'Troubleshooting playbook'))}</p>
     </div>
@@ -567,7 +790,7 @@ function openArticle(a) {
         <h1>${esc(a.title)}</h1>
 
         <h3>Article Content</h3>
-        <pre style="white-space:pre-wrap;padding:15px;background:#f8f9fb;color:#1f2937;border:1px solid #dcdcdc;border-radius:6px;font-size:14px;line-height:1.6;max-height:500px;overflow:auto;">${esc(a.content || '')}</pre>
+        <pre style="white-space:pre-wrap;padding:15px;background:#0e1526;color:#cbd5e1;border:1px solid #24324f;border-radius:6px;font-size:14px;line-height:1.6;max-height:500px;overflow:auto;">${esc(a.content || '')}</pre>
 
         ${
           a.attachments && a.attachments.length
@@ -753,42 +976,52 @@ function renderCommands(q = '') {
 function renderScripts() {
   const el = $('#scriptResults');
   if (!el) return;
-  el.innerHTML = DB.scripts.map((s, i) => `
-    <div class="article-card">
-      <span class="tag">${esc(s.category || 'Automation')}</span>
-      <h3>${esc(s.title || s.name)}</h3>
-      <p>${esc(s.desc || s.description || '')}</p>
-      <button class="copy" data-script="${i}">Copy</button>
-      <pre>${esc(s.code || '')}</pre>
+  el.innerHTML = DB.scripts.map((x, i) => `
+    <div class="command">
+      <button class="copy" data-copy-script="${i}">Copy Script</button>
+      <b>${esc(x.title || x.name)}</b><br>
+      <small>${esc(x.platform || '')} — ${esc(x.category || '')} — ${esc(x.desc || x.description || '')}</small>
+      <pre>${esc(x.code || '')}</pre>
     </div>
-  `).join('') || '<div class="panel">No scripts found.</div>';
+  `).join('') || '<div class="panel">No automation scripts available.</div>';
 
-  $$('[data-script]').forEach(b => {
-    b.onclick = () => copy(DB.scripts[+b.dataset.script]?.code || '');
+  $$('[data-copy-script]').forEach(b => {
+    b.onclick = () => {
+      const idx = +b.dataset.copyScript;
+      if (DB.scripts[idx]) copy(DB.scripts[idx].code || '');
+    };
   });
 }
 
 function renderResources(q = '', cat = 'all') {
   const el = $('#resourceResults');
   if (!el) return;
-  const out = DB.resources.filter(r =>
-    (cat === 'all' || r.category === cat) &&
-    (!q || JSON.stringify(r).toLowerCase().includes(q.toLowerCase()))
-  );
 
-  el.innerHTML = out.map(r => `
+  const cats = [...new Set(DB.resources.map(x => x.category).filter(Boolean))];
+  const catSel = $('#resourceCategory');
+  if (catSel && catSel.children.length <= 1) {
+    catSel.innerHTML = '<option value="all">All categories</option>' + cats.map(c => `<option value="${esc(c)}">${esc(c)}</option>`).join('');
+  }
+
+  q = q.toLowerCase();
+  const filtered = DB.resources.filter(x => {
+    const matchesQ = !q || JSON.stringify(x).toLowerCase().includes(q);
+    const matchesC = cat === 'all' || x.category === cat;
+    return matchesQ && matchesC;
+  });
+
+  el.innerHTML = filtered.map(x => `
     <div class="article-card">
-      <span class="tag">${esc(r.category || 'Resource')}</span>
-      <h3>${esc(r.name || r.title)}</h3>
-      <p>${esc(r.description || r.notes || '')}</p>
-      ${r.url ? `<a class="result-link" href="${esc(r.url)}" target="_blank" rel="noopener">Open resource →</a>` : ''}
+      <span class="tag">${esc(x.platform || 'General')}</span>
+      <span class="subtag">${esc(x.category || '')}</span>
+      <h3>${esc(x.name || x.title)}</h3>
+      <p>${esc(x.description || '')}</p>
+      ${x.notes ? `<small style="color:var(--text-muted); display:block; margin-top:8px;">💡 ${esc(x.notes)}</small>` : ''}
+      <a href="${esc(x.url || '#')}" target="_blank" style="display:inline-block; margin-top:12px; color:var(--cf-blue); font-size:12px; font-weight:bold; text-decoration:none;">
+        Open Resource ↗
+      </a>
     </div>
   `).join('') || '<div class="panel">No resources found.</div>';
-
-  const rCat = $('#resourceCategory');
-  if (rCat) {
-    rCat.innerHTML = '<option value="all">All categories</option>' + [...new Set(DB.resources.map(x => x.category).filter(Boolean))].map(c => `<option>${esc(c)}</option>`).join('');
-  }
 }
 
 function analyze() {
@@ -819,7 +1052,7 @@ function analyze() {
           <ul>${arr(a.causes).slice(0, 4).map(x => `<li>${esc(x)}</li>`).join('')}</ul>
           <b>Next checks</b>
           <ol>${arr(a.checks).slice(0, 5).map(x => `<li>${esc(x)}</li>`).join('')}</ol>
-          <button type="button" onclick="openArticleById('${esc(a.id)}')">Open full article</button>
+          <button type="button" class="primary" style="margin-top:10px; font-size:12px;" onclick="openArticleById('${esc(a.id)}')">Open full article</button>
         </div>
       `;
     });
@@ -862,12 +1095,12 @@ function renderAdmin() {
   if (!adminContent) return;
 
   adminContent.innerHTML = `
-    <div style="background:#fff7ed;border:1px solid #fed7aa;padding:18px;border-radius:8px;margin-bottom:20px;">
-      <h3 style="margin:0 0 8px 0;color:#c2410c;font-size:16px;">Article Publishing & Management Portal</h3>
-      <p style="margin:0 0 14px 0;font-size:13px;color:#7c2d12;line-height:1.5;">
+    <div style="background:rgba(243,128,32,0.08);border:1px solid rgba(243,128,32,0.3);padding:18px;border-radius:8px;margin-bottom:20px;">
+      <h3 style="margin:0 0 8px 0;color:#f38020;font-size:16px;">Article Publishing & Management Portal</h3>
+      <p style="margin:0 0 14px 0;font-size:13px;color:#cbd5e1;line-height:1.5;">
         Publishing new articles, updating existing articles, managing file attachments, and deleting articles are strictly handled via the dedicated <b>publisher.html</b> portal.
       </p>
-      <a href="/publisher.html" target="_blank" style="display:inline-block;background:#f38020;color:white;padding:10px 18px;border-radius:4px;font-weight:bold;text-decoration:none;font-size:14px;">
+      <a href="publisher.html" target="_blank" style="display:inline-block;background:#f38020;color:white;padding:10px 18px;border-radius:4px;font-weight:bold;text-decoration:none;font-size:14px;">
         🔑 Open publisher.html Portal ↗
       </a>
     </div>
@@ -898,18 +1131,6 @@ function renderAll() {
 
 // Initial setup on DOM ready
 function initSysAdminIQ() {
-  // Theme Toggle
-  const themeBtn = $('#themeBtn');
-  if (themeBtn) {
-    themeBtn.onclick = () => {
-      document.documentElement.dataset.theme = document.documentElement.dataset.theme === 'dark' ? '' : 'dark';
-      localStorage.vmTheme = document.documentElement.dataset.theme;
-    };
-  }
-  if (localStorage.vmTheme) {
-    document.documentElement.dataset.theme = localStorage.vmTheme;
-  }
-
   // Navigation handlers
   $$('.nav').forEach(b => {
     b.onclick = () => nav(b.dataset.view);
@@ -994,9 +1215,21 @@ function initSysAdminIQ() {
     };
   }
 
-  // Load database and render
+  // Load database and render immediately
   loadDB();
 }
+
+// Window global exports for inline event handlers and modules
+window.nav = nav;
+window.openPlatform = openPlatform;
+window.openArticleById = openArticleById;
+window.openArticle = openArticle;
+window.openAttachment = openAttachment;
+window.copy = copy;
+window.analyze = analyze;
+window.inspectLogs = inspectLogs;
+window.renderKB = renderKB;
+window.promptAuth = promptAuth;
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initSysAdminIQ);
