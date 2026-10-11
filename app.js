@@ -776,15 +776,32 @@ function openArticleById(id) {
   if (a) openArticle(a);
 }
 
-// Rich Formatted Callout & Markdown Parser
+// Rich Formatted Callout, OneNote & Markdown Parser
 function formatArticleContent(raw) {
   if (!raw) return '';
 
-  let html = raw.replace(/:::(\w+)\s*\[(.*?)\]([\s\S]*?):::/g, (match, type, title, body) => {
+  let html = raw;
+
+  // 1. OneNote Checklists [ ] and [x]
+  html = html.replace(/^(\s*)- \[ \] (.*$)/gim, `
+    <div class="onenote-todo-item">
+      <input type="checkbox" class="onenote-todo-checkbox" onchange="this.parentElement.classList.toggle('checked', this.checked)">
+      <span class="todo-text">$2</span>
+    </div>
+  `);
+  html = html.replace(/^(\s*)- \[[xX]\] (.*$)/gim, `
+    <div class="onenote-todo-item checked">
+      <input type="checkbox" class="onenote-todo-checkbox" checked onchange="this.parentElement.classList.toggle('checked', this.checked)">
+      <span class="todo-text">$2</span>
+    </div>
+  `);
+
+  // 2. Format callouts :::type [title]
+  html = html.replace(/:::(\w+)\s*\[(.*?)\]([\s\S]*?):::/g, (match, type, title, body) => {
     return `
       <div class="callout callout-${type}">
         <div class="callout-header">${esc(title)}</div>
-        <div>${esc(body.trim()).replace(/\n/g, '<br>')}</div>
+        <div>${body.trim().replace(/\n/g, '<br>')}</div>
       </div>
     `;
   });
@@ -793,11 +810,12 @@ function formatArticleContent(raw) {
     const t = type.toLowerCase();
     return `
       <div class="callout callout-${t}">
-        <div>${esc(body.trim()).replace(/\n/g, '<br>')}</div>
+        <div>${body.trim().replace(/\n/g, '<br>')}</div>
       </div>
     `;
   });
 
+  // 3. Code blocks with copy button
   html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
     return `
       <div style="position:relative; margin:12px 0;">
@@ -807,13 +825,42 @@ function formatArticleContent(raw) {
     `;
   });
 
+  // 4. Markdown tables (| Header 1 | Header 2 |)
+  html = html.replace(/((?:\|[^\n]+\|\r?\n){2,})/g, (match) => {
+    const lines = match.trim().split(/\r?\n/);
+    if (lines.length < 2) return match;
+    const headerLine = lines[0];
+    const headers = headerLine.split('|').map(s => s.trim()).filter(Boolean);
+    const bodyLines = lines.slice(1).filter(l => !l.match(/^\|[\s\-:|]+\|$/));
+    return `
+      <table class="onenote-table">
+        <thead>
+          <tr>${headers.map(h => `<th>${esc(h)}</th>`).join('')}</tr>
+        </thead>
+        <tbody>
+          ${bodyLines.map(line => {
+            const cells = line.split('|').map(s => s.trim()).filter(Boolean);
+            return `<tr>${cells.map(c => `<td>${esc(c)}</td>`).join('')}</tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+  });
+
+  // 5. Markdown Headings
   html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
   html = html.replace(/^## (.*$)/gim, '<h2 style="color:#fff; font-size:18px; margin:16px 0 8px 0;">$1</h2>');
   html = html.replace(/^# (.*$)/gim, '<h1 style="color:#fff; font-size:22px; margin:18px 0 10px 0;">$1</h1>');
 
+  // 6. Bold, Italic & Inline Code
   html = html.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
   html = html.replace(/\*(.*?)\*/g, '<i>$1</i>');
-  html = html.replace(/`(.*?)`/g, '<code style="background:#090e1a; padding:2px 6px; border-radius:4px; color:#38bdf8;">$1</code>');
+  html = html.replace(/`([^`]+)`/g, '<code style="background:#090e1a; padding:2px 6px; border-radius:4px; color:#38bdf8;">$1</code>');
+
+  // If text does not contain block HTML, convert double newlines
+  if (!/<p>|<div|<table|<h\d/i.test(html)) {
+    html = html.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
+  }
 
   return html;
 }
@@ -821,7 +868,119 @@ function formatArticleContent(raw) {
 // In-Website Document & Attachment Viewer (Restricted Download)
 let currentViewerZoom = 1.0;
 
-function openSecureViewer(rawKey, fileName, fileType) {
+function parseAttachmentsList(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+      if (parsed && typeof parsed === 'object') return [parsed];
+    } catch {
+      return [];
+    }
+  }
+  if (typeof raw === 'object') return [raw];
+  return [];
+}
+
+async function probeFileUrl(rawKey, fileName) {
+  if (rawKey.startsWith('data:') || rawKey.startsWith('blob:')) {
+    return { ok: true, key: rawKey, url: rawKey, contentType: '' };
+  }
+
+  const cleanName = fileName || (rawKey ? rawKey.split('/').pop() : '');
+  const candidates = [
+    rawKey,
+    rawKey.startsWith('attachments/') ? rawKey.replace(/^attachments\//, '') : '',
+    rawKey.startsWith('attachments/') ? 'test/' + rawKey.replace(/^attachments\//, '') : '',
+    !rawKey.startsWith('test/') ? 'test/' + rawKey : '',
+    cleanName,
+    cleanName ? 'test/' + cleanName : ''
+  ].filter((v, idx, arr) => Boolean(v) && arr.indexOf(v) === idx);
+
+  for (const candidateKey of candidates) {
+    try {
+      const testUrl = `https://sysadminiq-api.baijucm.workers.dev/file?key=${encodeURIComponent(candidateKey)}`;
+      const ctrl = new AbortController();
+      const tid = setTimeout(() => ctrl.abort(), 3500);
+      const res = await fetch(testUrl, { method: 'GET', signal: ctrl.signal });
+      clearTimeout(tid);
+      if (res.status === 200) {
+        return {
+          ok: true,
+          key: candidateKey,
+          url: testUrl,
+          contentType: res.headers.get('content-type') || ''
+        };
+      }
+    } catch {}
+  }
+
+  return {
+    ok: false,
+    key: rawKey,
+    url: `https://sysadminiq-api.baijucm.workers.dev/file?key=${encodeURIComponent(rawKey)}`,
+    candidates
+  };
+}
+
+async function renderDocxContent(arrayBuf, targetEl, docTitle) {
+  try {
+    let htmlResult = '';
+    // 1. Try client-side mammoth
+    if (window.mammoth && window.mammoth.convertToHtml) {
+      const result = await window.mammoth.convertToHtml({ arrayBuffer: arrayBuf });
+      htmlResult = result.value;
+    } else {
+      // 2. Try server-side fallback
+      const base64Str = btoa(new Uint8Array(arrayBuf).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+      const res = await fetch('/api/docs/render-docx', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ base64: base64Str })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        htmlResult = data.html || '';
+      }
+    }
+
+    if (htmlResult) {
+      targetEl.innerHTML = `
+        <div class="secure-viewer-docx-content">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #cbd5e1; padding-bottom:12px; margin-bottom:20px;">
+            <div>
+              <span style="font-size:11px; font-weight:700; color:#2563eb; text-transform:uppercase; letter-spacing:0.04em;">Word Document Playbook</span>
+              <h2 style="font-size:20px; font-weight:800; color:#0f172a; margin:4px 0 0 0;">${esc(docTitle)}</h2>
+            </div>
+            <span class="secure-badge" style="background:#e0f2fe; color:#0369a1; border-color:#bae6fd;">🔒 In-Website View Mode</span>
+          </div>
+          <div class="docx-body">
+            ${htmlResult}
+          </div>
+        </div>
+      `;
+    } else {
+      targetEl.innerHTML = `
+        <div style="text-align:center; padding:40px; color:#cbd5e1;">
+          <h3>Unable to render Word Document</h3>
+          <p style="color:var(--text-muted); font-size:12px;">The document is loaded in memory but could not be parsed into HTML.</p>
+        </div>
+      `;
+    }
+  } catch (err) {
+    console.error('Docx render error:', err);
+    targetEl.innerHTML = `
+      <div style="text-align:center; padding:40px; color:#cbd5e1;">
+        <h3 style="color:#f87171;">Document Parser Error</h3>
+        <p style="color:var(--text-muted); font-size:12px;">${esc(err.message)}</p>
+      </div>
+    `;
+  }
+}
+
+async function openSecureViewer(rawKey, fileName, fileType) {
   if (!rawKey || rawKey === 'undefined' || rawKey === 'null') {
     alert('This attachment does not have a valid storage key.');
     return;
@@ -833,49 +992,175 @@ function openSecureViewer(rawKey, fileName, fileType) {
   const iconEl = $('#secureViewerIcon');
   if (!modal || !body) return;
 
-  const fileUrl = `https://sysadminiq-api.baijucm.workers.dev/file?key=${encodeURIComponent(rawKey)}`;
-  const ext = (fileName || '').split('.').pop().toLowerCase();
-  const isImg = fileType?.includes('image') || ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext);
-  const isPdf = fileType?.includes('pdf') || ext === 'pdf';
+  nameEl.textContent = fileName || 'Attachment';
+  iconEl.textContent = '⏳';
+  currentViewerZoom = 1.0;
+  modal.classList.remove('hidden');
+
+  body.innerHTML = `
+    <div style="text-align:center; padding:60px 20px; color:#94a3b8;">
+      <div style="font-size:42px; margin-bottom:14px;">⏳</div>
+      <h3 style="color:#f8fafc; font-size:17px; margin-bottom:6px;">Connecting to secure storage...</h3>
+      <p style="font-size:12px; color:#64748b;">Retrieving ${esc(fileName || 'document')} from Cloudflare R2 bucket</p>
+    </div>
+  `;
+
+  const probe = await probeFileUrl(rawKey, fileName);
+  const ext = (fileName || rawKey || '').split('.').pop().toLowerCase();
+  const isImg = (fileType?.includes('image') || ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext));
+  const isPdf = (fileType?.includes('pdf') || ext === 'pdf');
+  const isDocx = (ext === 'docx' || ext === 'doc');
   const isCode = ['txt', 'log', 'sh', 'ps1', 'json', 'yaml', 'yml', 'xml', 'conf'].includes(ext);
 
-  nameEl.textContent = fileName || 'Attachment';
-  iconEl.textContent = isImg ? '🖼️' : (isPdf ? '📕' : (isCode ? '📋' : '📄'));
-  currentViewerZoom = 1.0;
+  if (!probe.ok) {
+    iconEl.textContent = '⚠️';
+    body.innerHTML = `
+      <div style="text-align:center; padding:36px 20px; color:#cbd5e1; max-width:680px; margin:0 auto;">
+        <div style="font-size:48px; margin-bottom:12px;">⚠️</div>
+        <h3 style="color:#fff; font-size:18px; margin-bottom:6px;">Document Not Found in Cloudflare R2</h3>
+        <p style="color:var(--text-muted); font-size:13px; margin-bottom:18px;">
+          Document: <b style="color:#f8fafc;">${esc(fileName || rawKey)}</b>
+        </p>
 
-  if (isImg) {
+        <div class="callout callout-warning" style="text-align:left; margin-bottom:16px;">
+          <div class="callout-header">Storage Discrepancy (Cloudflare R2 HTTP 404)</div>
+          <div style="font-size:12px; line-height:1.6; color:#cbd5e1;">
+            The article row in your <b>Cloudflare D1 database</b> references storage path:
+            <code style="display:block; margin:6px 0; background:#0b1120; padding:6px 10px; border-radius:6px; color:#fbbf24; word-break:break-all;">
+              ${esc(rawKey)}
+            </code>
+            This file object has not been stored in your Cloudflare R2 bucket yet.
+          </div>
+        </div>
+
+        <!-- Interactive In-Modal Local Document Viewer & Sync -->
+        <div class="dropzone" id="viewerLocalDropzone" style="margin:20px 0; padding:24px; cursor:pointer;" onclick="document.getElementById('viewerLocalPicker').click()">
+          <input type="file" id="viewerLocalPicker" style="display:none;" onchange="handleViewerLocalFile(event, '${esc(fileName)}')">
+          <div style="font-size:32px; margin-bottom:6px;">📂</div>
+          <div style="color:#fff; font-weight:700; font-size:14px; margin-bottom:4px;">Have "${esc(fileName)}" on your computer?</div>
+          <div style="color:var(--text-muted); font-size:12px;">Click here or drop the file to open and view it right now in this window!</div>
+        </div>
+
+        <div style="display:flex; justify-content:center; gap:12px; margin-top:16px;">
+          <a href="publisher.html" class="btn btn-primary" style="text-decoration:none;">
+            ✏️ Open Publisher to Upload
+          </a>
+          <button type="button" class="btn btn-secondary" onclick="closeSecureViewer()">Close Viewer</button>
+        </div>
+      </div>
+    `;
+
+    // Setup drag and drop on the fallback dropzone
+    const dropzone = document.getElementById('viewerLocalDropzone');
+    if (dropzone) {
+      dropzone.ondragover = (e) => { e.preventDefault(); dropzone.style.borderColor = '#0070f3'; };
+      dropzone.ondragleave = () => { dropzone.style.borderColor = 'var(--border)'; };
+      dropzone.ondrop = (e) => {
+        e.preventDefault();
+        dropzone.style.borderColor = 'var(--border)';
+        if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+          renderLocalFileInViewer(e.dataTransfer.files[0]);
+        }
+      };
+    }
+    return;
+  }
+
+  const fileUrl = probe.url;
+  nameEl.textContent = fileName || 'Attachment';
+  iconEl.textContent = isImg ? '🖼️' : (isPdf ? '📕' : (isDocx ? '📘' : (isCode ? '📋' : '📄')));
+
+  if (isDocx) {
+    body.innerHTML = `
+      <div style="text-align:center; padding:60px 20px; color:#94a3b8;">
+        <div style="font-size:42px; margin-bottom:14px;">📘</div>
+        <h3 style="color:#f8fafc; font-size:17px; margin-bottom:6px;">Formatting Word Document...</h3>
+        <p style="font-size:12px; color:#64748b;">Rendering tables, headings, and instructions inline</p>
+      </div>
+    `;
+    try {
+      const res = await fetch(fileUrl);
+      const arrayBuf = await res.arrayBuffer();
+      await renderDocxContent(arrayBuf, body, fileName || 'Word Document Playbook');
+    } catch (err) {
+      body.innerHTML = `<div style="text-align:center; padding:40px; color:#f87171;">Failed to load Word document: ${esc(err.message)}</div>`;
+    }
+  } else if (isImg) {
     body.innerHTML = `
       <img id="secureViewerImg" src="${fileUrl}" class="secure-viewer-img" alt="${esc(fileName)}" draggable="false" oncontextmenu="return false;">
     `;
   } else if (isPdf) {
     body.innerHTML = `
-      <iframe src="${fileUrl}#toolbar=0&navpanes=0&scrollbar=0" class="secure-viewer-iframe"></iframe>
+      <iframe src="${fileUrl}#toolbar=0&navpanes=0&scrollbar=0" class="secure-viewer-iframe" style="width:100%; height:100%; min-height:560px; border:none; background:#0b0f19;"></iframe>
     `;
   } else if (isCode) {
     body.innerHTML = `<div class="secure-viewer-text">Loading document content securely...</div>`;
     fetch(fileUrl)
       .then(r => r.text())
       .then(t => {
-        body.innerHTML = `<div class="secure-viewer-text">${esc(t)}</div>`;
+        body.innerHTML = `
+          <div style="position:relative;">
+            <button class="copy" style="position:absolute; top:8px; right:8px;" onclick='copy(${JSON.stringify(t)})'>Copy Content</button>
+            <div class="secure-viewer-text">${esc(t)}</div>
+          </div>
+        `;
       })
       .catch(() => {
         body.innerHTML = `<div class="secure-viewer-text">Unable to load text document inline.</div>`;
       });
   } else {
     body.innerHTML = `
-      <div style="text-align:center; padding:40px; color:#cbd5e1; max-width:620px;">
+      <div style="text-align:center; padding:40px; color:#cbd5e1; max-width:620px; margin:0 auto;">
         <div style="font-size:48px; margin-bottom:12px;">📄</div>
         <h3 style="color:#fff; font-size:18px; margin-bottom:6px;">${esc(fileName)}</h3>
         <p style="color:var(--text-muted); font-size:12px; margin-bottom:18px;">Diagnostic Document • In-Website View Mode Active</p>
         <div class="callout callout-info" style="text-align:left;">
           <div class="callout-header">🔒 In-Website View Policy</div>
-          <div>Direct file download is restricted for read-only users. This document is authenticated and accessible within the SysAdminIQ diagnostic workspace.</div>
+          <div>Direct file download is restricted for read-only users. This document is authenticated and stored securely in Cloudflare R2 storage under key <code>${esc(probe.key)}</code>.</div>
         </div>
       </div>
     `;
   }
+}
 
-  modal.classList.remove('hidden');
+// Local File Preview Handler inside Viewer Modal
+window.handleViewerLocalFile = function(e, expectedName) {
+  if (e.target.files && e.target.files[0]) {
+    renderLocalFileInViewer(e.target.files[0]);
+  }
+};
+
+async function renderLocalFileInViewer(file) {
+  const body = $('#secureViewerBody');
+  const nameEl = $('#secureViewerFilename');
+  const iconEl = $('#secureViewerIcon');
+  if (!body) return;
+
+  nameEl.textContent = file.name;
+  const ext = file.name.split('.').pop().toLowerCase();
+  const isImg = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext);
+  const isPdf = ext === 'pdf';
+  const isDocx = ['docx', 'doc'].includes(ext);
+  const isCode = ['txt', 'log', 'sh', 'ps1', 'json', 'yaml', 'yml', 'xml', 'conf'].includes(ext);
+
+  iconEl.textContent = isImg ? '🖼️' : (isPdf ? '📕' : (isDocx ? '📘' : (isCode ? '📋' : '📄')));
+
+  if (isDocx) {
+    body.innerHTML = `<div style="text-align:center; padding:40px; color:#94a3b8;">Processing Word Document...</div>`;
+    const arrayBuf = await file.arrayBuffer();
+    await renderDocxContent(arrayBuf, body, file.name);
+  } else if (isPdf) {
+    const objectUrl = URL.createObjectURL(file);
+    body.innerHTML = `
+      <iframe src="${objectUrl}#toolbar=0" class="secure-viewer-iframe" style="width:100%; height:100%; min-height:560px; border:none; background:#0b0f19;"></iframe>
+    `;
+  } else if (isImg) {
+    const objectUrl = URL.createObjectURL(file);
+    body.innerHTML = `<img id="secureViewerImg" src="${objectUrl}" class="secure-viewer-img" alt="${esc(file.name)}" draggable="false">`;
+  } else if (isCode) {
+    const text = await file.text();
+    body.innerHTML = `<div class="secure-viewer-text">${esc(text)}</div>`;
+  }
 }
 
 function closeSecureViewer() {
@@ -887,42 +1172,63 @@ function closeSecureViewer() {
 
 function zoomSecureViewer(delta) {
   const img = $('#secureViewerImg');
-  if (!img) return;
-  currentViewerZoom = Math.max(0.4, Math.min(3.0, currentViewerZoom + delta));
-  img.style.transform = `scale(${currentViewerZoom})`;
+  const docx = $('.secure-viewer-docx-content');
+  if (img) {
+    currentViewerZoom = Math.max(0.4, Math.min(3.0, currentViewerZoom + delta));
+    img.style.transform = `scale(${currentViewerZoom})`;
+  } else if (docx) {
+    currentViewerZoom = Math.max(0.7, Math.min(2.0, currentViewerZoom + delta));
+    docx.style.zoom = currentViewerZoom;
+  }
 }
 
 function resetSecureZoom() {
   const img = $('#secureViewerImg');
-  if (!img) return;
+  const docx = $('.secure-viewer-docx-content');
   currentViewerZoom = 1.0;
-  img.style.transform = 'scale(1)';
+  if (img) img.style.transform = 'scale(1)';
+  if (docx) docx.style.zoom = 1.0;
 }
 
-function renderAttachmentsList(attachments) {
+// Expose globals for onclick attributes
+window.openSecureViewer = openSecureViewer;
+window.closeSecureViewer = closeSecureViewer;
+window.zoomSecureViewer = zoomSecureViewer;
+window.resetSecureZoom = resetSecureZoom;
+
+function renderAttachmentsList(rawAttachments) {
+  const attachments = parseAttachmentsList(rawAttachments);
   if (!attachments || !attachments.length) return '';
   return `
     <h3>Attachments (${attachments.length})</h3>
     <div class="attachments" style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
       ${attachments.map(file => {
-        const rawKey = file.key || file.path || file.name || '';
+        const rawKey = file.key || file.path || file.fileKey || file.url || file.name || '';
+        const fileName = file.name || (rawKey ? rawKey.split('/').pop() : 'Diagnostic Attachment');
         const isValidKey = Boolean(rawKey && rawKey !== 'undefined' && rawKey !== 'null');
+        const ext = (fileName || '').split('.').pop().toLowerCase();
         const isImg = file.type && (file.type.includes('png') || file.type.includes('jpg') || file.type.includes('jpeg') || file.type.includes('webp') || file.type.includes('image'));
+        const isPdf = file.type?.includes('pdf') || ext === 'pdf';
+        const isDocx = ext === 'docx' || ext === 'doc';
+        const icon = isImg ? '🖼️' : (isPdf ? '📕' : (isDocx ? '📘' : '📎'));
+        const keyForClick = encodeURIComponent(rawKey);
+        const nameForClick = encodeURIComponent(fileName);
+        const typeForClick = encodeURIComponent(file.type || ext);
         return `
           <div class="attachment-item" style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:#090e1a; border:1px solid #202d48; border-radius:8px;">
             <div style="display:flex; align-items:center; gap:12px;">
-              <span style="font-size:20px;">${isImg ? '🖼️' : '📎'}</span>
+              <span style="font-size:20px;">${icon}</span>
               <div>
                 <div style="color:#f8fafc; font-weight:600; font-size:14px;">
-                  ${esc(file.name || 'Diagnostic Attachment')}
+                  ${esc(fileName)}
                 </div>
                 <div style="font-size:11px; color:#64748b; margin-top:2px;">
-                  ${esc(file.type || 'file')} ${file.size ? '• ' + Math.round(file.size / 1024) + ' KB' : ''} • 🔒 View-Only
+                  ${esc(file.type || ext.toUpperCase())} ${file.size ? '• ' + Math.round(file.size / 1024) + ' KB' : ''} • 🔒 View-Only
                 </div>
               </div>
             </div>
             ${isValidKey ? `
-              <button type="button" class="btn btn-secondary btn-sm" onclick="openSecureViewer('${esc(rawKey)}', '${esc(file.name)}', '${esc(file.type)}')">
+              <button type="button" class="btn btn-secondary btn-sm" onclick="openSecureViewer(decodeURIComponent('${keyForClick}'), decodeURIComponent('${nameForClick}'), decodeURIComponent('${typeForClick}'))">
                 👁️ View in Website
               </button>
             ` : `

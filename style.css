@@ -1009,3 +1009,248 @@ pre {
     padding: 16px;
   }
 }
+
+/* ==========================================================================
+   OneNote-Style Rich Article Canvas, Cards, Tables & Document Viewer
+   ========================================================================== */
+
+/* OneNote Interactive Document Attachment Card */
+.onenote-doc-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  background: linear-gradient(135deg, #0d1527 0%, #111c34 100%);
+  border: 1px solid #1e293b;
+  border-left: 4px solid #0070f3;
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 14px 0;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  user-select: none;
+}
+.onenote-doc-card:hover {
+  border-color: #38bdf8;
+}
+.onenote-doc-card .doc-icon {
+  font-size: 26px;
+  flex-shrink: 0;
+}
+.onenote-doc-card .doc-meta {
+  flex: 1;
+  min-width: 0;
+}
+.onenote-doc-card .doc-title {
+  font-weight: 700;
+  color: #f8fafc;
+  font-size: 13.5px;
+  margin-bottom: 2px;
+  word-break: break-all;
+}
+.onenote-doc-card .doc-sub {
+  font-size: 11px;
+  color: #94a3b8;
+}
+.onenote-doc-card .doc-view-btn {
+  background: #1e293b;
+  border: 1px solid #334155;
+  color: #38bdf8;
+  font-weight: 600;
+  font-size: 12px;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+.onenote-doc-card .doc-view-btn:hover {
+  background: #0070f3;
+  color: #fff;
+  border-color: #0070f3;
+}
+
+/* OneNote Interactive Checklists (To-Do) */
+.onenote-todo-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 6px 0;
+  font-size: 13.5px;
+  line-height: 1.5;
+}
+.onenote-todo-checkbox {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 17px;
+  height: 17px;
+  margin-top: 3px;
+  border: 2px solid #64748b;
+  border-radius: 4px;
+  background: transparent;
+  cursor: pointer;
+  display: inline-grid;
+  place-content: center;
+  flex-shrink: 0;
+  transition: all 0.15s;
+}
+.onenote-todo-checkbox:checked {
+  background: #0070f3;
+  border-color: #0070f3;
+}
+.onenote-todo-checkbox:checked::before {
+  content: "✓";
+  color: #fff;
+  font-size: 12px;
+  font-weight: 900;
+}
+.onenote-todo-item.checked .todo-text,
+.onenote-todo-checkbox:checked + .todo-text {
+  text-decoration: line-through;
+  color: #64748b;
+}
+
+/* OneNote Styled Data Tables */
+.onenote-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 16px 0;
+  font-size: 13px;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  border: 1px solid #1e293b;
+}
+.onenote-table th {
+  background: #172554;
+  color: #93c5fd;
+  text-align: left;
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  border-bottom: 2px solid #1e3a8a;
+  border-right: 1px solid #1e293b;
+}
+.onenote-table td {
+  padding: 9px 14px;
+  border-bottom: 1px solid #1e293b;
+  border-right: 1px solid #1e293b;
+  color: #e2e8f0;
+  background: #0b1120;
+}
+.onenote-table tr:nth-child(even) td {
+  background: #0d1527;
+}
+.onenote-table tr:hover td {
+  background: #131d33;
+}
+
+/* OneNote Highlighter & Color Accents */
+.hl-yellow { background-color: rgba(245, 158, 11, 0.35); color: #fef08a; padding: 2px 4px; border-radius: 3px; }
+.hl-green { background-color: rgba(16, 185, 129, 0.35); color: #a7f3d0; padding: 2px 4px; border-radius: 3px; }
+.hl-blue { background-color: rgba(14, 165, 233, 0.35); color: #bae6fd; padding: 2px 4px; border-radius: 3px; }
+.hl-purple { background-color: rgba(168, 85, 247, 0.35); color: #e9d5ff; padding: 2px 4px; border-radius: 3px; }
+.hl-red { background-color: rgba(239, 68, 68, 0.35); color: #fecaca; padding: 2px 4px; border-radius: 3px; }
+
+.color-red { color: #f87171 !important; }
+.color-blue { color: #38bdf8 !important; }
+.color-amber { color: #fbbf24 !important; }
+.color-green { color: #34d399 !important; }
+.color-purple { color: #c084fc !important; }
+
+/* OneNote-Style Visual Editor Canvas */
+.onenote-canvas {
+  min-height: 380px;
+  max-height: 700px;
+  overflow-y: auto;
+  background: #070b14;
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  padding: 24px 28px;
+  color: #f1f5f9;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.7;
+  outline: none;
+  cursor: text;
+}
+.onenote-canvas:focus {
+  border-color: #0070f3;
+  box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.2);
+}
+.onenote-canvas:empty:before {
+  content: attr(placeholder);
+  color: #64748b;
+  pointer-events: none;
+  display: block;
+}
+.onenote-canvas p { margin: 0 0 10px 0; }
+.onenote-canvas h1 {
+  font-size: 22px;
+  font-weight: 800;
+  color: #fff;
+  margin: 20px 0 10px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 6px;
+}
+.onenote-canvas h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 16px 0 8px 0;
+}
+.onenote-canvas h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: #60a5fa;
+  margin: 14px 0 6px 0;
+}
+.onenote-canvas ul, .onenote-canvas ol {
+  margin: 8px 0 12px 24px;
+}
+.onenote-canvas li { margin: 4px 0; }
+.onenote-canvas blockquote {
+  border-left: 4px solid #38bdf8;
+  margin: 12px 0;
+  padding: 8px 16px;
+  background: rgba(14, 165, 233, 0.08);
+  border-radius: 0 6px 6px 0;
+  color: #bae6fd;
+}
+.onenote-canvas img {
+  max-width: 100%;
+  border-radius: 8px;
+  border: 1px solid #1e293b;
+  margin: 12px 0;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.4);
+}
+
+/* Word DOCX In-Website Secure Viewer */
+.secure-viewer-docx-content {
+  background: #ffffff;
+  color: #1e293b;
+  border-radius: 8px;
+  padding: 40px 48px;
+  max-width: 900px;
+  margin: 0 auto;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  font-size: 14px;
+  line-height: 1.7;
+  overflow-wrap: break-word;
+}
+.secure-viewer-docx-content h1 { font-size: 24px; font-weight: 800; color: #0f172a; margin: 22px 0 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 8px; }
+.secure-viewer-docx-content h2 { font-size: 19px; font-weight: 700; color: #1e293b; margin: 18px 0 10px; }
+.secure-viewer-docx-content h3 { font-size: 16px; font-weight: 700; color: #2563eb; margin: 14px 0 8px; }
+.secure-viewer-docx-content p { margin-bottom: 12px; }
+.secure-viewer-docx-content ul, .secure-viewer-docx-content ol { margin: 10px 0 14px 28px; }
+.secure-viewer-docx-content li { margin-bottom: 6px; }
+.secure-viewer-docx-content table { width: 100%; border-collapse: collapse; margin: 16px 0; border: 1px solid #cbd5e1; }
+.secure-viewer-docx-content th { background: #f1f5f9; padding: 10px 14px; border: 1px solid #cbd5e1; font-weight: 700; text-align: left; }
+.secure-viewer-docx-content td { padding: 8px 12px; border: 1px solid #cbd5e1; }
+.secure-viewer-docx-content strong { font-weight: 700; color: #0f172a; }

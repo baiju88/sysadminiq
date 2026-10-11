@@ -7,7 +7,8 @@
 <meta name="description" content="Publisher and Authoring Portal for SysAdminIQ knowledge articles with rich formatting, multi-color callouts, file attachments, and AI playbook generation.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
 <style>
 :root {
   --bg-dark: #0b0f19;
@@ -624,41 +625,79 @@ textarea#content {
       </div>
     </div>
 
-    <!-- Rich Formatted Body Editor with Colors and Formats -->
+    <!-- OneNote-Style Rich Article Body Editor (Supports Document Paste, Rich Text, Colors, Tables & Screenshots) -->
     <div class="form-group">
-      <label class="form-label">Article Body & Playbook (Supports Multiple Formats & Colors)</label>
-      
-      <div class="editor-toolbar-wrap">
-        <!-- Row 1: Standard Markdown Formatting -->
-        <div class="editor-toolbar-row">
-          <button type="button" class="editor-btn" onclick="insertFormat('**', '**', 'bold text')" title="Bold"><b>B</b> Bold</button>
-          <button type="button" class="editor-btn" onclick="insertFormat('*', '*', 'italic text')" title="Italic"><i>I</i> Italic</button>
-          <button type="button" class="editor-btn" onclick="insertFormat('### ', '', 'Heading 3')">H3</button>
-          <button type="button" class="editor-btn" onclick="insertFormat('- ', '', 'Bullet list item')">• List</button>
-          <button type="button" class="editor-btn" onclick="insertFormat('1. ', '', 'Numbered item')">1. List</button>
-          <button type="button" class="editor-btn" onclick="insertFormat('`', '`', 'command')">`Code`</button>
-          <button type="button" class="editor-btn" onclick="insertCodeBlock('powershell')">PowerShell</button>
-          <button type="button" class="editor-btn" onclick="insertCodeBlock('bash')">Bash</button>
-          <button type="button" class="editor-btn" onclick="insertCodeBlock('cisco')">Cisco CLI</button>
-          <button type="button" class="editor-btn" onclick="insertTable()">Table</button>
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px; flex-wrap:wrap; gap:8px;">
+        <label class="form-label" style="margin-bottom:0;">Article Body & Playbook (OneNote Rich Canvas • Paste Documents, Tables, Colors & Images)</label>
+        <span style="font-size:11px; color:#38bdf8; background:rgba(0,112,243,0.12); padding:3px 8px; border-radius:4px; border:1px solid rgba(0,112,243,0.25);">
+          📋 OneNote Paste Active (Ctrl+V: Preserves Tables, Formatting, Images & Documents)
+        </span>
+      </div>
 
+      <div class="editor-toolbar-wrap">
+        <!-- Row 1: OneNote Ribbon Style Formatting & Controls -->
+        <div class="editor-toolbar-row">
+          <select id="headingSelect" onchange="applyHeading(this.value)" style="width:auto; padding:5px 8px; font-size:12px; margin-bottom:0; background:#131b2e; border-color:var(--border);" title="Text Style">
+            <option value="p">Normal Text</option>
+            <option value="h1">Heading 1 (22px)</option>
+            <option value="h2">Heading 2 (18px)</option>
+            <option value="h3">Heading 3 (15px)</option>
+            <option value="pre">Code Block</option>
+          </select>
+
+          <button type="button" class="editor-btn" onclick="formatOneNote('bold')" title="Bold (Ctrl+B)"><b>B</b> Bold</button>
+          <button type="button" class="editor-btn" onclick="formatOneNote('italic')" title="Italic (Ctrl+I)"><i>I</i> Italic</button>
+          <button type="button" class="editor-btn" onclick="formatOneNote('underline')" title="Underline (Ctrl+U)"><u>U</u> Underline</button>
+          <button type="button" class="editor-btn" onclick="formatOneNote('strikeThrough')" title="Strikethrough"><s>S</s> Strike</button>
+          <button type="button" class="editor-btn" onclick="formatOneNoteInlineCode()" title="Inline Code">`Code`</button>
+
+          <!-- Text Color Picker -->
+          <div style="display:inline-flex; align-items:center; gap:2px; background:rgba(255,255,255,0.04); padding:2px 6px; border-radius:4px; border:1px solid var(--border);" title="Font Color">
+            <span style="font-size:11px; font-weight:700; color:#94a3b8; margin-right:4px;">A</span>
+            <button type="button" style="width:14px; height:14px; background:#f8fafc; border:none; border-radius:2px; cursor:pointer;" onclick="applyTextColor('#f8fafc')" title="White"></button>
+            <button type="button" style="width:14px; height:14px; background:#38bdf8; border:none; border-radius:2px; cursor:pointer;" onclick="applyTextColor('#38bdf8')" title="Cyan Blue"></button>
+            <button type="button" style="width:14px; height:14px; background:#f87171; border:none; border-radius:2px; cursor:pointer;" onclick="applyTextColor('#f87171')" title="Red Alert"></button>
+            <button type="button" style="width:14px; height:14px; background:#fbbf24; border:none; border-radius:2px; cursor:pointer;" onclick="applyTextColor('#fbbf24')" title="Warning Amber"></button>
+            <button type="button" style="width:14px; height:14px; background:#34d399; border:none; border-radius:2px; cursor:pointer;" onclick="applyTextColor('#34d399')" title="Fix Green"></button>
+            <button type="button" style="width:14px; height:14px; background:#c084fc; border:none; border-radius:2px; cursor:pointer;" onclick="applyTextColor('#c084fc')" title="Purple"></button>
+          </div>
+
+          <!-- OneNote Highlighter Pen -->
+          <div style="display:inline-flex; align-items:center; gap:2px; background:rgba(255,255,255,0.04); padding:2px 6px; border-radius:4px; border:1px solid var(--border);" title="OneNote Text Highlighter">
+            <span style="font-size:12px; margin-right:3px;">🖍️</span>
+            <button type="button" style="width:14px; height:14px; background:#fef08a; border:none; border-radius:2px; cursor:pointer;" onclick="applyHighlight('rgba(245, 158, 11, 0.35)')" title="Yellow Highlight"></button>
+            <button type="button" style="width:14px; height:14px; background:#a7f3d0; border:none; border-radius:2px; cursor:pointer;" onclick="applyHighlight('rgba(16, 185, 129, 0.35)')" title="Green Highlight"></button>
+            <button type="button" style="width:14px; height:14px; background:#bae6fd; border:none; border-radius:2px; cursor:pointer;" onclick="applyHighlight('rgba(14, 165, 233, 0.35)')" title="Blue Highlight"></button>
+            <button type="button" style="width:14px; height:14px; background:#e9d5ff; border:none; border-radius:2px; cursor:pointer;" onclick="applyHighlight('rgba(168, 85, 247, 0.35)')" title="Purple Highlight"></button>
+            <button type="button" style="width:14px; height:14px; background:#fecaca; border:none; border-radius:2px; cursor:pointer;" onclick="applyHighlight('rgba(239, 68, 68, 0.35)')" title="Red Highlight"></button>
+            <button type="button" style="font-size:10px; color:#94a3b8; background:none; border:none; cursor:pointer; padding:0 2px;" onclick="applyHighlight('transparent')" title="Clear Highlight">✕</button>
+          </div>
+
+          <button type="button" class="editor-btn" onclick="formatOneNote('insertUnorderedList')" title="Bulleted List">• List</button>
+          <button type="button" class="editor-btn" onclick="formatOneNote('insertOrderedList')" title="Numbered List">1. List</button>
+          <button type="button" class="editor-btn" onclick="insertOneNoteChecklist()" title="OneNote Checklist (To-Do Box)">☑️ Checklist</button>
+          <button type="button" class="editor-btn" onclick="insertOneNoteTable()" title="Insert OneNote Styled Table">📊 Table</button>
+          <button type="button" class="editor-btn" onclick="clearCanvasFormatting()" title="Clear Format">🧹 Clear</button>
+
+          <!-- Tabs: OneNote Visual vs Markdown Source vs Preview -->
           <div class="editor-tabs">
-            <button type="button" class="editor-tab active" id="tabEditor" onclick="switchEditorTab('edit')">✏️ Editor</button>
-            <button type="button" class="editor-tab" id="tabPreview" onclick="switchEditorTab('preview')">👁️ Live Formatted Preview</button>
+            <button type="button" class="editor-tab active" id="tabOneNote" onclick="switchEditorTab('onenote')">📓 OneNote Canvas</button>
+            <button type="button" class="editor-tab" id="tabEditor" onclick="switchEditorTab('edit')">💻 Markdown/Source</button>
+            <button type="button" class="editor-tab" id="tabPreview" onclick="switchEditorTab('preview')">👁️ Live Preview</button>
           </div>
         </div>
 
-        <!-- Row 2: Rich Color Highlights & Callouts (Red, Amber, Blue, Green, Purple) -->
+        <!-- Row 2: Rich Callouts, Document Paste, Image Paste, Code Blocks -->
         <div class="editor-toolbar-row" style="padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.05);">
-          <span style="font-size:11px; font-weight:700; color:var(--text-muted); margin-right:4px;">COLORS & CALLOUTS:</span>
+          <span style="font-size:11px; font-weight:700; color:var(--text-muted); margin-right:4px;">CALLOUTS:</span>
           <button type="button" class="editor-btn editor-btn-danger" onclick="insertCallout('danger', 'Critical PSOD / Service Outage')" title="Red Callout">
-            🔴 Critical PSOD Alert
+            🔴 Critical PSOD
           </button>
           <button type="button" class="editor-btn editor-btn-warning" onclick="insertCallout('warning', 'Caution & Pre-checks')" title="Amber Callout">
-            🟡 Warning / Impact
+            🟡 Warning
           </button>
           <button type="button" class="editor-btn editor-btn-info" onclick="insertCallout('info', 'Configuration Note')" title="Blue Callout">
-            🔵 Info / Note
+            🔵 Note
           </button>
           <button type="button" class="editor-btn editor-btn-success" onclick="insertCallout('success', 'Verified Resolution')" title="Green Callout">
             🟢 Verified Fix
@@ -666,17 +705,49 @@ textarea#content {
           <button type="button" class="editor-btn editor-btn-tip" onclick="insertCallout('tip', 'SysAdmin Pro-Tip')" title="Purple Callout">
             🟣 Pro-Tip
           </button>
+
+          <span style="border-left: 1px solid rgba(255,255,255,0.1); margin: 0 4px; height: 18px;"></span>
+
+          <span style="font-size:11px; font-weight:700; color:var(--text-muted); margin-right:4px;">CLI:</span>
+          <button type="button" class="editor-btn" onclick="insertCodeBlock('powershell')">PowerShell</button>
+          <button type="button" class="editor-btn" onclick="insertCodeBlock('bash')">Bash</button>
+          <button type="button" class="editor-btn" onclick="insertCodeBlock('cisco')">Cisco CLI</button>
+
+          <span style="border-left: 1px solid rgba(255,255,255,0.1); margin: 0 4px; height: 18px;"></span>
+
+          <!-- OneNote Document & Image Paste Integration -->
+          <button type="button" class="editor-btn" style="background:rgba(0,112,243,0.15); border-color:#0070f3; color:#60a5fa; font-weight:700;" onclick="promptInsertDocument()" title="Paste / Import Document into Body (Word .docx, PDF, Logs, Scripts)">
+            📎 Paste Document into Body
+          </button>
+          <button type="button" class="editor-btn" style="background:rgba(16,185,129,0.15); border-color:#10b981; color:#34d399; font-weight:700;" onclick="promptInsertImage()" title="Insert or Paste Screenshot Image">
+            🖼️ Paste Image
+          </button>
         </div>
       </div>
 
+      <!-- Hidden Document & Image File Pickers for Toolbar -->
+      <input type="file" id="docInsertInput" style="display:none;" accept=".docx,.doc,.pdf,.txt,.log,.ps1,.sh,.json,.csv,.xlsx">
+      <input type="file" id="imgInsertInput" style="display:none;" accept="image/*">
+
+      <!-- OneNote WYSIWYG Visual Canvas (Default Active View) -->
+      <div
+        id="onenoteCanvas"
+        class="onenote-canvas"
+        contenteditable="true"
+        spellcheck="true"
+        placeholder="Start typing your article, paste formatted notes and tables from OneNote or Word (Ctrl+V), paste screenshot images, or drag & drop document files here..."
+      ></div>
+
+      <!-- Markdown / Raw Source View (Hidden by default) -->
       <textarea
         id="content"
         rows="14"
+        style="display:none;"
         placeholder="### Overview&#10;Describe the incident or failure scenario...&#10;&#10;:::danger [Critical PSOD Alert]&#10;Describe critical failure symptoms or kernel panics here.&#10;:::&#10;&#10;### Symptoms&#10;- Error code or message&#10;&#10;### Investigation Commands&#10;```bash&#10;esxcli network nic list&#10;```&#10;&#10;:::success [Verified Resolution]&#10;1. Step-by-step fix...&#10;:::"
       ></textarea>
 
       <!-- Live Formatted Preview Pane -->
-      <div id="previewBox"></div>
+      <div id="previewBox" style="display:none;"></div>
     </div>
 
     <!-- Attachments Zone (All formats supported, multiple files upload) -->
@@ -784,70 +855,474 @@ function showToast(msg, type = "info") {
   }, 4000);
 }
 
-// Rich Text & Callout Format Helpers
-function insertFormat(before, after, placeholder) {
+function parseAttachmentsList(raw) {
+  if (!raw) return [];
+  if (Array.isArray(raw)) return raw;
+  if (typeof raw === 'string') {
+    try {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) return parsed;
+      if (parsed && typeof parsed === 'object') return [parsed];
+    } catch {
+      return [];
+    }
+  }
+  if (typeof raw === 'object') return [raw];
+  return [];
+}
+
+// ============================================================================
+// OneNote-Style Rich Visual Editor Engine & Clipboard Paste Handler
+// ============================================================================
+
+let currentViewerZoom = 1.0;
+
+function initOneNoteEditor() {
+  const canvas = document.getElementById("onenoteCanvas");
+  const docInput = document.getElementById("docInsertInput");
+  const imgInput = document.getElementById("imgInsertInput");
+
+  if (!canvas) return;
+
+  // Sync canvas to textarea on any input or keyup
+  canvas.addEventListener("input", () => {
+    syncCanvasToTextarea();
+  });
+
+  // Attach Document & Image Pickers
+  if (docInput) {
+    docInput.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files[0]) {
+        extractDocumentIntoCanvas(e.target.files[0]);
+        e.target.value = "";
+      }
+    });
+  }
+
+  if (imgInput) {
+    imgInput.addEventListener("change", (e) => {
+      if (e.target.files && e.target.files[0]) {
+        insertImageFileIntoCanvas(e.target.files[0]);
+        e.target.value = "";
+      }
+    });
+  }
+
+  // Drag and Drop files directly onto the OneNote Canvas
+  canvas.addEventListener("dragover", (e) => {
+    e.preventDefault();
+    canvas.style.borderColor = "#0070f3";
+  });
+  canvas.addEventListener("dragleave", () => {
+    canvas.style.borderColor = "var(--border)";
+  });
+  canvas.addEventListener("drop", (e) => {
+    e.preventDefault();
+    canvas.style.borderColor = "var(--border)";
+    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+      Array.from(e.dataTransfer.files).forEach(file => {
+        const ext = file.name.split('.').pop().toLowerCase();
+        if (['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext)) {
+          insertImageFileIntoCanvas(file);
+        } else {
+          extractDocumentIntoCanvas(file);
+        }
+      });
+    }
+  });
+
+  // The Core: OneNote-Style Paste Interceptor (Ctrl+V)
+  canvas.addEventListener("paste", async (e) => {
+    const clipboard = e.clipboardData;
+    if (!clipboard) return;
+
+    // 1. If an Image file or screenshot is in the clipboard
+    const imageItem = Array.from(clipboard.items).find(item => item.type.startsWith("image/"));
+    if (imageItem) {
+      e.preventDefault();
+      const blob = imageItem.getAsFile();
+      if (blob) {
+        insertImageFileIntoCanvas(blob, "Screenshot from Clipboard");
+        showToast("Pasted screenshot image inline!", "success");
+        return;
+      }
+    }
+
+    // 2. If a Document File was copied and pasted (e.g. Word .docx, PDF, txt)
+    if (clipboard.files && clipboard.files.length > 0) {
+      e.preventDefault();
+      const file = clipboard.files[0];
+      extractDocumentIntoCanvas(file);
+      return;
+    }
+
+    // 3. Rich Formatted Text & Tables from OneNote / Word / Excel
+    const htmlData = clipboard.getData("text/html");
+    if (htmlData) {
+      e.preventDefault();
+      const clean = sanitizeOneNoteHtml(htmlData);
+      document.execCommand("insertHTML", false, clean);
+      syncCanvasToTextarea();
+      showToast("Pasted with rich formatting & tables preserved!", "success");
+      return;
+    }
+
+    // 4. Plain text paste: allow default or normalize
+    setTimeout(syncCanvasToTextarea, 20);
+  });
+}
+
+// Sanitize HTML from OneNote/Word/Excel while strictly preserving tables, fonts, colors, bold/italics
+function sanitizeOneNoteHtml(raw) {
+  let html = raw;
+  // Remove Word/Office XML & mso metadata
+  html = html.replace(/<!--[\s\S]*?-->/gi, '');
+  html = html.replace(/<o:p[\s\S]*?<\/o:p>/gi, '');
+  html = html.replace(/<xml[\s\S]*?<\/xml>/gi, '');
+  html = html.replace(/<style[\s\S]*?<\/style>/gi, '');
+  html = html.replace(/class="?Mso\w+"?/gi, '');
+  html = html.replace(/style="[^"]*mso-[^"]*"/gi, '');
+
+  // Add onenote-table class to tables for styled borders and dark-theme headers
+  html = html.replace(/<table(?![^>]*class=)/gi, '<table class="onenote-table"');
+
+  return html;
+}
+
+// Insert Image file into OneNote Canvas
+function insertImageFileIntoCanvas(file, captionText) {
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const dataUrl = e.target.result;
+    const caption = captionText || file.name || "Screenshot";
+    const imgHtml = `
+      <figure class="onenote-img-block" style="text-align:center; margin:16px 0;">
+        <img src="${dataUrl}" alt="${escapeHtml(caption)}" style="max-width:100%; max-height:480px; border-radius:8px; border:1px solid #202d48; box-shadow:0 4px 14px rgba(0,0,0,0.4);" />
+        <figcaption style="font-size:11px; color:#94a3b8; margin-top:4px;">🖼️ ${escapeHtml(caption)}</figcaption>
+      </figure>
+      <p><br></p>
+    `;
+    const canvas = document.getElementById("onenoteCanvas");
+    canvas.focus();
+    document.execCommand("insertHTML", false, imgHtml);
+    syncCanvasToTextarea();
+  };
+  reader.readAsDataURL(file);
+}
+
+// Extract / Paste Document into Body (Word .docx, PDF, txt, log, scripts)
+async function extractDocumentIntoCanvas(file) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  const canvas = document.getElementById("onenoteCanvas");
+  canvas.focus();
+
+  // Also stage in article attachments list so it's tracked in D1
+  if (!selectedFiles.some(f => f.name === file.name)) {
+    selectedFiles.push(file);
+    renderFileList();
+  }
+
+  // A. Word DOCX Document: Extract full text, headings, and tables using Mammoth!
+  if (ext === 'docx' || ext === 'doc') {
+    showToast(`Parsing Word Document "${file.name}"...`, "info");
+    try {
+      const arrayBuf = await file.arrayBuffer();
+      let extractedHtml = '';
+
+      if (window.mammoth && window.mammoth.convertToHtml) {
+        const result = await window.mammoth.convertToHtml({ arrayBuffer: arrayBuf });
+        extractedHtml = result.value;
+      } else {
+        const base64Str = btoa(new Uint8Array(arrayBuf).reduce((d, b) => d + String.fromCharCode(b), ''));
+        const res = await fetch('/api/docs/render-docx', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ base64: base64Str })
+        });
+        if (res.ok) {
+          const data = await res.json();
+          extractedHtml = data.html || '';
+        }
+      }
+
+      if (extractedHtml) {
+        const formattedDocBlock = `
+          <div class="onenote-doc-card" style="margin:16px 0;">
+            <span class="doc-icon">📘</span>
+            <div class="doc-meta">
+              <div class="doc-title">${escapeHtml(file.name)}</div>
+              <div class="doc-sub">Word Document • ${Math.round(file.size / 1024)} KB • Extracted to Playbook</div>
+            </div>
+            <button type="button" class="doc-view-btn" onclick="openSecureViewer('', '${escapeHtml(file.name)}', 'docx')">👁️ View Original</button>
+          </div>
+          <div class="docx-extracted-content" style="border-left:3px solid #0070f3; padding-left:16px; margin:16px 0;">
+            ${sanitizeOneNoteHtml(extractedHtml)}
+          </div>
+          <p><br></p>
+        `;
+        document.execCommand("insertHTML", false, formattedDocBlock);
+        syncCanvasToTextarea();
+        showToast(`Document "${file.name}" pasted into Article Body!`, "success");
+        return;
+      }
+    } catch (err) {
+      console.warn("Docx extract error, embedding card:", err);
+    }
+  }
+
+  // B. Text, Logs, Code, Scripts (.txt, .log, .sh, .ps1, .json, .csv)
+  if (['txt', 'log', 'sh', 'ps1', 'json', 'yaml', 'yml', 'xml', 'csv', 'sql'].includes(ext)) {
+    const text = await file.text();
+    const lang = ext === 'ps1' ? 'powershell' : (ext === 'sh' ? 'bash' : ext);
+    const codeHtml = `
+      <div style="margin:14px 0;">
+        <div style="font-size:11px; font-weight:700; color:#38bdf8; margin-bottom:4px;">📄 ${escapeHtml(file.name)}:</div>
+        <pre style="background:#090e1a; padding:12px; border-radius:6px; border:1px solid #202d48; color:#34d399; font-family:monospace; white-space:pre-wrap;">${escapeHtml(text)}</pre>
+      </div>
+      <p><br></p>
+    `;
+    document.execCommand("insertHTML", false, codeHtml);
+    syncCanvasToTextarea();
+    showToast(`Pasted "${file.name}" content into Body!`, "success");
+    return;
+  }
+
+  // C. PDF, Excel, or other binary files: Embed OneNote Document Card
+  embedDocCardInCanvasDirect(file.name, file.name, ext, file.size);
+  showToast(`Embedded "${file.name}" attachment card into Body!`, "success");
+}
+
+function embedDocCardInCanvasDirect(key, name, type, size) {
+  const canvas = document.getElementById("onenoteCanvas");
+  canvas.focus();
+  const ext = (name || '').split('.').pop().toLowerCase();
+  const icon = ext === 'pdf' ? '📕' : (['docx', 'doc'].includes(ext) ? '📘' : (['xlsx', 'csv'].includes(ext) ? '📊' : '📄'));
+  const sizeText = size ? `${Math.round(size / 1024)} KB • ` : '';
+  const cardHtml = `
+    <div class="onenote-doc-card" contenteditable="false" style="margin:14px 0;">
+      <span class="doc-icon">${icon}</span>
+      <div class="doc-meta">
+        <div class="doc-title">${escapeHtml(name)}</div>
+        <div class="doc-sub">${escapeHtml(ext.toUpperCase())} Document • ${sizeText}In-Website View Only</div>
+      </div>
+      <button type="button" class="doc-view-btn" onclick="openSecureViewer('${escapeHtml(key)}', '${escapeHtml(name)}', '${escapeHtml(type)}')">
+        👁️ View Document
+      </button>
+    </div>
+    <p><br></p>
+  `;
+  document.execCommand("insertHTML", false, cardHtml);
+  syncCanvasToTextarea();
+}
+
+function promptInsertDocument() {
+  const input = document.getElementById("docInsertInput");
+  if (input) input.click();
+}
+
+function promptInsertImage() {
+  const input = document.getElementById("imgInsertInput");
+  if (input) input.click();
+}
+
+// Two-way synchronization between OneNote canvas and hidden textarea
+function syncCanvasToTextarea() {
+  const canvas = document.getElementById("onenoteCanvas");
   const ta = document.getElementById("content");
-  const start = ta.selectionStart;
-  const end = ta.selectionEnd;
-  const selected = ta.value.substring(start, end) || placeholder;
-  const replacement = before + selected + after;
-  ta.value = ta.value.substring(0, start) + replacement + ta.value.substring(end);
-  ta.focus();
-  ta.selectionStart = start + before.length;
-  ta.selectionEnd = start + before.length + selected.length;
+  if (!canvas || !ta) return;
+  ta.value = canvas.innerHTML;
   updateLivePreview();
+}
+
+function syncTextareaToCanvas() {
+  const canvas = document.getElementById("onenoteCanvas");
+  const ta = document.getElementById("content");
+  if (!canvas || !ta) return;
+  canvas.innerHTML = renderFormattedContent(ta.value);
+}
+
+// OneNote Ribbon Toolbar Actions
+function formatOneNote(cmd, val = null) {
+  const canvas = document.getElementById("onenoteCanvas");
+  canvas.focus();
+  document.execCommand(cmd, false, val);
+  syncCanvasToTextarea();
+}
+
+function formatOneNoteInlineCode() {
+  const selection = window.getSelection();
+  if (!selection.rangeCount) return;
+  const text = selection.toString() || 'code';
+  document.execCommand('insertHTML', false, `<code style="background:#090e1a; padding:2px 6px; border-radius:4px; color:#38bdf8;">${escapeHtml(text)}</code>`);
+  syncCanvasToTextarea();
+}
+
+function applyHeading(level) {
+  const canvas = document.getElementById("onenoteCanvas");
+  canvas.focus();
+  if (level === 'pre') {
+    document.execCommand('formatBlock', false, 'pre');
+  } else {
+    document.execCommand('formatBlock', false, `<${level}>`);
+  }
+  syncCanvasToTextarea();
+}
+
+function applyTextColor(color) {
+  const canvas = document.getElementById("onenoteCanvas");
+  canvas.focus();
+  document.execCommand('foreColor', false, color);
+  syncCanvasToTextarea();
+}
+
+function applyHighlight(color) {
+  const canvas = document.getElementById("onenoteCanvas");
+  canvas.focus();
+  document.execCommand('hiliteColor', false, color);
+  syncCanvasToTextarea();
+}
+
+function insertOneNoteChecklist() {
+  const canvas = document.getElementById("onenoteCanvas");
+  canvas.focus();
+  const todoHtml = `
+    <div class="onenote-todo-item" style="display:flex; align-items:flex-start; gap:8px; margin:6px 0;">
+      <input type="checkbox" class="onenote-todo-checkbox" onchange="this.parentElement.classList.toggle('checked', this.checked)">
+      <span class="todo-text" contenteditable="true">Action item / verification step...</span>
+    </div>
+    <p><br></p>
+  `;
+  document.execCommand("insertHTML", false, todoHtml);
+  syncCanvasToTextarea();
+}
+
+function insertOneNoteTable() {
+  const canvas = document.getElementById("onenoteCanvas");
+  canvas.focus();
+  const tableHtml = `
+    <table class="onenote-table" style="width:100%; border-collapse:collapse; margin:16px 0;">
+      <thead>
+        <tr>
+          <th>Component</th>
+          <th>Diagnostic Command / Check</th>
+          <th>Expected Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Fabric Interconnect</td>
+          <td><code>show cluster status</code></td>
+          <td>HA Primary / Subordinate (In Sync)</td>
+        </tr>
+        <tr>
+          <td>ESXi Host</td>
+          <td><code>esxcli network nic list</code></td>
+          <td>Link Up / 10000 Mbps Full</td>
+        </tr>
+      </tbody>
+    </table>
+    <p><br></p>
+  `;
+  document.execCommand("insertHTML", false, tableHtml);
+  syncCanvasToTextarea();
+}
+
+function clearCanvasFormatting() {
+  const canvas = document.getElementById("onenoteCanvas");
+  canvas.focus();
+  document.execCommand("removeFormat", false, null);
+  syncCanvasToTextarea();
 }
 
 function insertCallout(type, title) {
+  const canvas = document.getElementById("onenoteCanvas");
   const ta = document.getElementById("content");
-  const text = `\n:::${type} [${title}]\nWrite callout message here...\n:::\n`;
-  const start = ta.selectionStart;
-  ta.value = ta.value.substring(0, start) + text + ta.value.substring(start);
-  ta.focus();
-  updateLivePreview();
+  const calloutHtml = `
+    <div class="callout callout-${type}" style="margin:14px 0;">
+      <div class="callout-header">${escapeHtml(title)}</div>
+      <div contenteditable="true">Describe alert symptoms, warnings, or resolution instructions here...</div>
+    </div>
+    <p><br></p>
+  `;
+
+  if (canvas && canvas.style.display !== 'none') {
+    canvas.focus();
+    document.execCommand("insertHTML", false, calloutHtml);
+    syncCanvasToTextarea();
+  } else if (ta) {
+    const text = `\n:::${type} [${title}]\nDescribe alert symptoms, warnings, or resolution instructions here...\n:::\n`;
+    const start = ta.selectionStart;
+    ta.value = ta.value.substring(0, start) + text + ta.value.substring(start);
+    ta.focus();
+    updateLivePreview();
+  }
 }
 
 function insertCodeBlock(lang) {
+  const canvas = document.getElementById("onenoteCanvas");
   const ta = document.getElementById("content");
-  const text = `\n\`\`\`${lang}\n# ${lang} diagnostic command\n\`\`\`\n`;
-  const start = ta.selectionStart;
-  ta.value = ta.value.substring(0, start) + text + ta.value.substring(start);
-  ta.focus();
-  updateLivePreview();
+  const codeHtml = `
+    <div style="position:relative; margin:12px 0;">
+      <div style="font-size:11px; font-weight:700; color:#38bdf8; margin-bottom:4px;">${escapeHtml(lang.toUpperCase())}:</div>
+      <pre style="background:#090e1a; padding:12px; border-radius:6px; border:1px solid #202d48; color:#34d399; font-family:monospace; white-space:pre-wrap;"># ${lang} diagnostic commands here...</pre>
+    </div>
+    <p><br></p>
+  `;
+
+  if (canvas && canvas.style.display !== 'none') {
+    canvas.focus();
+    document.execCommand("insertHTML", false, codeHtml);
+    syncCanvasToTextarea();
+  } else if (ta) {
+    const text = `\n\`\`\`${lang}\n# ${lang} diagnostic command\n\`\`\`\n`;
+    const start = ta.selectionStart;
+    ta.value = ta.value.substring(0, start) + text + ta.value.substring(start);
+    ta.focus();
+    updateLivePreview();
+  }
 }
 
-function insertTable() {
-  const ta = document.getElementById("content");
-  const text = `\n| Component | Diagnostic Check | Expected Status |\n| :--- | :--- | :--- |\n| Network NIC | esxcli network nic list | Link Up / 10Gbps |\n| Storage Path | esxcli storage nmp device list | Active (I/O) |\n`;
-  const start = ta.selectionStart;
-  ta.value = ta.value.substring(0, start) + text + ta.value.substring(start);
-  ta.focus();
-  updateLivePreview();
-}
-
-// Tab switcher between Editor and Live Preview
+// Tab Switcher between OneNote Canvas, Markdown/Source, and Live Preview
 function switchEditorTab(mode) {
+  const canvas = document.getElementById("onenoteCanvas");
   const ta = document.getElementById("content");
   const preview = document.getElementById("previewBox");
+  const btnOneNote = document.getElementById("tabOneNote");
   const btnEdit = document.getElementById("tabEditor");
   const btnPrev = document.getElementById("tabPreview");
 
-  if (mode === 'preview') {
-    btnEdit.classList.remove('active');
-    btnPrev.classList.add('active');
-    ta.style.display = 'none';
-    preview.style.display = 'block';
-    updateLivePreview();
-  } else {
-    btnPrev.classList.remove('active');
-    btnEdit.classList.add('active');
-    preview.style.display = 'none';
-    ta.style.display = 'block';
+  if (mode === 'onenote') {
+    if (btnOneNote) btnOneNote.classList.add('active');
+    if (btnEdit) btnEdit.classList.remove('active');
+    if (btnPrev) btnPrev.classList.remove('active');
+    syncTextareaToCanvas();
+    if (canvas) canvas.style.display = 'block';
+    if (ta) ta.style.display = 'none';
+    if (preview) preview.style.display = 'none';
+  } else if (mode === 'edit') {
+    if (btnEdit) btnEdit.classList.add('active');
+    if (btnOneNote) btnOneNote.classList.remove('active');
+    if (btnPrev) btnPrev.classList.remove('active');
+    syncCanvasToTextarea();
+    if (canvas) canvas.style.display = 'none';
+    if (ta) ta.style.display = 'block';
+    if (preview) preview.style.display = 'none';
+  } else if (mode === 'preview') {
+    if (btnPrev) btnPrev.classList.add('active');
+    if (btnOneNote) btnOneNote.classList.remove('active');
+    if (btnEdit) btnEdit.classList.remove('active');
+    syncCanvasToTextarea();
+    if (canvas) canvas.style.display = 'none';
+    if (ta) ta.style.display = 'none';
+    if (preview) {
+      preview.style.display = 'block';
+      updateLivePreview();
+    }
   }
 }
 
 function updateLivePreview() {
-  const raw = document.getElementById("content").value;
+  const raw = document.getElementById("content")?.value || "";
   const preview = document.getElementById("previewBox");
   if (!preview) return;
   preview.innerHTML = renderFormattedContent(raw);
@@ -856,12 +1331,28 @@ function updateLivePreview() {
 function renderFormattedContent(raw) {
   if (!raw) return '<p style="color:var(--text-muted); font-style:italic;">No content to preview.</p>';
 
-  // Format callouts
-  let html = raw.replace(/:::(\w+)\s*\[(.*?)\]([\s\S]*?):::/g, (match, type, title, body) => {
+  let html = raw;
+
+  // Checklists
+  html = html.replace(/^(\s*)- \[ \] (.*$)/gim, `
+    <div class="onenote-todo-item">
+      <input type="checkbox" class="onenote-todo-checkbox" onchange="this.parentElement.classList.toggle('checked', this.checked)">
+      <span class="todo-text">$2</span>
+    </div>
+  `);
+  html = html.replace(/^(\s*)- \[[xX]\] (.*$)/gim, `
+    <div class="onenote-todo-item checked">
+      <input type="checkbox" class="onenote-todo-checkbox" checked onchange="this.parentElement.classList.toggle('checked', this.checked)">
+      <span class="todo-text">$2</span>
+    </div>
+  `);
+
+  // Callouts
+  html = html.replace(/:::(\w+)\s*\[(.*?)\]([\s\S]*?):::/g, (match, type, title, body) => {
     return `
       <div class="callout callout-${type}">
         <div class="callout-header">${escapeHtml(title)}</div>
-        <div>${escapeHtml(body.trim()).replace(/\n/g, '<br>')}</div>
+        <div>${body.trim().replace(/\n/g, '<br>')}</div>
       </div>
     `;
   });
@@ -869,6 +1360,26 @@ function renderFormattedContent(raw) {
   // Code blocks
   html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
     return `<pre style="background:#090e1a; padding:12px; border-radius:6px; margin:10px 0; border:1px solid #202d48; color:#34d399; font-family:monospace; white-space:pre-wrap;">${escapeHtml(code.trim())}</pre>`;
+  });
+
+  // Markdown tables
+  html = html.replace(/((?:\|[^\n]+\|\r?\n){2,})/g, (match) => {
+    const lines = match.trim().split(/\r?\n/);
+    if (lines.length < 2) return match;
+    const headerLine = lines[0];
+    const headers = headerLine.split('|').map(s => s.trim()).filter(Boolean);
+    const bodyLines = lines.slice(1).filter(l => !l.match(/^\|[\s\-:|]+\|$/));
+    return `
+      <table class="onenote-table">
+        <thead><tr>${headers.map(h => `<th>${escapeHtml(h)}</th>`).join('')}</tr></thead>
+        <tbody>
+          ${bodyLines.map(line => {
+            const cells = line.split('|').map(s => s.trim()).filter(Boolean);
+            return `<tr>${cells.map(c => `<td>${escapeHtml(c)}</td>`).join('')}</tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
   });
 
   // Headings
@@ -879,10 +1390,241 @@ function renderFormattedContent(raw) {
   // Bold & Italic
   html = html.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
   html = html.replace(/\*(.*?)\*/g, '<i>$1</i>');
-  html = html.replace(/`(.*?)`/g, '<code style="background:#090e1a; padding:2px 6px; border-radius:4px; color:#38bdf8;">$1</code>');
+  html = html.replace(/`([^`]+)`/g, '<code style="background:#090e1a; padding:2px 6px; border-radius:4px; color:#38bdf8;">$1</code>');
 
-  return html.replace(/\n\n/g, '<br><br>');
+  if (!/<p>|<div|<table|<h\d/i.test(html)) {
+    html = html.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
+  }
+
+  return html;
 }
+
+// In-Website Secure Document Viewer Implementation for Publisher
+async function openSecureViewer(rawKey, fileName, fileType) {
+  const modal = document.getElementById("secureViewerModal");
+  const body = document.getElementById("secureViewerBody");
+  const nameEl = document.getElementById("secureViewerFilename");
+  const iconEl = document.getElementById("secureViewerIcon");
+  if (!modal || !body) return;
+
+  nameEl.textContent = fileName || 'Attachment';
+  iconEl.textContent = '⏳';
+  currentViewerZoom = 1.0;
+  modal.style.display = 'flex';
+  modal.classList.remove('hidden');
+
+  body.innerHTML = `
+    <div style="text-align:center; padding:60px 20px; color:#94a3b8;">
+      <div style="font-size:42px; margin-bottom:14px;">⏳</div>
+      <h3 style="color:#f8fafc; font-size:17px; margin-bottom:6px;">Connecting to secure storage...</h3>
+      <p style="font-size:12px; color:#64748b;">Retrieving ${escapeHtml(fileName || 'document')} from Cloudflare R2 bucket</p>
+    </div>
+  `;
+
+  // Find candidate URLs
+  const cleanName = fileName || (rawKey ? rawKey.split('/').pop() : '');
+  const candidates = [
+    rawKey,
+    rawKey?.startsWith('attachments/') ? rawKey.replace(/^attachments\//, '') : '',
+    rawKey?.startsWith('attachments/') ? 'test/' + rawKey.replace(/^attachments\//, '') : '',
+    rawKey && !rawKey.startsWith('test/') ? 'test/' + rawKey : '',
+    cleanName,
+    cleanName ? 'test/' + cleanName : ''
+  ].filter((v, idx, arr) => Boolean(v) && arr.indexOf(v) === idx);
+
+  let probeOk = false;
+  let fileUrl = '';
+  for (const k of candidates) {
+    try {
+      const u = `${API_BASE}/file?key=${encodeURIComponent(k)}`;
+      const res = await fetch(u);
+      if (res.status === 200) {
+        probeOk = true;
+        fileUrl = u;
+        break;
+      }
+    } catch {}
+  }
+
+  const ext = (fileName || rawKey || '').split('.').pop().toLowerCase();
+  const isImg = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext);
+  const isPdf = ext === 'pdf';
+  const isDocx = ['docx', 'doc'].includes(ext);
+  const isCode = ['txt', 'log', 'sh', 'ps1', 'json', 'yaml', 'yml', 'xml', 'csv'].includes(ext);
+
+  if (!probeOk) {
+    iconEl.textContent = '⚠️';
+    body.innerHTML = `
+      <div style="text-align:center; padding:36px 20px; color:#cbd5e1; max-width:680px; margin:0 auto;">
+        <div style="font-size:48px; margin-bottom:12px;">⚠️</div>
+        <h3 style="color:#fff; font-size:18px; margin-bottom:6px;">Document Not Found in Cloudflare R2</h3>
+        <p style="color:var(--text-muted); font-size:13px; margin-bottom:18px;">
+          Document: <b style="color:#f8fafc;">${escapeHtml(fileName || rawKey)}</b>
+        </p>
+
+        <div class="callout callout-warning" style="text-align:left; margin-bottom:16px;">
+          <div class="callout-header">Storage Discrepancy (Cloudflare R2 HTTP 404)</div>
+          <div style="font-size:12px; line-height:1.6; color:#cbd5e1;">
+            Storage path referenced:
+            <code style="display:block; margin:6px 0; background:#0b1120; padding:6px 10px; border-radius:6px; color:#fbbf24; word-break:break-all;">
+              ${escapeHtml(rawKey || fileName)}
+            </code>
+            This file object was not saved to your Cloudflare R2 bucket.
+          </div>
+        </div>
+
+        <div class="dropzone" style="margin:20px 0; padding:24px; cursor:pointer;" onclick="document.getElementById('publisherLocalPicker').click()">
+          <input type="file" id="publisherLocalPicker" style="display:none;" onchange="handleViewerLocalFile(event, '${escapeHtml(fileName)}')">
+          <div style="font-size:32px; margin-bottom:6px;">📂</div>
+          <div style="color:#fff; font-weight:700; font-size:14px; margin-bottom:4px;">Have "${escapeHtml(fileName)}" on your computer?</div>
+          <div style="color:var(--text-muted); font-size:12px;">Click here or drop the file to open and view it right now in this window!</div>
+        </div>
+
+        <button type="button" class="btn btn-secondary" onclick="closeSecureViewer()">Close Viewer</button>
+      </div>
+    `;
+    return;
+  }
+
+  iconEl.textContent = isImg ? '🖼️' : (isPdf ? '📕' : (isDocx ? '📘' : (isCode ? '📋' : '📄')));
+
+  if (isDocx) {
+    body.innerHTML = `
+      <div style="text-align:center; padding:60px 20px; color:#94a3b8;">
+        <div style="font-size:42px; margin-bottom:14px;">📘</div>
+        <h3 style="color:#f8fafc; font-size:17px; margin-bottom:6px;">Formatting Word Document...</h3>
+        <p style="font-size:12px; color:#64748b;">Rendering tables, headings, and instructions inline</p>
+      </div>
+    `;
+    try {
+      const res = await fetch(fileUrl);
+      const arrayBuf = await res.arrayBuffer();
+      await renderDocxContent(arrayBuf, body, fileName || 'Word Document Playbook');
+    } catch (err) {
+      body.innerHTML = `<div style="text-align:center; padding:40px; color:#f87171;">Failed to load Word document: ${escapeHtml(err.message)}</div>`;
+    }
+  } else if (isImg) {
+    body.innerHTML = `<img id="secureViewerImg" src="${fileUrl}" class="secure-viewer-img" alt="${escapeHtml(fileName)}" style="max-width:100%; margin:0 auto; display:block; border-radius:8px;">`;
+  } else if (isPdf) {
+    body.innerHTML = `<iframe src="${fileUrl}#toolbar=0" style="width:100%; height:100%; min-height:560px; border:none; background:#0b0f19;"></iframe>`;
+  } else if (isCode) {
+    const text = await (await fetch(fileUrl)).text();
+    body.innerHTML = `<pre style="background:#090e1a; padding:16px; border-radius:8px; border:1px solid #202d48; color:#34d399; font-family:monospace; white-space:pre-wrap;">${escapeHtml(text)}</pre>`;
+  }
+}
+
+async function renderDocxContent(arrayBuf, targetEl, docTitle) {
+  try {
+    let htmlResult = '';
+    if (window.mammoth && window.mammoth.convertToHtml) {
+      const result = await window.mammoth.convertToHtml({ arrayBuffer: arrayBuf });
+      htmlResult = result.value;
+    } else {
+      const base64Str = btoa(new Uint8Array(arrayBuf).reduce((d, b) => d + String.fromCharCode(b), ''));
+      const res = await fetch('/api/docs/render-docx', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ base64: base64Str })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        htmlResult = data.html || '';
+      }
+    }
+
+    if (htmlResult) {
+      targetEl.innerHTML = `
+        <div class="secure-viewer-docx-content">
+          <div style="display:flex; justify-content:space-between; align-items:center; border-bottom:1px solid #cbd5e1; padding-bottom:12px; margin-bottom:20px;">
+            <div>
+              <span style="font-size:11px; font-weight:700; color:#2563eb; text-transform:uppercase; letter-spacing:0.04em;">Word Document Playbook</span>
+              <h2 style="font-size:20px; font-weight:800; color:#0f172a; margin:4px 0 0 0;">${escapeHtml(docTitle)}</h2>
+            </div>
+            <span class="secure-badge" style="background:#e0f2fe; color:#0369a1; border-color:#bae6fd;">🔒 In-Website View Mode</span>
+          </div>
+          <div class="docx-body">
+            ${htmlResult}
+          </div>
+        </div>
+      `;
+    }
+  } catch (err) {
+    targetEl.innerHTML = `<div style="text-align:center; padding:40px; color:#f87171;">Failed to convert document: ${escapeHtml(err.message)}</div>`;
+  }
+}
+
+window.handleViewerLocalFile = function(e, expectedName) {
+  if (e.target.files && e.target.files[0]) {
+    renderLocalFileInViewer(e.target.files[0]);
+  }
+};
+
+async function renderLocalFileInViewer(file) {
+  const body = document.getElementById("secureViewerBody");
+  const nameEl = document.getElementById("secureViewerFilename");
+  const iconEl = document.getElementById("secureViewerIcon");
+  if (!body) return;
+
+  nameEl.textContent = file.name;
+  const ext = file.name.split('.').pop().toLowerCase();
+  const isImg = ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext);
+  const isPdf = ext === 'pdf';
+  const isDocx = ['docx', 'doc'].includes(ext);
+  const isCode = ['txt', 'log', 'sh', 'ps1', 'json', 'yaml', 'yml', 'xml', 'csv'].includes(ext);
+
+  iconEl.textContent = isImg ? '🖼️' : (isPdf ? '📕' : (isDocx ? '📘' : (isCode ? '📋' : '📄')));
+
+  if (isDocx) {
+    body.innerHTML = `<div style="text-align:center; padding:40px; color:#94a3b8;">Processing Word Document...</div>`;
+    const arrayBuf = await file.arrayBuffer();
+    await renderDocxContent(arrayBuf, body, file.name);
+  } else if (isPdf) {
+    const objectUrl = URL.createObjectURL(file);
+    body.innerHTML = `<iframe src="${objectUrl}#toolbar=0" style="width:100%; height:100%; min-height:560px; border:none; background:#0b0f19;"></iframe>`;
+  } else if (isImg) {
+    const objectUrl = URL.createObjectURL(file);
+    body.innerHTML = `<img id="secureViewerImg" src="${objectUrl}" style="max-width:100%; margin:0 auto; display:block; border-radius:8px;">`;
+  } else if (isCode) {
+    const text = await file.text();
+    body.innerHTML = `<pre style="background:#090e1a; padding:16px; border-radius:8px; border:1px solid #202d48; color:#34d399; font-family:monospace; white-space:pre-wrap;">${escapeHtml(text)}</pre>`;
+  }
+}
+
+function closeSecureViewer() {
+  const modal = document.getElementById("secureViewerModal");
+  if (modal) {
+    modal.style.display = 'none';
+    modal.classList.add('hidden');
+  }
+  const body = document.getElementById("secureViewerBody");
+  if (body) body.innerHTML = '';
+}
+
+function zoomSecureViewer(delta) {
+  const img = document.getElementById("secureViewerImg");
+  const docx = document.querySelector(".secure-viewer-docx-content");
+  if (img) {
+    currentViewerZoom = Math.max(0.4, Math.min(3.0, currentViewerZoom + delta));
+    img.style.transform = `scale(${currentViewerZoom})`;
+  } else if (docx) {
+    currentViewerZoom = Math.max(0.7, Math.min(2.0, currentViewerZoom + delta));
+    docx.style.zoom = currentViewerZoom;
+  }
+}
+
+function resetSecureZoom() {
+  const img = document.getElementById("secureViewerImg");
+  const docx = document.querySelector(".secure-viewer-docx-content");
+  currentViewerZoom = 1.0;
+  if (img) img.style.transform = 'scale(1)';
+  if (docx) docx.style.zoom = 1.0;
+}
+
+// Expose globals
+window.openSecureViewer = openSecureViewer;
+window.closeSecureViewer = closeSecureViewer;
+window.zoomSecureViewer = zoomSecureViewer;
+window.resetSecureZoom = resetSecureZoom;
 
 // AI Playbook Generation with Google Gemini via full-stack server
 async function generateAiPlaybook() {
@@ -936,19 +1678,24 @@ function renderFileList() {
   let html = "";
 
   if (uploadedAttachments.length > 0) {
-    html += uploadedAttachments.map((f, i) => `
+    html += uploadedAttachments.map((f, i) => {
+      const fileName = f.name || (f.key || f.path || 'Document').split('/').pop();
+      const storageKey = f.key || f.path || '';
+      return `
       <div class="file-chip">
         <div class="file-chip-name">
           <span>📎</span>
-          <span><b>${escapeHtml(f.name)}</b></span>
-          <span style="color:var(--text-muted); font-size:11px;">[Ready & Attached]</span>
+          <span><b>${escapeHtml(fileName)}</b></span>
+          <span style="color:var(--text-muted); font-size:11px;">[${escapeHtml(storageKey || 'Attached')}]</span>
         </div>
-        <div style="display:flex; gap:8px;">
-          <button type="button" class="btn btn-secondary btn-sm" onclick="insertFileRef('${escapeHtml(f.name)}')">Insert in Body</button>
+        <div style="display:flex; gap:6px; align-items:center;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="openSecureViewer('${escapeHtml(storageKey)}', '${escapeHtml(fileName)}', '${escapeHtml(f.type || '')}')">👁️ View</button>
+          <button type="button" class="btn btn-secondary btn-sm" onclick="embedDocCardInCanvasDirect('${escapeHtml(storageKey)}', '${escapeHtml(fileName)}', '${escapeHtml(f.type || '')}', ${f.size || 0})">Embed in Canvas</button>
           <span class="file-chip-remove" onclick="removeAttachment(${i})">✕ Remove</span>
         </div>
       </div>
-    `).join("");
+    `;
+    }).join("");
   }
 
   if (selectedFiles.length > 0) {
@@ -968,12 +1715,11 @@ function renderFileList() {
 }
 
 function insertFileRef(name) {
-  const ta = document.getElementById("content");
-  const text = `\n> **Attachment Reference:** [${name}]\n`;
-  const start = ta.selectionStart;
-  ta.value = ta.value.substring(0, start) + text + ta.value.substring(start);
-  ta.focus();
-  updateLivePreview();
+  const file = uploadedAttachments.find(f => (f.name || '').includes(name) || (f.key || '').includes(name));
+  const storageKey = file ? (file.key || file.path || name) : name;
+  const size = file ? file.size : 0;
+  embedDocCardInCanvasDirect(storageKey, name, file?.type || '', size);
+  showToast(`Embedded "${name}" document card into Article Body!`, "success");
 }
 
 function removeAttachment(index) {
@@ -1041,6 +1787,9 @@ async function uploadAllSelectedFiles() {
 
 // Publish New or Update Existing Article
 async function publishOrUpdateArticle() {
+  // Ensure the latest content from OneNote canvas is synced to the hidden textarea
+  syncCanvasToTextarea();
+
   const title = document.getElementById("title").value.trim();
   if (!title) {
     showToast("Please enter an Article Title.", "error");
@@ -1123,8 +1872,10 @@ function editArticle(id) {
     ].filter(Boolean).join('\n');
   }
   document.getElementById("content").value = body;
+  syncTextareaToCanvas();
+  switchEditorTab('onenote');
 
-  uploadedAttachments = Array.isArray(article.attachments) ? [...article.attachments] : [];
+  uploadedAttachments = parseAttachmentsList(article.attachments);
   renderFileList();
 
   document.getElementById("formModeTitle").textContent = "Edit Article: " + (article.title || id);
@@ -1142,6 +1893,8 @@ function cancelEdit() {
   document.getElementById("title").value = "";
   document.getElementById("category").value = "Troubleshooting";
   document.getElementById("content").value = "";
+  const canvas = document.getElementById("onenoteCanvas");
+  if (canvas) canvas.innerHTML = "";
   uploadedAttachments = [];
   selectedFiles = [];
   renderFileList();
@@ -1150,7 +1903,7 @@ function cancelEdit() {
   document.getElementById("formModeIcon").textContent = "📝";
   document.getElementById("cancelEditBtn").style.display = "none";
   document.getElementById("saveBtn").textContent = "🚀 Publish Article";
-  switchEditorTab('edit');
+  switchEditorTab('onenote');
 }
 
 function resetForm() {
@@ -1234,7 +1987,7 @@ function renderExistingTable() {
 
   tbody.innerHTML = filtered.map(a => {
     const snippet = a.content ? a.content.slice(0, 100) : (Array.isArray(a.symptoms) ? a.symptoms[0] : (a.description || ''));
-    const fileCount = (a.attachments && a.attachments.length) || 0;
+    const fileCount = parseAttachmentsList(a.attachments).length;
     const platform = a.platform || 'VMware';
 
     return `
@@ -1266,7 +2019,33 @@ function escapeHtml(str) {
 // Initialize on DOM load
 window.addEventListener("DOMContentLoaded", () => {
   loadExistingArticles();
+  initOneNoteEditor();
 });
 </script>
+
+<!-- In-Website Secure Document & Attachment Viewer Modal (Download Restricted) -->
+<div id="secureViewerModal" class="modal-overlay hidden" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center; padding:20px;">
+  <div class="modal-box secure-viewer-modal" style="background:#0c1322; border:1px solid var(--border); border-radius:12px; width:95%; max-width:1050px; height:88vh; display:flex; flex-direction:column; overflow:hidden;">
+    <div class="secure-viewer-header" style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-bottom:1px solid var(--border); background:#080e1a;">
+      <div class="secure-viewer-title" style="display:flex; align-items:center; gap:10px;">
+        <span id="secureViewerIcon" style="font-size:20px;">📎</span>
+        <div>
+          <div id="secureViewerFilename" style="font-weight:700; color:#fff; font-size:14px;">Document Viewer</div>
+          <span class="secure-badge" style="font-size:11px; color:#38bdf8;">🔒 Secure In-Website Viewer • View Only</span>
+        </div>
+      </div>
+      <div class="secure-viewer-controls" style="display:flex; align-items:center; gap:8px;">
+        <button class="editor-btn" onclick="zoomSecureViewer(0.2)" title="Zoom In">🔍 +</button>
+        <button class="editor-btn" onclick="zoomSecureViewer(-0.2)" title="Zoom Out">🔍 -</button>
+        <button class="editor-btn" onclick="resetSecureZoom()" title="Reset Zoom">100%</button>
+        <button class="editor-btn" style="color:#f87171;" onclick="closeSecureViewer()">✕ Close</button>
+      </div>
+    </div>
+    <div class="secure-viewer-body" id="secureViewerBody" style="flex:1; overflow-y:auto; padding:20px; background:#070b14;">
+      <!-- Content injected by JavaScript -->
+    </div>
+  </div>
+</div>
+
 </body>
 </html>
