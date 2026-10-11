@@ -551,38 +551,32 @@ const BUILTIN_LOG_MAP = [
   ["vmon.log", "vCenter Service Lifecycle Manager. Tracks service crashes, timeouts, and automated restarts."]
 ];
 
-function getAuthKey() {
-  return localStorage.getItem(AUTH_STORAGE_KEY) || 
-         localStorage.getItem(CF_TOKEN_KEY) || 
-         localStorage.getItem(LEGACY_AUTH_KEY) || '';
-}
-
-function getAuthHeaders() {
-  const key = getAuthKey();
-  if (!key) return {};
-  return {
-    'Authorization': `Bearer ${key}`,
-    'X-Auth-Token': key,
-    'X-Auth-Key': key
-  };
-}
-
-function isAuthorized() {
-  return Boolean(getAuthKey());
-}
-
-function promptAuth() {
-  const existing = getAuthKey();
-  const key = prompt('Cloudflare Authentication:\nPlease enter your Authorization Key:', existing || '');
-  if (key && key.trim()) {
-    localStorage.setItem(AUTH_STORAGE_KEY, key.trim());
-    localStorage.setItem(CF_TOKEN_KEY, key.trim());
-    localStorage.setItem(LEGACY_AUTH_KEY, key.trim());
-    alert('Authorization key saved successfully.');
-    renderAll();
-    return true;
+// Official SVG Logos for Technology Platforms
+function getPlatformLogoSvg(platform, size = 18) {
+  const p = String(platform || '').toLowerCase();
+  if (p.includes('vmware')) {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" class="platform-logo"><rect width="24" height="24" rx="4" fill="#0070cd"/><path d="M4.5 8h2.3l1.8 5 1.8-5h2.3l-3 7.8H7.5L4.5 8zm8.7 0h2.2l1.6 4.6 1.6-4.6h2.2l-2.8 7.8h-2.1L13.2 8z" fill="#fff"/></svg>`;
   }
-  return false;
+  if (p.includes('windows')) {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" class="platform-logo"><rect x="2" y="3" width="9.5" height="8.5" fill="#F25022"/><rect x="12.5" y="3" width="9.5" height="8.5" fill="#7FBA00"/><rect x="2" y="12.5" width="9.5" height="8.5" fill="#00A4EF"/><rect x="12.5" y="12.5" width="9.5" height="8.5" fill="#FFB900"/></svg>`;
+  }
+  if (p.includes('linux')) {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" class="platform-logo"><path d="M12 2c-3 0-5 2.5-5 5.5 0 1.5.5 3.5 0 5-1 .5-2 2-2 4.5 0 2.5 2 3.5 4 3.5 1 0 1.5-.5 3-.5s2 .5 3 .5c2 0 4-1 4-3.5 0-2.5-1-4-2-4.5-.5-1.5 0-3.5 0-5 0-3-2-5.5-5-5.5z" fill="#f8fafc"/><path d="M12 3c-2.2 0-3.8 1.8-3.8 4.2 0 1.2.3 2.8 0 4-.8.4-1.7 1.6-1.7 3.8 0 2 1.6 2.8 3.3 2.8.8 0 1.3-.4 2.2-.4s1.4.4 2.2.4c1.7 0 3.3-.8 3.3-2.8 0-2.2-.9-3.4-1.7-3.8-.3-1.2 0-2.8 0-4C15.8 4.8 14.2 3 12 3z" fill="#0f172a"/><ellipse cx="10.5" cy="6.5" rx="1.2" ry="1.6" fill="#fff"/><circle cx="10.8" cy="6.6" r="0.7" fill="#000"/><ellipse cx="13.5" cy="6.5" rx="1.2" ry="1.6" fill="#fff"/><circle cx="13.2" cy="6.6" r="0.7" fill="#000"/><path d="M10.2 8.5c0-.2.8-1 1.8-1s1.8.8 1.8 1c0 1-1 2.2-1.8 2.2s-1.8-1.2-1.8-2.2z" fill="#f59e0b"/><ellipse cx="12" cy="14" rx="3.5" ry="4" fill="#f8fafc"/><path d="M7 19.5c0-1 1.5-1.5 3-1.5s2 .5 2 1.5c0 .8-1 1.5-2.5 1.5S7 20.3 7 19.5zm5 0c0-1 1.5-1.5 3-1.5s2 .5 2 1.5c0 .8-1 1.5-2.5 1.5S12 20.3 12 19.5z" fill="#f59e0b"/></svg>`;
+  }
+  if (p.includes('cisco') || p.includes('ucs')) {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" class="platform-logo"><rect width="24" height="24" rx="4" fill="#005073"/><path d="M4 14.5h1.5v3H4zm2.5-3H8v6H6.5zm2.5-2H10.5v8H9zm2.5 3H13v5h-1.5zm2.5-3H15.5v8H14zm2.5 2H18v6h-1.5zm2.5 3H20v3h-1.5z" fill="#00bceb"/><path d="M4 8.5h1.5v2H4zm2.5-2H8v4H6.5zm2.5-1.5H10.5v5.5H9zm2.5 2H13v3.5h-1.5zm2.5-2H15.5v5.5H14zm2.5 1.5H18v4h-1.5zm2.5 2H20v2h-1.5z" fill="#ffffff"/></svg>`;
+  }
+  if (p.includes('aws')) {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" class="platform-logo"><rect width="24" height="24" rx="4" fill="#232f3e"/><text x="4" y="12" font-family="sans-serif" font-weight="900" font-size="7" fill="#ffffff">AWS</text><path d="M4 15.5c4 2.8 11 2.8 15 0" stroke="#ff9900" stroke-width="1.8" stroke-linecap="round" fill="none"/><path d="M18.5 13.5l1.5 2.5-2.8.5" fill="#ff9900"/></svg>`;
+  }
+  if (p.includes('azure')) {
+    return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" class="platform-logo"><rect width="24" height="24" rx="4" fill="#0078d4"/><path d="M6 17.5l4-11h4l-4 11H6zm5.5 0l2.5-6.5 4 6.5h-6.5z" fill="#ffffff"/></svg>`;
+  }
+  return `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" class="platform-logo"><rect width="24" height="24" rx="4" fill="#334155"/><path d="M4 6h16v12H4z" stroke="#94a3b8" stroke-width="2"/><circle cx="8" cy="12" r="1.5" fill="#38bdf8"/></svg>`;
+}
+
+function platformOf(x) {
+  return x.platform || 'VMware';
 }
 
 function embeddedDB() {
@@ -613,18 +607,10 @@ function normalizeDB(data) {
   for (const k of ['articles', 'scripts', 'commands', 'resources']) {
     out[k] = (Array.isArray(out[k]) ? out[k] : []).map(x => ({ ...x, platform: x.platform || 'VMware' }));
   }
-  if (!out.articles.length) {
-    out.articles = [...BUILTIN_ARTICLES];
-  }
-  if (!out.commands.length) {
-    out.commands = [...BUILTIN_COMMANDS];
-  }
-  if (!out.scripts.length) {
-    out.scripts = [...BUILTIN_SCRIPTS];
-  }
-  if (!out.resources.length) {
-    out.resources = [...BUILTIN_RESOURCES];
-  }
+  if (!out.articles.length) out.articles = [...BUILTIN_ARTICLES];
+  if (!out.commands.length) out.commands = [...BUILTIN_COMMANDS];
+  if (!out.scripts.length) out.scripts = [...BUILTIN_SCRIPTS];
+  if (!out.resources.length) out.resources = [...BUILTIN_RESOURCES];
   out.log_map = Array.isArray(out.log_map) && out.log_map.length > 0 ? out.log_map : BUILTIN_LOG_MAP;
   return out;
 }
@@ -660,15 +646,14 @@ function saveLocal(data) {
 }
 
 async function loadDB() {
-  // 1. Immediately render local database with zero latency
   DB = localDB();
+  populateSidebarLogos();
   renderAll();
-  updateBackendStatus();
+  updateSidebarFilterCounts();
 
-  // 2. Fetch live Cloudflare D1 articles in background with timeout
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3500);
+    const timeoutId = setTimeout(() => controller.abort(), 4000);
     const response = await fetch('https://sysadminiq-api.baijucm.workers.dev', {
       signal: controller.signal
     });
@@ -677,27 +662,64 @@ async function loadDB() {
     if (response.ok) {
       const d1Articles = await response.json();
       if (Array.isArray(d1Articles) && d1Articles.length > 0) {
-        DB.articles = d1Articles;
+        const d1Map = new Map();
+        d1Articles.forEach(a => d1Map.set(String(a.id), a));
+        const merged = [...d1Articles];
+        BUILTIN_ARTICLES.forEach(b => {
+          if (!d1Map.has(String(b.id))) {
+            merged.push(b);
+          }
+        });
+        DB.articles = merged;
         saveLocal(DB);
         BACKEND_ONLINE = true;
         renderAll();
-        updateBackendStatus();
+        updateSidebarFilterCounts();
       }
     }
   } catch (e) {
     BACKEND_ONLINE = false;
-    updateBackendStatus();
-    console.log('Using local knowledge base playbooks:', e.message);
+    console.log('Using local database:', e.message);
   }
 }
 
-function updateBackendStatus() {
-  const el = $('#backendStatus');
-  if (el) {
-    el.innerHTML = BACKEND_ONLINE
-      ? `<span class="status-dot online"></span> Connected to Cloudflare Database — ${DB.articles.length} articles indexed`
-      : `<span class="status-dot offline"></span> Local Mode — ${DB.articles.length} articles loaded from knowledge base`;
+function populateSidebarLogos() {
+  const map = {
+    'VMware': '#sidebarLogo-VMware',
+    'Windows': '#sidebarLogo-Windows',
+    'Linux': '#sidebarLogo-Linux',
+    'Cisco UCS': '#sidebarLogo-Cisco',
+    'AWS': '#sidebarLogo-AWS',
+    'Azure': '#sidebarLogo-Azure'
+  };
+  for (const [p, sel] of Object.entries(map)) {
+    const el = $(sel);
+    if (el) el.innerHTML = getPlatformLogoSvg(p, 18);
   }
+}
+
+function updateSidebarFilterCounts() {
+  const platforms = ['VMware', 'Windows', 'Linux', 'Cisco UCS', 'AWS', 'Azure'];
+  platforms.forEach(p => {
+    const count = DB.articles.filter(a => platformOf(a).toLowerCase().includes(p.toLowerCase())).length;
+    const countId = p === 'Cisco UCS' ? 'count-Cisco' : `count-${p}`;
+    const el = document.getElementById(countId);
+    if (el) el.textContent = count;
+  });
+}
+
+function toggleSidebarFilter(platform) {
+  nav('knowledge');
+  const sel = $('#kbPlatform');
+  if (sel) sel.value = platform;
+  renderKB($('#kbSearch')?.value || '', platform, $('#kbCategory')?.value || 'all');
+}
+
+function filterByPlatform(platform) {
+  nav('knowledge');
+  const sel = $('#kbPlatform');
+  if (sel) sel.value = platform;
+  renderKB($('#kbSearch')?.value || '', platform, $('#kbCategory')?.value || 'all');
 }
 
 function copy(text) {
@@ -716,48 +738,29 @@ function copy(text) {
 }
 
 function nav(view) {
-  $$('.nav').forEach(x => x.classList.toggle('active', x.dataset.view === view));
+  $$('.sidebar-item').forEach(x => {
+    if (x.dataset.view) {
+      x.classList.toggle('active', x.dataset.view === view);
+    }
+  });
   $$('.view').forEach(x => x.classList.toggle('active', x.id === view));
-}
-
-function platformOf(x) {
-  return x.platform || 'VMware';
-}
-
-function renderStats() {
-  const el = $('#stats');
-  if (!el) return;
-  const cats = [...new Set(DB.articles.map(x => x.category).filter(Boolean))];
-  el.innerHTML = `
-    <div class="stat"><b>${DB.articles.length}</b><span>Knowledge articles</span></div>
-    <div class="stat"><b>${cats.length}</b><span>Subcategories</span></div>
-    <div class="stat"><b>${DB.commands.length}</b><span>Commands indexed</span></div>
-    <div class="stat"><b>${DB.scripts.length}</b><span>Automation scripts</span></div>
-  `;
-}
-
-function scoreArticle(a, text) {
-  const t = text.toLowerCase();
-  return [a.title, a.platform, a.category, ...arr(a.keywords), ...arr(a.symptoms), ...arr(a.causes), ...arr(a.logs)]
-    .reduce((n, x) => n + (t.includes(String(x).toLowerCase()) ? 3 : String(x).toLowerCase().split(/\s+/).filter(w => w.length > 3 && t.includes(w)).length), 0);
-}
-
-function findMatches(text) {
-  return DB.articles
-    .map(a => ({ ...a, score: scoreArticle(a, text) }))
-    .filter(a => a.score > 0)
-    .sort((a, b) => b.score - a.score);
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 function articleCard(a) {
+  const platform = platformOf(a);
+  const logo = getPlatformLogoSvg(platform, 15);
   return `
     <div class="article-card" data-article="${esc(a.id)}">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-        <span class="tag">${esc(platformOf(a))}</span>
+      <div class="article-card-header">
+        <span class="platform-tag-pill">
+          ${logo}
+          <span>${esc(platform)}</span>
+        </span>
         <span class="subtag">${esc(a.category || 'General')}</span>
       </div>
       <h3>${esc(a.title)}</h3>
-      <p>${esc(arr(a.symptoms)[0] || a.description || (a.content ? a.content.slice(0, 120) + '...' : 'Troubleshooting playbook'))}</p>
+      <p>${esc(arr(a.symptoms)[0] || a.description || (a.content ? a.content.slice(0, 110) + '...' : 'Diagnostic playbook'))}</p>
     </div>
   `;
 }
@@ -773,43 +776,186 @@ function openArticleById(id) {
   if (a) openArticle(a);
 }
 
-// Clean article reading view (No edit/delete options in reader mode)
+// Rich Formatted Callout & Markdown Parser
+function formatArticleContent(raw) {
+  if (!raw) return '';
+
+  let html = raw.replace(/:::(\w+)\s*\[(.*?)\]([\s\S]*?):::/g, (match, type, title, body) => {
+    return `
+      <div class="callout callout-${type}">
+        <div class="callout-header">${esc(title)}</div>
+        <div>${esc(body.trim()).replace(/\n/g, '<br>')}</div>
+      </div>
+    `;
+  });
+
+  html = html.replace(/\[CALLOUT:(\w+)\]([\s\S]*?)\[\/CALLOUT\]/g, (match, type, body) => {
+    const t = type.toLowerCase();
+    return `
+      <div class="callout callout-${t}">
+        <div>${esc(body.trim()).replace(/\n/g, '<br>')}</div>
+      </div>
+    `;
+  });
+
+  html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+    return `
+      <div style="position:relative; margin:12px 0;">
+        <button class="copy" onclick='copy(${JSON.stringify(code.trim())})'>Copy</button>
+        <pre>${esc(code.trim())}</pre>
+      </div>
+    `;
+  });
+
+  html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+  html = html.replace(/^## (.*$)/gim, '<h2 style="color:#fff; font-size:18px; margin:16px 0 8px 0;">$1</h2>');
+  html = html.replace(/^# (.*$)/gim, '<h1 style="color:#fff; font-size:22px; margin:18px 0 10px 0;">$1</h1>');
+
+  html = html.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+  html = html.replace(/\*(.*?)\*/g, '<i>$1</i>');
+  html = html.replace(/`(.*?)`/g, '<code style="background:#090e1a; padding:2px 6px; border-radius:4px; color:#38bdf8;">$1</code>');
+
+  return html;
+}
+
+// In-Website Document & Attachment Viewer (Restricted Download)
+let currentViewerZoom = 1.0;
+
+function openSecureViewer(rawKey, fileName, fileType) {
+  if (!rawKey || rawKey === 'undefined' || rawKey === 'null') {
+    alert('This attachment does not have a valid storage key.');
+    return;
+  }
+
+  const modal = $('#secureViewerModal');
+  const body = $('#secureViewerBody');
+  const nameEl = $('#secureViewerFilename');
+  const iconEl = $('#secureViewerIcon');
+  if (!modal || !body) return;
+
+  const fileUrl = `https://sysadminiq-api.baijucm.workers.dev/file?key=${encodeURIComponent(rawKey)}`;
+  const ext = (fileName || '').split('.').pop().toLowerCase();
+  const isImg = fileType?.includes('image') || ['png', 'jpg', 'jpeg', 'webp', 'gif', 'svg'].includes(ext);
+  const isPdf = fileType?.includes('pdf') || ext === 'pdf';
+  const isCode = ['txt', 'log', 'sh', 'ps1', 'json', 'yaml', 'yml', 'xml', 'conf'].includes(ext);
+
+  nameEl.textContent = fileName || 'Attachment';
+  iconEl.textContent = isImg ? '🖼️' : (isPdf ? '📕' : (isCode ? '📋' : '📄'));
+  currentViewerZoom = 1.0;
+
+  if (isImg) {
+    body.innerHTML = `
+      <img id="secureViewerImg" src="${fileUrl}" class="secure-viewer-img" alt="${esc(fileName)}" draggable="false" oncontextmenu="return false;">
+    `;
+  } else if (isPdf) {
+    body.innerHTML = `
+      <iframe src="${fileUrl}#toolbar=0&navpanes=0&scrollbar=0" class="secure-viewer-iframe"></iframe>
+    `;
+  } else if (isCode) {
+    body.innerHTML = `<div class="secure-viewer-text">Loading document content securely...</div>`;
+    fetch(fileUrl)
+      .then(r => r.text())
+      .then(t => {
+        body.innerHTML = `<div class="secure-viewer-text">${esc(t)}</div>`;
+      })
+      .catch(() => {
+        body.innerHTML = `<div class="secure-viewer-text">Unable to load text document inline.</div>`;
+      });
+  } else {
+    body.innerHTML = `
+      <div style="text-align:center; padding:40px; color:#cbd5e1; max-width:620px;">
+        <div style="font-size:48px; margin-bottom:12px;">📄</div>
+        <h3 style="color:#fff; font-size:18px; margin-bottom:6px;">${esc(fileName)}</h3>
+        <p style="color:var(--text-muted); font-size:12px; margin-bottom:18px;">Diagnostic Document • In-Website View Mode Active</p>
+        <div class="callout callout-info" style="text-align:left;">
+          <div class="callout-header">🔒 In-Website View Policy</div>
+          <div>Direct file download is restricted for read-only users. This document is authenticated and accessible within the SysAdminIQ diagnostic workspace.</div>
+        </div>
+      </div>
+    `;
+  }
+
+  modal.classList.remove('hidden');
+}
+
+function closeSecureViewer() {
+  const modal = $('#secureViewerModal');
+  if (modal) modal.classList.add('hidden');
+  const body = $('#secureViewerBody');
+  if (body) body.innerHTML = '';
+}
+
+function zoomSecureViewer(delta) {
+  const img = $('#secureViewerImg');
+  if (!img) return;
+  currentViewerZoom = Math.max(0.4, Math.min(3.0, currentViewerZoom + delta));
+  img.style.transform = `scale(${currentViewerZoom})`;
+}
+
+function resetSecureZoom() {
+  const img = $('#secureViewerImg');
+  if (!img) return;
+  currentViewerZoom = 1.0;
+  img.style.transform = 'scale(1)';
+}
+
+function renderAttachmentsList(attachments) {
+  if (!attachments || !attachments.length) return '';
+  return `
+    <h3>Attachments (${attachments.length})</h3>
+    <div class="attachments" style="display:flex; flex-direction:column; gap:8px; margin-top:8px;">
+      ${attachments.map(file => {
+        const rawKey = file.key || file.path || file.name || '';
+        const isValidKey = Boolean(rawKey && rawKey !== 'undefined' && rawKey !== 'null');
+        const isImg = file.type && (file.type.includes('png') || file.type.includes('jpg') || file.type.includes('jpeg') || file.type.includes('webp') || file.type.includes('image'));
+        return `
+          <div class="attachment-item" style="display:flex; justify-content:space-between; align-items:center; padding:12px 16px; background:#090e1a; border:1px solid #202d48; border-radius:8px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+              <span style="font-size:20px;">${isImg ? '🖼️' : '📎'}</span>
+              <div>
+                <div style="color:#f8fafc; font-weight:600; font-size:14px;">
+                  ${esc(file.name || 'Diagnostic Attachment')}
+                </div>
+                <div style="font-size:11px; color:#64748b; margin-top:2px;">
+                  ${esc(file.type || 'file')} ${file.size ? '• ' + Math.round(file.size / 1024) + ' KB' : ''} • 🔒 View-Only
+                </div>
+              </div>
+            </div>
+            ${isValidKey ? `
+              <button type="button" class="btn btn-secondary btn-sm" onclick="openSecureViewer('${esc(rawKey)}', '${esc(file.name)}', '${esc(file.type)}')">
+                👁️ View in Website
+              </button>
+            ` : `
+              <span style="font-size:11px; color:#64748b;">No storage key</span>
+            `}
+          </div>
+        `;
+      }).join('')}
+    </div>
+  `;
+}
+
 function openArticle(a) {
   if (!a) return;
   const modalContent = $('#modalContent');
   if (!modalContent) return;
 
+  const platform = platformOf(a);
+  const logo = getPlatformLogoSvg(platform, 18);
   const isD1Article = a.content && !a.symptoms && !a.causes;
 
   if (isD1Article) {
     modalContent.innerHTML = `
       <div class="article-detail">
-        <span class="tag">${esc(platformOf(a))}</span>
-        <span class="subtag">${esc(a.category || 'General')}</span>
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <span class="platform-tag-pill">${logo} <span>${esc(platform)}</span></span>
+          <span class="subtag">${esc(a.category || 'General')}</span>
+        </div>
         <h1>${esc(a.title)}</h1>
-
-        <h3>Article Content</h3>
-        <pre style="white-space:pre-wrap;padding:15px;background:#0e1526;color:#cbd5e1;border:1px solid #24324f;border-radius:6px;font-size:14px;line-height:1.6;max-height:500px;overflow:auto;">${esc(a.content || '')}</pre>
-
-        ${
-          a.attachments && a.attachments.length
-            ? `
-              <h3>Attachments</h3>
-              <div class="attachments">
-                ${a.attachments.map(file => `
-                  <div class="attachment-item">
-                    📎
-                    <a href="#" onclick="openAttachment('${esc(file.key)}'); return false;">
-                      ${esc(file.name || 'Attachment')}
-                    </a>
-                    <br>
-                    <small>${esc(file.type || '')}</small>
-                  </div>
-                `).join('')}
-              </div>
-            `
-            : ''
-        }
+        <div style="margin-top:16px;">
+          ${formatArticleContent(a.content || '')}
+        </div>
+        ${renderAttachmentsList(a.attachments)}
       </div>
     `;
   } else {
@@ -817,10 +963,12 @@ function openArticle(a) {
 
     modalContent.innerHTML = `
       <div class="article-detail">
-        <span class="tag">${esc(platformOf(a))}</span>
-        <span class="subtag">${esc(a.category || 'General')}</span>
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+          <span class="platform-tag-pill">${logo} <span>${esc(platform)}</span></span>
+          <span class="subtag">${esc(a.category || 'General')}</span>
+        </div>
         <h1>${esc(a.title)}</h1>
-        <p class="muted">${esc(a.description || '')}</p>
+        <p style="color:var(--text-secondary); margin-top:4px;">${esc(a.description || '')}</p>
 
         <h3>Symptoms</h3>
         ${list(a.symptoms)}
@@ -848,25 +996,7 @@ function openArticle(a) {
           <ol>${arr(a.verification).map(x => `<li>${esc(x)}</li>`).join('')}</ol>
         ` : ''}
 
-        ${
-          a.attachments && a.attachments.length
-            ? `
-              <h3>Attachments</h3>
-              <div class="attachments">
-                ${a.attachments.map(file => `
-                  <div class="attachment-item">
-                    📎
-                    <a href="#" onclick="openAttachment('${esc(file.key)}'); return false;">
-                      ${esc(file.name || 'Attachment')}
-                    </a>
-                    <br>
-                    <small>${esc(file.type || '')}</small>
-                  </div>
-                `).join('')}
-              </div>
-            `
-            : ''
-        }
+        ${renderAttachmentsList(a.attachments)}
       </div>
     `;
   }
@@ -875,47 +1005,290 @@ function openArticle(a) {
   if (modal) modal.classList.remove('hidden');
 }
 
-function openAttachment(key) {
-  const url = `https://sysadminiq-api.baijucm.workers.dev/file?key=${encodeURIComponent(key)}`;
-  window.open(url, '_blank');
+function closeArticleModal() {
+  const modal = $('#articleModal');
+  if (modal) modal.classList.add('hidden');
 }
 
-function openPlatform(name) {
-  nav('knowledge');
-  const sel = $('#kbPlatform');
-  if (sel) sel.value = name;
-  renderKB($('#kbSearch')?.value || '', name, $('#kbCategory')?.value || 'all');
+// Multi-AI Model Tools
+let selectedAi = 'gemini';
+let lastAiSolution = '';
+
+function selectAiModel(model) {
+  selectedAi = model;
+  ['gemini', 'chatgpt', 'claude', 'perplexity', 'deepseek'].forEach(m => {
+    $(`#tab-${m}`)?.classList.toggle('active', m === model);
+  });
+
+  const note = $('#aiStatusNote');
+  const runBtn = $('#runAiBtn');
+
+  if (model === 'gemini') {
+    if (note) note.textContent = 'Integrated Live AI (Powered by Google Gemini Flash)';
+    if (runBtn) {
+      runBtn.textContent = '✨ Ask Google Gemini';
+    }
+  } else {
+    const names = {
+      chatgpt: 'ChatGPT (OpenAI)',
+      claude: 'Claude (Anthropic)',
+      perplexity: 'Perplexity AI',
+      deepseek: 'DeepSeek AI'
+    };
+    if (note) note.textContent = `External Model: ${names[model]} (Launches with engineered sysadmin prompt)`;
+    if (runBtn) {
+      runBtn.textContent = `Launch in ${names[model]} ↗`;
+    }
+  }
 }
 
+function applyAiPrompt(promptText) {
+  const input = $('#aiPromptInput');
+  if (input) {
+    input.value = promptText;
+    input.focus();
+  }
+}
+
+async function submitAiQuery() {
+  if (selectedAi !== 'gemini') {
+    openExternalAi();
+    return;
+  }
+
+  const promptInput = $('#aiPromptInput');
+  const platform = $('#aiPlatformSelect')?.value || 'VMware';
+  const query = promptInput?.value.trim();
+
+  if (!query) {
+    alert('Please enter an issue description or question.');
+    promptInput?.focus();
+    return;
+  }
+
+  const runBtn = $('#runAiBtn');
+  const outPanel = $('#aiOutputPanel');
+  const outContent = $('#aiOutputContent');
+
+  if (runBtn) {
+    runBtn.disabled = true;
+    runBtn.textContent = '✨ Gemini is analyzing...';
+  }
+
+  if (outPanel) outPanel.style.display = 'block';
+  if (outContent) outContent.innerHTML = '<p style="color:#60a5fa; font-style:italic;">Running diagnostics with Google Gemini Flash...</p>';
+
+  try {
+    const res = await fetch('/api/ai/diagnose', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prompt: query, platform })
+    });
+
+    if (!res.ok) throw new Error('AI Server responded with ' + res.status);
+    const data = await res.json();
+    lastAiSolution = data.response || 'No solution generated.';
+    if (outContent) outContent.innerHTML = formatArticleContent(lastAiSolution);
+  } catch (err) {
+    if (outContent) outContent.innerHTML = `<div class="callout callout-danger"><div class="callout-header">AI Diagnosis Failed</div><div>${esc(err.message)}</div></div>`;
+  } finally {
+    if (runBtn) {
+      runBtn.disabled = false;
+      runBtn.textContent = '✨ Ask Google Gemini';
+    }
+  }
+}
+
+function openExternalAi() {
+  const query = $('#aiPromptInput')?.value.trim() || 'SysAdmin troubleshooting playbook';
+  const platform = $('#aiPlatformSelect')?.value || 'VMware';
+  const engineered = `Act as an enterprise Systems Administrator and Infrastructure Engineer. Diagnose this ${platform} issue with root cause analysis, diagnostic commands, and remediation playbook:\n\n${query}`;
+
+  const urls = {
+    chatgpt: `https://chatgpt.com/?q=${encodeURIComponent(engineered)}`,
+    claude: `https://claude.ai/new?q=${encodeURIComponent(engineered)}`,
+    perplexity: `https://www.perplexity.ai/search?q=${encodeURIComponent(engineered)}`,
+    deepseek: `https://chat.deepseek.com/?q=${encodeURIComponent(engineered)}`
+  };
+
+  const targetUrl = urls[selectedAi] || urls.chatgpt;
+  window.open(targetUrl, '_blank');
+}
+
+function copyAiOutput() {
+  if (lastAiSolution) {
+    copy(lastAiSolution);
+  } else {
+    alert('No AI solution to copy.');
+  }
+}
+
+function exportAiToPublisher() {
+  window.open('publisher.html', '_blank');
+}
+
+function sendLogsToAi() {
+  const log = $('#logInput')?.value.trim();
+  if (!log) {
+    alert('Please paste log lines first.');
+    return;
+  }
+  nav('ai-assistant');
+  const input = $('#aiPromptInput');
+  if (input) {
+    input.value = `Analyze and identify root-cause from this infrastructure log excerpt:\n\n${log}`;
+    submitAiQuery();
+  }
+}
+
+// Unified Multi-Content & Internet Search
+let currentResearchTab = 'all';
+
+function executeGlobalSearch() {
+  const q = $('#globalSearchInput')?.value.trim();
+  if (!q) return;
+  nav('research');
+  const rInput = $('#researchInput');
+  if (rInput) rInput.value = q;
+  executeResearchSearch();
+}
+
+function executeInternetSearch() {
+  const q = $('#globalSearchInput')?.value.trim() || $('#researchInput')?.value.trim() || '';
+  if (!q) {
+    alert('Please enter a search term first.');
+    return;
+  }
+  window.open(`https://www.google.com/search?q=${encodeURIComponent(q + ' infrastructure troubleshooting')}`, '_blank');
+}
+
+function executeResearchSearch() {
+  const q = ($('#researchInput')?.value || '').toLowerCase().trim();
+  const resEl = $('#researchResults');
+  if (!resEl) return;
+
+  const matchStr = (val) => String(val || '').toLowerCase().includes(q);
+
+  const articles = DB.articles.filter(a => !q || matchStr(a.title) || matchStr(a.content) || matchStr(a.category) || matchStr(a.platform) || matchStr(a.keywords));
+  const commands = DB.commands.filter(c => !q || matchStr(c.name) || matchStr(c.cmd) || matchStr(c.category) || matchStr(c.use));
+  const scripts = DB.scripts.filter(s => !q || matchStr(s.title) || matchStr(s.code) || matchStr(s.category) || matchStr(s.platform));
+  const logs = (DB.log_map || []).filter(l => !q || matchStr(l[0]) || matchStr(l[1]));
+
+  $('#researchCount-all').textContent = articles.length + commands.length + scripts.length + logs.length;
+  $('#researchCount-articles').textContent = articles.length;
+  $('#researchCount-commands').textContent = commands.length;
+  $('#researchCount-scripts').textContent = scripts.length;
+  $('#researchCount-logs').textContent = logs.length;
+
+  let html = '';
+
+  if (currentResearchTab === 'all' || currentResearchTab === 'articles') {
+    if (articles.length) {
+      html += `<h3 style="margin:16px 0 10px 0; font-size:15px; color:#60a5fa;">📖 Knowledge Articles (${articles.length})</h3><div class="articles-grid">` + articles.map(articleCard).join('') + `</div>`;
+    }
+  }
+
+  if (currentResearchTab === 'all' || currentResearchTab === 'commands') {
+    if (commands.length) {
+      html += `<h3 style="margin:24px 0 10px 0; font-size:15px; color:#34d399;">⌘ Diagnostic Commands (${commands.length})</h3>` + commands.map(c => `
+        <div class="command">
+          <button class="copy" onclick='copy(${JSON.stringify(c.cmd || c.code || "")})'>Copy</button>
+          <b>${esc(c.name || c.title)}</b><br>
+          <small>${esc(c.platform || '')} • ${esc(c.category || '')} — ${esc(c.use || c.description || '')}</small>
+          <pre>${esc(c.cmd || c.code || '')}</pre>
+        </div>
+      `).join('');
+    }
+  }
+
+  if (currentResearchTab === 'all' || currentResearchTab === 'scripts') {
+    if (scripts.length) {
+      html += `<h3 style="margin:24px 0 10px 0; font-size:15px; color:#f59e0b;">⚡ Automation Scripts (${scripts.length})</h3>` + scripts.map(s => `
+        <div class="command">
+          <button class="copy" onclick='copy(${JSON.stringify(s.code || "")})'>Copy Script</button>
+          <b>${esc(s.title || s.name)}</b><br>
+          <small>${esc(s.platform || '')} — ${esc(s.desc || s.description || '')}</small>
+          <pre>${esc(s.code || '')}</pre>
+        </div>
+      `).join('');
+    }
+  }
+
+  if (currentResearchTab === 'all' || currentResearchTab === 'logs') {
+    if (logs.length) {
+      html += `<h3 style="margin:24px 0 10px 0; font-size:15px; color:#c084fc;">📋 Log Patterns (${logs.length})</h3>` + logs.map(l => `
+        <div class="command">
+          <b>${esc(l[0])}</b><br>
+          <small>${esc(l[1])}</small>
+        </div>
+      `).join('');
+    }
+  }
+
+  if (!html) {
+    html = `<div class="card" style="text-align:center; padding:32px; color:var(--text-muted);">No local matches found for "${esc(q)}". Try searching external portals below!</div>`;
+  }
+
+  resEl.innerHTML = html;
+  bindArticleCards();
+}
+
+function filterResearchTab(tab) {
+  currentResearchTab = tab;
+  $$('.search-filter-tab').forEach(b => b.classList.toggle('active', b.dataset.type === tab));
+  executeResearchSearch();
+}
+
+function launchWebSearch(engine) {
+  const q = $('#researchInput')?.value.trim() || $('#globalSearchInput')?.value.trim() || 'infrastructure troubleshooting';
+  const urls = {
+    broadcom: `https://knowledge.broadcom.com/external/search?searchString=${encodeURIComponent(q)}`,
+    cisco: `https://www.cisco.com/c/en/us/support/search.html#~keyword=${encodeURIComponent(q)}`,
+    microsoft: `https://learn.microsoft.com/en-us/search/?terms=${encodeURIComponent(q)}`,
+    google: `https://www.google.com/search?q=${encodeURIComponent(q)}`,
+    stackoverflow: `https://stackoverflow.com/search?q=${encodeURIComponent(q)}`
+  };
+  window.open(urls[engine] || urls.google, '_blank');
+}
+
+// Dashboard Platform Grid with Genuine Logos
 function renderPlatforms() {
   const el = $('#platformGrid');
   if (!el) return;
   el.innerHTML = MAIN_CATEGORIES.map(c => {
     const count = DB.articles.filter(a => platformOf(a) === c.name).length;
+    const logo = getPlatformLogoSvg(c.name, 24);
     return `
       <div class="platform-card" data-platform="${esc(c.name)}">
-        <div class="badge">${esc(c.short)}</div>
-        <div class="platform-title">${esc(c.name)}</div>
+        <div class="platform-card-header">
+          <div class="platform-logo-box">${logo}</div>
+          <div>
+            <div class="platform-title">${esc(c.name)}</div>
+            <div class="subtag">${count} Playbooks</div>
+          </div>
+        </div>
         <div class="platform-desc">${esc(c.desc)}</div>
-        <div class="platform-meta">${count} playbooks available</div>
+        <div class="platform-meta">
+          <span>Click to explore</span>
+          <span style="color:var(--cf-blue);">→</span>
+        </div>
       </div>
     `;
   }).join('');
 
   $$('[data-platform]').forEach(b => {
-    b.onclick = () => openPlatform(b.dataset.platform);
+    b.onclick = () => filterByPlatform(b.dataset.platform);
   });
 }
 
 function renderRecent() {
   const el = $('#recentArticles');
   if (!el) return;
-  el.innerHTML = DB.articles.slice(0, 6).map(articleCard).join('') || '<div class="panel">No articles found.</div>';
+  el.innerHTML = DB.articles.slice(0, 6).map(articleCard).join('') || '<div class="card">No articles found.</div>';
   bindArticleCards();
 }
 
 function renderDashboard() {
-  renderStats();
   renderPlatforms();
   renderRecent();
 }
@@ -945,7 +1318,7 @@ function renderKB(q = '', platform = 'all', category = 'all') {
     return matchesQ && matchesP && matchesC;
   });
 
-  el.innerHTML = filtered.map(articleCard).join('') || '<div class="panel">No knowledge articles match your filter.</div>';
+  el.innerHTML = filtered.map(articleCard).join('') || '<div class="card" style="text-align:center; padding:32px; color:var(--text-muted);">No playbooks match your filter.</div>';
   bindArticleCards();
 }
 
@@ -959,10 +1332,10 @@ function renderCommands(q = '') {
     <div class="command">
       <button class="copy" data-copy="${i}">Copy</button>
       <b>${esc(x.name || x.title)}</b><br>
-      <small>${esc(x.category || '')} — ${esc(x.use || x.description || '')}</small>
+      <small>${esc(x.platform || '')} • ${esc(x.category || '')} — ${esc(x.use || x.description || '')}</small>
       <pre>${esc(x.cmd || x.code || '')}</pre>
     </div>
-  `).join('') || '<div class="panel">No commands found.</div>';
+  `).join('') || '<div class="card">No commands found.</div>';
 
   $$('[data-copy]').forEach(b => {
     b.onclick = () => {
@@ -982,7 +1355,7 @@ function renderScripts() {
       <small>${esc(x.platform || '')} — ${esc(x.category || '')} — ${esc(x.desc || x.description || '')}</small>
       <pre>${esc(x.code || '')}</pre>
     </div>
-  `).join('') || '<div class="panel">No automation scripts available.</div>';
+  `).join('') || '<div class="card">No automation scripts available.</div>';
 
   $$('[data-copy-script]').forEach(b => {
     b.onclick = () => {
@@ -1011,53 +1384,18 @@ function renderResources(q = '', cat = 'all') {
 
   el.innerHTML = filtered.map(x => `
     <div class="article-card">
-      <span class="tag">${esc(x.platform || 'General')}</span>
-      <span class="subtag">${esc(x.category || '')}</span>
+      <div class="article-card-header">
+        <span class="platform-tag-pill">${getPlatformLogoSvg(x.platform || 'General', 14)} <span>${esc(x.platform || 'General')}</span></span>
+        <span class="subtag">${esc(x.category || '')}</span>
+      </div>
       <h3>${esc(x.name || x.title)}</h3>
       <p>${esc(x.description || '')}</p>
       ${x.notes ? `<small style="color:var(--text-muted); display:block; margin-top:8px;">💡 ${esc(x.notes)}</small>` : ''}
-      <a href="${esc(x.url || '#')}" target="_blank" style="display:inline-block; margin-top:12px; color:var(--cf-blue); font-size:12px; font-weight:bold; text-decoration:none;">
-        Open Resource ↗
+      <a href="${esc(x.url || '#')}" target="_blank" rel="noopener noreferrer" style="display:inline-block; margin-top:12px; color:var(--cf-blue); font-size:12px; font-weight:bold; text-decoration:none;">
+        Open Portal ↗
       </a>
     </div>
-  `).join('') || '<div class="panel">No resources found.</div>';
-}
-
-function analyze() {
-  const inputEl = $('#issueInput');
-  const outEl = $('#analysisOutput');
-  if (!inputEl || !outEl) return;
-
-  const text = inputEl.value.trim();
-  if (!text) {
-    outEl.innerHTML = '<div class="result-panel">Please enter an issue description or log excerpt.</div>';
-    return;
-  }
-
-  const matches = findMatches(text);
-  currentCase = { input: text, matches, when: new Date().toLocaleString() };
-  const top = matches.slice(0, 3);
-
-  let html = '<div class="result-panel"><h2>Investigation plan</h2>';
-  if (!top.length) {
-    html += '<div class="diagnosis"><b>No strong local match yet.</b><br>Start with service status, capacity, network reachability and the earliest relevant log error.</div>';
-  } else {
-    top.forEach((a, i) => {
-      html += `
-        <div class="diagnosis">
-          <span class="score">Match ${i + 1}: ${a.score}</span>
-          <h3>${esc(a.title)}</h3>
-          <b>Likely causes</b>
-          <ul>${arr(a.causes).slice(0, 4).map(x => `<li>${esc(x)}</li>`).join('')}</ul>
-          <b>Next checks</b>
-          <ol>${arr(a.checks).slice(0, 5).map(x => `<li>${esc(x)}</li>`).join('')}</ol>
-          <button type="button" class="primary" style="margin-top:10px; font-size:12px;" onclick="openArticleById('${esc(a.id)}')">Open full article</button>
-        </div>
-      `;
-    });
-  }
-  html += '</div>';
-  outEl.innerHTML = html;
+  `).join('') || '<div class="card">No resources found.</div>';
 }
 
 function inspectLogs() {
@@ -1067,54 +1405,27 @@ function inspectLogs() {
 
   const text = inputEl.value.trim();
   if (!text) {
-    outEl.innerHTML = '<div class="result-panel">Paste a log excerpt first.</div>';
+    outEl.innerHTML = '<div class="card">Paste a log excerpt first.</div>';
     return;
   }
 
   const patterns = [
-    ['vpxd', 'vCenter Server'],
-    ['hostd', 'ESXi host management'],
-    ['vpxa', 'vCenter agent communication'],
-    ['vmkernel', 'ESXi kernel/storage/network'],
-    ['fdm', 'vSphere HA'],
-    ['vmon', 'vCenter service lifecycle'],
-    ['certificate|ssl|trust', 'Certificate / TLS'],
-    ['apd|all paths down', 'Storage path / APD']
+    ['vpxd', 'vCenter Server management daemon'],
+    ['hostd', 'ESXi host management daemon'],
+    ['vpxa', 'vCenter agent on ESXi'],
+    ['vmkernel', 'ESXi core vmkernel (driver/SCSI/network)'],
+    ['fdm', 'Fault Domain Manager / vSphere HA'],
+    ['vmon', 'vCenter Service Lifecycle Manager'],
+    ['certificate|ssl|trust', 'TLS/SSL certificate authentication failure'],
+    ['apd|all paths down', 'Storage All-Paths-Down / Dead path condition'],
+    ['kswapd|oom', 'Linux kernel memory reclaim / OOM killer']
   ];
 
   const hits = patterns.filter(([p]) => new RegExp(p, 'i').test(text));
-  outEl.innerHTML = '<div class="result-panel"><h2>Detected components</h2>' +
+  outEl.innerHTML = '<div class="card"><h2 style="font-size:16px; font-weight:700; color:#fff; margin-bottom:12px;">Detected Originating Components</h2>' +
     (hits.length
-      ? hits.map(x => `<div class="log-hit"><b>${esc(x[1])}</b><br>Search related entries in the corresponding VMware log and correlate timestamps.</div>`).join('')
-      : 'No known VMware component pattern detected.') + '</div>';
-}
-
-function renderAdmin() {
-  const adminContent = $('#adminContent');
-  if (!adminContent) return;
-
-  adminContent.innerHTML = `
-    <div style="background:rgba(243,128,32,0.08);border:1px solid rgba(243,128,32,0.3);padding:18px;border-radius:8px;margin-bottom:20px;">
-      <h3 style="margin:0 0 8px 0;color:#f38020;font-size:16px;">Article Publishing & Management Portal</h3>
-      <p style="margin:0 0 14px 0;font-size:13px;color:#cbd5e1;line-height:1.5;">
-        Publishing new articles, updating existing articles, managing file attachments, and deleting articles are strictly handled via the dedicated <b>publisher.html</b> portal.
-      </p>
-      <a href="publisher.html" target="_blank" style="display:inline-block;background:#f38020;color:white;padding:10px 18px;border-radius:4px;font-weight:bold;text-decoration:none;font-size:14px;">
-        🔑 Open publisher.html Portal ↗
-      </a>
-    </div>
-  `;
-}
-
-function renderLogMap() {
-  const el = $('#logMap');
-  if (!el) return;
-  el.innerHTML = (DB.log_map || []).map(x => `
-    <div class="command">
-      <b>${esc(x[0] || '')}</b><br>
-      <small>${esc(x[1] || '')}</small>
-    </div>
-  `).join('');
+      ? hits.map(x => `<div class="callout callout-warning"><div class="callout-header">${esc(x[1])}</div><div>Correlate timestamps and look for thread lockups in logs.</div></div>`).join('')
+      : '<p style="color:var(--text-muted);">No known signature matched in pattern database.</p>') + '</div>';
 }
 
 function renderAll() {
@@ -1124,36 +1435,9 @@ function renderAll() {
   renderCommands();
   renderScripts();
   renderResources();
-  renderLogMap();
-  if ($('#adminContent')) renderAdmin();
 }
 
-// Initial setup on DOM ready
 function initSysAdminIQ() {
-  // Navigation handlers
-  $$('.nav').forEach(b => {
-    b.onclick = () => nav(b.dataset.view);
-  });
-
-  $$('.platform-nav').forEach(b => {
-    b.onclick = () => openPlatform(b.dataset.platform);
-  });
-
-  // Search handlers
-  const searchBtn = $('#searchBtn');
-  const globalSearch = $('#globalSearch');
-  if (searchBtn && globalSearch) {
-    searchBtn.onclick = () => {
-      nav('knowledge');
-      const kbSearch = $('#kbSearch');
-      if (kbSearch) kbSearch.value = globalSearch.value;
-      renderKB(globalSearch.value, $('#kbPlatform')?.value || 'all', $('#kbCategory')?.value || 'all');
-    };
-    globalSearch.addEventListener('keydown', e => {
-      if (e.key === 'Enter') searchBtn.click();
-    });
-  }
-
   // Knowledge Base filters
   const kbSearch = $('#kbSearch');
   const kbPlatform = $('#kbPlatform');
@@ -1175,14 +1459,11 @@ function initSysAdminIQ() {
     cmdSearch.oninput = e => renderCommands(e.target.value);
   }
 
-  // Analyzer & Inspector
-  const analyzeBtn = $('#analyzeBtn');
-  if (analyzeBtn) analyzeBtn.onclick = analyze;
-
+  // Log Inspector
   const inspectLogBtn = $('#inspectLogBtn');
   if (inspectLogBtn) inspectLogBtn.onclick = inspectLogs;
 
-  // Resource Search & Filter
+  // Resource Search
   const resourceSearch = $('#resourceSearch');
   const resourceCat = $('#resourceCategory');
   if (resourceSearch) {
@@ -1192,43 +1473,36 @@ function initSysAdminIQ() {
     resourceCat.onchange = e => renderResources(resourceSearch?.value || '', e.target.value);
   }
 
-  // Article Modal Close
-  const closeModal = $('#closeModal');
-  const articleModal = $('#articleModal');
-  if (closeModal && articleModal) {
-    closeModal.onclick = () => articleModal.classList.add('hidden');
-    articleModal.onclick = e => {
-      if (e.target.id === 'articleModal') articleModal.classList.add('hidden');
-    };
-  }
-
-  // Export Case
-  const exportBtn = $('#exportBtn');
-  if (exportBtn) {
-    exportBtn.onclick = () => {
-      const blob = new Blob([JSON.stringify(currentCase || { exported: new Date().toISOString() }, null, 2)], { type: 'application/json' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'sysadminiq-troubleshooting-case.json';
-      a.click();
-    };
-  }
-
-  // Load database and render immediately
+  // Load database and render
   loadDB();
 }
 
-// Window global exports for inline event handlers and modules
+// Global exports
 window.nav = nav;
-window.openPlatform = openPlatform;
+window.filterByPlatform = filterByPlatform;
+window.toggleSidebarFilter = toggleSidebarFilter;
 window.openArticleById = openArticleById;
 window.openArticle = openArticle;
-window.openAttachment = openAttachment;
+window.closeArticleModal = closeArticleModal;
+window.openSecureViewer = openSecureViewer;
+window.closeSecureViewer = closeSecureViewer;
+window.zoomSecureViewer = zoomSecureViewer;
+window.resetSecureZoom = resetSecureZoom;
 window.copy = copy;
-window.analyze = analyze;
 window.inspectLogs = inspectLogs;
 window.renderKB = renderKB;
-window.promptAuth = promptAuth;
+window.selectAiModel = selectAiModel;
+window.applyAiPrompt = applyAiPrompt;
+window.submitAiQuery = submitAiQuery;
+window.openExternalAi = openExternalAi;
+window.copyAiOutput = copyAiOutput;
+window.exportAiToPublisher = exportAiToPublisher;
+window.sendLogsToAi = sendLogsToAi;
+window.executeGlobalSearch = executeGlobalSearch;
+window.executeInternetSearch = executeInternetSearch;
+window.executeResearchSearch = executeResearchSearch;
+window.filterResearchTab = filterResearchTab;
+window.launchWebSearch = launchWebSearch;
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initSysAdminIQ);

@@ -3,37 +3,33 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SysAdminIQ Publisher — Content & Article Management</title>
+<title>SysAdminIQ Publisher Portal</title>
+<meta name="description" content="Publisher and Authoring Portal for SysAdminIQ knowledge articles with rich formatting, multi-color callouts, file attachments, and AI playbook generation.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-
 <style>
 :root {
   --bg-dark: #0b0f19;
   --bg-card: #131b2e;
   --bg-card-hover: #17223b;
-  --bg-input: #0e1526;
-  --border: #24324f;
-  --border-focus: #f38020;
+  --bg-input: #0a101f;
+  --border: #202d48;
   --text-primary: #f8fafc;
   --text-secondary: #94a3b8;
   --text-muted: #64748b;
-  --cf-orange: #f38020;
-  --cf-orange-hover: #e06d0e;
   --cf-blue: #0070f3;
   --cf-blue-hover: #005bc5;
+  --cf-orange: #f38020;
   --accent-green: #10b981;
   --accent-red: #ef4444;
+  --accent-purple: #8b5cf6;
   --radius-lg: 12px;
   --radius-md: 8px;
+  --radius-sm: 6px;
 }
 
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+* { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
   font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -43,29 +39,26 @@ body {
   padding: 24px 32px 60px 32px;
   line-height: 1.5;
   background-image: 
-    radial-gradient(at 0% 0%, rgba(243, 128, 32, 0.08) 0px, transparent 50%),
-    radial-gradient(at 100% 0%, rgba(0, 112, 243, 0.08) 0px, transparent 50%),
-    radial-gradient(at 50% 100%, rgba(16, 185, 129, 0.05) 0px, transparent 50%);
+    radial-gradient(at 0% 0%, rgba(0, 112, 243, 0.08) 0px, transparent 40%),
+    radial-gradient(at 100% 0%, rgba(243, 128, 32, 0.06) 0px, transparent 40%);
   background-attachment: fixed;
 }
 
-/* Full Page Fluid Container (Eliminates Empty Sides) */
-.container {
-  width: 100%;
-  max-width: 100%;
+.portal-container {
+  max-width: 1300px;
   margin: 0 auto;
 }
 
 /* Header */
-.header {
+.portal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding-bottom: 20px;
   margin-bottom: 24px;
+  border-bottom: 1px solid var(--border);
   flex-wrap: wrap;
   gap: 16px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid var(--border);
 }
 
 .brand-section {
@@ -75,220 +68,317 @@ body {
 }
 
 .brand-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #f38020 0%, #fa541c 100%);
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #0070f3 0%, #0050cd 100%);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 800;
-  font-size: 20px;
+  font-size: 18px;
   color: #fff;
-  box-shadow: 0 4px 14px rgba(243, 128, 32, 0.35);
+  box-shadow: 0 4px 12px rgba(0, 112, 243, 0.35);
 }
 
-.brand-title {
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+.brand-title h1 {
+  font-size: 20px;
+  font-weight: 800;
   color: #ffffff;
-  display: flex;
-  align-items: center;
-  gap: 8px;
 }
 
-.brand-badge {
-  font-size: 11px;
-  padding: 2px 8px;
-  border-radius: 20px;
-  background: rgba(243, 128, 32, 0.15);
-  color: var(--cf-orange);
-  border: 1px solid rgba(243, 128, 32, 0.3);
-  font-weight: 600;
-}
-
-.brand-sub {
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-
-/* Cloudflare Access Banner */
-.cf-access-bar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(19, 27, 46, 0.85);
-  backdrop-filter: blur(12px);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 14px 22px;
-  margin-bottom: 26px;
-  flex-wrap: wrap;
-  gap: 14px;
-}
-
-.cf-status {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.cf-logo-icon {
-  display: flex;
-  align-items: center;
-  color: var(--cf-orange);
-}
-
-.cf-info {
-  font-size: 13px;
-}
-
-.cf-team-name {
-  color: #cbd5e1;
-  font-family: 'JetBrains Mono', monospace;
+.brand-title p {
   font-size: 12px;
+  color: var(--text-muted);
 }
 
-.status-pill {
+.back-link {
+  color: #60a5fa;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  font-size: 12px;
-  font-weight: 600;
-  padding: 6px 14px;
-  border-radius: 20px;
-  background: rgba(16, 185, 129, 0.12);
-  color: #34d399;
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  padding: 7px 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(0, 112, 243, 0.1);
+  border: 1px solid rgba(0, 112, 243, 0.25);
+  transition: all 0.15s;
 }
 
-.status-pill.auth-key {
-  background: rgba(243, 128, 32, 0.15);
-  color: #fb923c;
-  border-color: rgba(243, 128, 32, 0.3);
+.back-link:hover {
+  background: #0070f3;
+  color: #fff;
 }
 
-.dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background-color: currentColor;
-}
-
-/* Card Sections - Full Width Spanning */
+/* Cards */
 .card {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  padding: 26px 30px;
-  margin-bottom: 26px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-  transition: border-color 0.2s;
-  width: 100%;
-}
-
-.card:hover {
-  border-color: rgba(243, 128, 32, 0.35);
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
 }
 
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 22px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid rgba(36, 50, 79, 0.6);
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+  gap: 12px;
 }
 
 .card-title {
-  font-size: 19px;
+  font-size: 17px;
   font-weight: 700;
-  color: #ffffff;
+  color: #fff;
   display: flex;
   align-items: center;
   gap: 10px;
 }
 
-/* Forms */
-.form-group {
+/* AI Assistant Bar for Publisher */
+.ai-generator-box {
+  background: #090e1a;
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  border-radius: var(--radius-md);
+  padding: 16px;
   margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.ai-generator-box input {
+  flex: 1;
+  min-width: 260px;
+  margin-bottom: 0;
+}
+
+/* Forms */
+.form-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 16px;
+}
+
+@media (max-width: 860px) {
+  .form-grid { grid-template-columns: 1fr; }
+}
+
+.form-group {
+  margin-bottom: 16px;
 }
 
 .form-label {
   display: block;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
   color: var(--text-secondary);
-  margin-bottom: 8px;
+  margin-bottom: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
-.form-grid-2 {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-}
-
-@media (max-width: 768px) {
-  body {
-    padding: 16px 14px 40px 14px;
-  }
-  .card {
-    padding: 18px 16px;
-  }
-  .form-grid-2 {
-    grid-template-columns: 1fr;
-  }
-}
-
-input[type="text"],
-input[type="password"],
-input[type="email"],
-select,
-textarea {
+input, select, textarea {
   width: 100%;
-  background-color: var(--bg-input);
+  background: var(--bg-input);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  padding: 12px 16px;
+  padding: 10px 14px;
   color: var(--text-primary);
   font-family: inherit;
-  font-size: 14px;
-  transition: all 0.2s ease;
+  font-size: 13px;
+  transition: border-color 0.2s, box-shadow 0.2s;
 }
 
-input:focus,
-select:focus,
-textarea:focus {
+input:focus, select:focus, textarea:focus {
   outline: none;
-  border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px rgba(243, 128, 32, 0.2);
+  border-color: var(--cf-blue);
+  box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.2);
 }
 
-textarea {
+/* Rich Toolbar */
+.editor-toolbar-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #090e1a;
+  border: 1px solid var(--border);
+  border-bottom: none;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  padding: 8px 12px;
+}
+
+.editor-toolbar-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.editor-btn {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border);
+  color: #cbd5e1;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: all 0.15s;
+}
+
+.editor-btn:hover {
+  background: #1e293b;
+  color: #fff;
+  border-color: #0070f3;
+}
+
+.editor-btn-danger {
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.3);
+}
+.editor-btn-danger:hover { background: rgba(239, 68, 68, 0.2); }
+
+.editor-btn-warning {
+  color: #fbbf24;
+  border-color: rgba(245, 158, 11, 0.3);
+}
+.editor-btn-warning:hover { background: rgba(245, 158, 11, 0.2); }
+
+.editor-btn-info {
+  color: #60a5fa;
+  border-color: rgba(0, 112, 243, 0.3);
+}
+.editor-btn-info:hover { background: rgba(0, 112, 243, 0.2); }
+
+.editor-btn-success {
+  color: #34d399;
+  border-color: rgba(16, 185, 129, 0.3);
+}
+.editor-btn-success:hover { background: rgba(16, 185, 129, 0.2); }
+
+.editor-btn-tip {
+  color: #c084fc;
+  border-color: rgba(139, 92, 246, 0.3);
+}
+.editor-btn-tip:hover { background: rgba(139, 92, 246, 0.2); }
+
+.editor-tabs {
+  display: flex;
+  gap: 6px;
+  margin-left: auto;
+}
+
+.editor-tab {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.editor-tab.active {
+  background: rgba(0, 112, 243, 0.2);
+  color: #60a5fa;
+  font-weight: 600;
+}
+
+textarea#content {
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
   font-family: 'JetBrains Mono', monospace;
   font-size: 13px;
   line-height: 1.6;
-  resize: vertical;
+  min-height: 320px;
+}
+
+/* Live Preview Box */
+#previewBox {
+  display: none;
+  background: var(--bg-input);
+  border: 1px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 var(--radius-md) var(--radius-md);
+  padding: 20px;
+  min-height: 320px;
+  max-height: 550px;
+  overflow-y: auto;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* Callouts Styling in Preview and Articles */
+.callout {
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 14px 0;
+  border-left-width: 4px;
+  border-left-style: solid;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.callout-header {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+.callout-danger {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-left: 4px solid #ef4444;
+  color: #fca5a5;
+}
+.callout-warning {
+  background: rgba(245, 158, 11, 0.08);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-left: 4px solid #f59e0b;
+  color: #fde68a;
+}
+.callout-info {
+  background: rgba(0, 112, 243, 0.08);
+  border: 1px solid rgba(0, 112, 243, 0.25);
+  border-left: 4px solid #0070f3;
+  color: #93c5fd;
+}
+.callout-success {
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-left: 4px solid #10b981;
+  color: #6ee7b7;
+}
+.callout-tip {
+  background: rgba(139, 92, 246, 0.08);
+  border: 1px solid rgba(139, 92, 246, 0.25);
+  border-left: 4px solid #8b5cf6;
+  color: #d8b4fe;
 }
 
 /* Dropzone */
 .dropzone {
   border: 2px dashed var(--border);
   border-radius: var(--radius-md);
-  padding: 32px 24px;
+  padding: 24px;
   text-align: center;
-  background-color: rgba(14, 21, 38, 0.5);
   cursor: pointer;
-  transition: all 0.2s ease;
+  background: #090e1a;
+  transition: all 0.2s;
   position: relative;
 }
-
 .dropzone:hover {
-  border-color: var(--cf-orange);
-  background-color: rgba(243, 128, 32, 0.04);
+  border-color: var(--cf-blue);
+  background: #0e1526;
 }
-
 .dropzone input[type="file"] {
   position: absolute;
   inset: 0;
@@ -297,258 +387,124 @@ textarea {
   width: 100%;
   height: 100%;
 }
+.dropzone-icon { font-size: 28px; display: block; margin-bottom: 8px; }
+.dropzone-text { font-size: 13px; font-weight: 600; color: #fff; }
+.dropzone-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
 
-.dropzone-icon {
-  font-size: 32px;
-  margin-bottom: 8px;
-  display: block;
-}
-
-.dropzone-text {
-  font-size: 15px;
-  font-weight: 600;
-  color: #fff;
-  margin-bottom: 4px;
-}
-
-.dropzone-hint {
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
+/* File list */
 .file-list {
-  margin-top: 14px;
   display: flex;
   flex-direction: column;
   gap: 8px;
+  margin-top: 12px;
 }
-
 .file-chip {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: var(--bg-input);
+  background: #0e1526;
   border: 1px solid var(--border);
   padding: 10px 14px;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: 12px;
 }
-
 .file-chip-name {
   display: flex;
   align-items: center;
   gap: 8px;
-  color: #cbd5e1;
 }
-
 .file-chip-remove {
-  color: var(--accent-red);
+  color: #f87171;
   cursor: pointer;
-  font-size: 12px;
   font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
 }
-
-.file-chip-remove:hover {
-  text-decoration: underline;
-}
+.file-chip-remove:hover { background: rgba(239,68,68,0.2); }
 
 /* Buttons */
 .btn {
   display: inline-flex;
   align-items: center;
-  justify-content: center;
-  gap: 8px;
+  gap: 6px;
+  padding: 9px 18px;
+  border-radius: var(--radius-md);
   font-size: 13px;
   font-weight: 600;
-  padding: 11px 20px;
-  border-radius: var(--radius-md);
-  border: 1px solid transparent;
   cursor: pointer;
-  transition: all 0.2s ease;
-  text-decoration: none;
+  border: none;
+  transition: all 0.15s;
 }
-
 .btn-primary {
-  background: linear-gradient(135deg, #f38020 0%, #fa541c 100%);
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(243, 128, 32, 0.3);
+  background: linear-gradient(135deg, #0070f3 0%, #0050cd 100%);
+  color: #fff;
 }
-
 .btn-primary:hover {
-  background: linear-gradient(135deg, #e06d0e 0%, #e8430b 100%);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(243, 128, 32, 0.4);
+  background: linear-gradient(135deg, #005bc5 0%, #003fa8 100%);
 }
-
 .btn-secondary {
-  background: rgba(30, 41, 59, 0.8);
+  background: #17223b;
+  border: 1px solid var(--border);
   color: #cbd5e1;
-  border-color: var(--border);
 }
-
 .btn-secondary:hover {
-  background: #24324f;
-  color: #ffffff;
-  border-color: #3b82f6;
+  background: #1e2d4d;
+  color: #fff;
 }
-
 .btn-danger {
   background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.3);
   color: #f87171;
-  border-color: rgba(239, 68, 68, 0.3);
 }
-
 .btn-danger:hover {
-  background: rgba(239, 68, 68, 0.25);
-  color: #ffffff;
+  background: #ef4444;
+  color: #fff;
 }
-
 .btn-sm {
-  padding: 7px 14px;
+  padding: 5px 12px;
   font-size: 12px;
 }
 
-.action-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 24px;
-  padding-top: 18px;
-  border-top: 1px solid var(--border);
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-.back-link {
-  color: var(--text-secondary);
-  text-decoration: none;
-  font-size: 13px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  transition: color 0.15s;
-}
-
-.back-link:hover {
-  color: var(--cf-orange);
-}
-
-/* Articles List Table */
-.search-box {
-  margin-bottom: 16px;
-  position: relative;
-}
-
-.search-icon {
-  position: absolute;
-  left: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-muted);
-}
-
-.search-box input {
-  padding-left: 38px;
-}
-
+/* Table */
 .table-wrapper {
   overflow-x: auto;
-  border: 1px solid var(--border);
   border-radius: var(--radius-md);
-  width: 100%;
+  border: 1px solid var(--border);
 }
-
 .articles-table {
   width: 100%;
   border-collapse: collapse;
-  text-align: left;
   font-size: 13px;
 }
-
 .articles-table th {
-  background-color: rgba(14, 21, 38, 0.85);
-  color: var(--text-secondary);
-  font-weight: 600;
-  padding: 14px 18px;
+  background: #090e1a;
+  padding: 12px 16px;
+  text-align: left;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
   border-bottom: 1px solid var(--border);
 }
-
 .articles-table td {
-  padding: 15px 18px;
-  border-bottom: 1px solid rgba(36, 50, 79, 0.4);
+  padding: 14px 16px;
+  border-bottom: 1px solid var(--border);
   vertical-align: middle;
 }
-
-.articles-table tr:hover {
-  background-color: rgba(23, 34, 59, 0.5);
+.articles-table tr:hover td {
+  background: rgba(255,255,255,0.02);
 }
 
 .tag-platform {
-  display: inline-block;
-  padding: 3px 9px;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 8px;
   border-radius: 4px;
   font-size: 11px;
   font-weight: 700;
-}
-
-.tag-vmware { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
-.tag-windows { background: rgba(6, 182, 212, 0.15); color: #22d3ee; border: 1px solid rgba(6, 182, 212, 0.3); }
-.tag-linux { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
-.tag-cisco { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
-.tag-aws { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
-.tag-azure { background: rgba(14, 165, 233, 0.15); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.3); }
-
-/* Cloudflare Authorization Modal */
-.modal-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.75);
-  backdrop-filter: blur(8px);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 20px;
-}
-
-.modal-overlay.active {
-  display: flex;
-}
-
-.auth-modal-card {
-  background: #131b2e;
-  border: 1px solid #24324f;
-  color: #f8fafc;
-  width: 100%;
-  max-width: 500px;
-  border-radius: 14px;
-  padding: 30px 26px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.7);
-  position: relative;
-  text-align: left;
-}
-
-.cf-close-btn {
-  position: absolute;
-  top: 18px;
-  right: 18px;
-  background: rgba(255, 255, 255, 0.08);
-  border: none;
-  width: 32px;
-  height: 32px;
-  border-radius: 6px;
-  font-size: 18px;
-  color: #94a3b8;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.15s;
-}
-
-.cf-close-btn:hover {
-  background: rgba(255, 255, 255, 0.15);
-  color: #fff;
+  background: rgba(0, 112, 243, 0.15);
+  color: #60a5fa;
 }
 
 /* Toast */
@@ -556,82 +512,71 @@ textarea {
   position: fixed;
   bottom: 24px;
   right: 24px;
-  background: #1e293b;
-  color: #fff;
+  background: #131b2e;
   border: 1px solid var(--border);
-  padding: 12px 18px;
+  padding: 14px 20px;
   border-radius: 8px;
+  color: #fff;
   font-size: 13px;
-  font-weight: 500;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.4);
-  display: none;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  transform: translateY(100px);
+  opacity: 0;
+  transition: all 0.25s ease;
+  z-index: 200;
+  display: flex;
   align-items: center;
   gap: 10px;
-  z-index: 2000;
 }
-
 .toast.show {
-  display: flex;
+  transform: translateY(0);
+  opacity: 1;
 }
-
-.toast.success { border-color: rgba(16, 185, 129, 0.5); background: #064e3b; }
-.toast.error { border-color: rgba(239, 68, 68, 0.5); background: #7f1d1d; }
-.toast.info { border-color: rgba(59, 130, 246, 0.5); background: #1e3a8a; }
+.toast.success { border-color: #10b981; }
+.toast.error { border-color: #ef4444; }
 </style>
 </head>
-
 <body>
 
-<div class="container">
-  <!-- Top Brand Header -->
-  <header class="header">
+<div class="portal-container">
+
+  <!-- Clean Top Header (Zero Trust banner removed per user request) -->
+  <header class="portal-header">
     <div class="brand-section">
       <div class="brand-icon">IQ</div>
-      <div>
-        <div class="brand-title">
-          SysAdminIQ Publisher
-          <span class="brand-badge">Production Portal</span>
-        </div>
-        <div class="brand-sub">Enterprise Playbook Authoring, Live Editing & Attachment Manager</div>
+      <div class="brand-title">
+        <h1>SysAdminIQ Publisher Portal</h1>
+        <p>Author, format, and publish enterprise infrastructure playbooks & attachments</p>
       </div>
     </div>
-
-    <div>
+    <div style="display: flex; align-items: center; gap: 12px;">
       <a href="index.html" class="back-link">
-        ← Back to Main Knowledge Base
+        ← Back to Knowledge Base
       </a>
     </div>
   </header>
 
-  <!-- Cloudflare Access Protection Status Banner -->
-  <div class="cf-access-bar">
-    <div class="cf-status">
-      <div class="cf-logo-icon">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM19 18H6c-2.21 0-4-1.79-4-4 0-2.05 1.53-3.76 3.56-3.97l1.07-.11.5-.95C8.08 7.14 9.94 6 12 6c2.62 0 4.88 1.86 5.39 4.43l.3 1.5 1.53.11c1.6.1 2.78 1.44 2.78 2.96 0 1.65-1.35 3-3 3z"/>
-        </svg>
-      </div>
-      <div class="cf-info">
-        <div style="font-weight: 600; color: #fff;">Cloudflare Access (Zero Trust)</div>
-        <div class="cf-team-name">tiny-pine-a9b7.cloudflareaccess.com</div>
-      </div>
+  <!-- AI Content Generator Assistance for Authors -->
+  <div class="card">
+    <div class="card-title" style="margin-bottom: 10px;">
+      <span>✨</span>
+      <span>AI Playbook Generator (Powered by Google Gemini)</span>
     </div>
-
-    <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-      <div id="authStatusPill" class="status-pill">
-        <span class="dot"></span>
-        <span id="authStatusLabel">Production Access Active</span>
-      </div>
-      <button type="button" class="btn btn-secondary btn-sm" onclick="openKeyModal()">
-        🔑 Authorization Key
+    <p style="font-size:12px; color:var(--text-secondary); margin-bottom:12px;">
+      Enter an infrastructure issue or topic to automatically draft structured troubleshooting playbooks with colored callout alerts, root causes, and diagnostic commands.
+    </p>
+    <div class="ai-generator-box">
+      <input
+        type="text"
+        id="aiTopicInput"
+        placeholder="e.g. Cisco UCS Fabric Interconnect split-brain recovery, ESXi host APD all-paths-down, Windows Kerberos 4771..."
+      >
+      <button type="button" class="btn btn-primary btn-sm" id="generateAiPlaybookBtn" onclick="generateAiPlaybook()">
+        ✨ Draft Playbook with Gemini
       </button>
-      <a href="https://tiny-pine-a9b7.cloudflareaccess.com" target="_blank" class="btn btn-secondary btn-sm" style="text-decoration:none;">
-        🌐 Zero Trust Portal ↗
-      </a>
     </div>
   </div>
 
-  <!-- Main Publisher Form (Publish New / Live Edit) -->
+  <!-- Main Publisher Form (Publish New / Edit) -->
   <div class="card">
     <div class="card-header">
       <div class="card-title">
@@ -645,50 +590,96 @@ textarea {
 
     <input type="hidden" id="editArticleId">
 
-    <div class="form-group">
-      <label class="form-label" for="title">Article Title</label>
-      <input
-        type="text"
-        id="title"
-        placeholder="e.g. vCenter Server STS Signing Certificate Expired or Linux Inode Exhaustion"
-        autocomplete="off"
-      >
-    </div>
-
-    <div class="form-grid-2">
+    <div class="form-grid">
       <div class="form-group">
-        <label class="form-label" for="platform">Primary Platform</label>
+        <label class="form-label" for="title">Article Title *</label>
+        <input
+          type="text"
+          id="title"
+          placeholder="e.g. ESXi Host Disconnected from vCenter Server (Heartbeat Lost)"
+          required
+        >
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="platform">Technology Platform *</label>
         <select id="platform">
-          <option value="VMware">VMware (vSphere, ESXi, vCenter)</option>
-          <option value="Windows">Windows (Active Directory, Server, RPC)</option>
-          <option value="Linux">Linux (RHEL, Ubuntu, Systemd, Storage)</option>
-          <option value="Cisco UCS">Cisco UCS (Fabric Interconnect, vNIC)</option>
-          <option value="AWS">AWS (EC2, VPC, Route Table, EBS)</option>
-          <option value="Azure">Azure (Virtual Machines, Serial Console)</option>
+          <option value="VMware">VMware vSphere</option>
+          <option value="Cisco UCS">Cisco UCS</option>
+          <option value="Windows">Windows Server</option>
+          <option value="Linux">Linux (RHEL / Ubuntu)</option>
+          <option value="AWS">AWS Cloud</option>
+          <option value="Azure">Microsoft Azure</option>
         </select>
       </div>
 
       <div class="form-group">
-        <label class="form-label" for="category">Subcategory</label>
+        <label class="form-label" for="category">Category</label>
         <input
           type="text"
           id="category"
-          placeholder="e.g. Storage, Networking, Identity & SSO, Core"
-          autocomplete="off"
+          placeholder="e.g. Storage, Network, HA/DRS"
+          value="Troubleshooting"
         >
       </div>
     </div>
 
+    <!-- Rich Formatted Body Editor with Colors and Formats -->
     <div class="form-group">
-      <label class="form-label" for="content">Article Body & Playbook Content (Markdown)</label>
+      <label class="form-label">Article Body & Playbook (Supports Multiple Formats & Colors)</label>
+      
+      <div class="editor-toolbar-wrap">
+        <!-- Row 1: Standard Markdown Formatting -->
+        <div class="editor-toolbar-row">
+          <button type="button" class="editor-btn" onclick="insertFormat('**', '**', 'bold text')" title="Bold"><b>B</b> Bold</button>
+          <button type="button" class="editor-btn" onclick="insertFormat('*', '*', 'italic text')" title="Italic"><i>I</i> Italic</button>
+          <button type="button" class="editor-btn" onclick="insertFormat('### ', '', 'Heading 3')">H3</button>
+          <button type="button" class="editor-btn" onclick="insertFormat('- ', '', 'Bullet list item')">• List</button>
+          <button type="button" class="editor-btn" onclick="insertFormat('1. ', '', 'Numbered item')">1. List</button>
+          <button type="button" class="editor-btn" onclick="insertFormat('`', '`', 'command')">`Code`</button>
+          <button type="button" class="editor-btn" onclick="insertCodeBlock('powershell')">PowerShell</button>
+          <button type="button" class="editor-btn" onclick="insertCodeBlock('bash')">Bash</button>
+          <button type="button" class="editor-btn" onclick="insertCodeBlock('cisco')">Cisco CLI</button>
+          <button type="button" class="editor-btn" onclick="insertTable()">Table</button>
+
+          <div class="editor-tabs">
+            <button type="button" class="editor-tab active" id="tabEditor" onclick="switchEditorTab('edit')">✏️ Editor</button>
+            <button type="button" class="editor-tab" id="tabPreview" onclick="switchEditorTab('preview')">👁️ Live Formatted Preview</button>
+          </div>
+        </div>
+
+        <!-- Row 2: Rich Color Highlights & Callouts (Red, Amber, Blue, Green, Purple) -->
+        <div class="editor-toolbar-row" style="padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.05);">
+          <span style="font-size:11px; font-weight:700; color:var(--text-muted); margin-right:4px;">COLORS & CALLOUTS:</span>
+          <button type="button" class="editor-btn editor-btn-danger" onclick="insertCallout('danger', 'Critical PSOD / Service Outage')" title="Red Callout">
+            🔴 Critical PSOD Alert
+          </button>
+          <button type="button" class="editor-btn editor-btn-warning" onclick="insertCallout('warning', 'Caution & Pre-checks')" title="Amber Callout">
+            🟡 Warning / Impact
+          </button>
+          <button type="button" class="editor-btn editor-btn-info" onclick="insertCallout('info', 'Configuration Note')" title="Blue Callout">
+            🔵 Info / Note
+          </button>
+          <button type="button" class="editor-btn editor-btn-success" onclick="insertCallout('success', 'Verified Resolution')" title="Green Callout">
+            🟢 Verified Fix
+          </button>
+          <button type="button" class="editor-btn editor-btn-tip" onclick="insertCallout('tip', 'SysAdmin Pro-Tip')" title="Purple Callout">
+            🟣 Pro-Tip
+          </button>
+        </div>
+      </div>
+
       <textarea
         id="content"
-        rows="12"
-        placeholder="### Overview&#10;Describe the incident or failure scenario...&#10;&#10;### Symptoms&#10;- Error code or message&#10;&#10;### Likely Causes&#10;1. Root cause description&#10;&#10;### Investigation Commands&#10;```bash&#10;esxcli network nic list&#10;```&#10;&#10;### Resolution Steps&#10;1. Step-by-step fix..."
+        rows="14"
+        placeholder="### Overview&#10;Describe the incident or failure scenario...&#10;&#10;:::danger [Critical PSOD Alert]&#10;Describe critical failure symptoms or kernel panics here.&#10;:::&#10;&#10;### Symptoms&#10;- Error code or message&#10;&#10;### Investigation Commands&#10;```bash&#10;esxcli network nic list&#10;```&#10;&#10;:::success [Verified Resolution]&#10;1. Step-by-step fix...&#10;:::"
       ></textarea>
+
+      <!-- Live Formatted Preview Pane -->
+      <div id="previewBox"></div>
     </div>
 
-    <!-- Attachments Zone -->
+    <!-- Attachments Zone (All formats supported, multiple files upload) -->
     <div class="form-group">
       <label class="form-label">Supporting Attachments (Logs, Diagrams, Scripts, Evidence)</label>
       <div class="dropzone" id="dropzoneEl">
@@ -696,17 +687,17 @@ textarea {
           type="file"
           id="articleAttachments"
           multiple
-          accept=".png,.jpg,.jpeg,.pdf,.docx,.xlsx,.pptx,.txt,.log,.vsdx"
+          accept=".png,.jpg,.jpeg,.pdf,.docx,.xlsx,.pptx,.txt,.log,.vsdx,.ps1,.sh,.json,.yaml,.xml"
         >
         <span class="dropzone-icon">📎</span>
-        <div class="dropzone-text">Click to browse or drop diagnostic files here</div>
-        <div class="dropzone-hint">Supports PNG, JPG, PDF, DOCX, XLSX, TXT, LOG, VSDX</div>
+        <div class="dropzone-text">Click to browse or drop files here</div>
+        <div class="dropzone-hint">Supports PNG, JPG, PDF, DOCX, XLSX, TXT, LOG, VSDX, PS1, SH, JSON (Uploaded files are view-only on main site)</div>
       </div>
 
       <div id="fileListContainer" class="file-list"></div>
 
-      <div style="margin-top: 12px; display: flex; align-items: center; gap: 12px;">
-        <button type="button" class="btn btn-secondary btn-sm" id="uploadBtn" onclick="uploadSelectedFiles()">
+      <div style="margin-top: 12px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+        <button type="button" class="btn btn-secondary btn-sm" id="uploadBtn" onclick="uploadAllSelectedFiles()">
           ⬆️ Upload Pending File(s)
         </button>
         <span id="uploadStatusText" style="font-size: 13px; color: var(--text-muted);"></span>
@@ -714,7 +705,7 @@ textarea {
     </div>
 
     <!-- Actions -->
-    <div class="action-bar">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 24px; padding-top: 16px; border-top: 1px solid var(--border); flex-wrap: wrap; gap: 12px;">
       <div style="display: flex; gap: 12px;">
         <button id="saveBtn" class="btn btn-primary" onclick="publishOrUpdateArticle()">
           🚀 Publish Article
@@ -723,14 +714,13 @@ textarea {
           Clear Form
         </button>
       </div>
-
-      <span style="font-size: 13px; color: var(--text-muted);">
+      <span style="font-size: 12px; color: var(--text-muted);">
         Directly syncs to Cloudflare Worker API & D1 Database
       </span>
     </div>
   </div>
 
-  <!-- Existing Articles Table (Full Width) -->
+  <!-- Existing Articles Table -->
   <div class="card">
     <div class="card-header">
       <div class="card-title">
@@ -742,13 +732,13 @@ textarea {
       </button>
     </div>
 
-    <div class="search-box">
-      <span class="search-icon">🔍</span>
+    <div style="margin-bottom: 14px;">
       <input
         type="text"
         id="searchExisting"
         placeholder="Filter existing articles by title, platform, or category..."
         oninput="renderExistingTable()"
+        style="margin-bottom: 0;"
       >
     </div>
 
@@ -758,85 +748,18 @@ textarea {
           <tr>
             <th style="width: 140px;">Platform</th>
             <th>Title & Snippet</th>
-            <th style="width: 180px;">Category</th>
-            <th style="width: 90px;">Files</th>
-            <th style="width: 180px; text-align: right;">Actions</th>
+            <th style="width: 150px;">Category</th>
+            <th style="width: 100px;">Files</th>
+            <th style="width: 160px; text-align: right;">Actions</th>
           </tr>
         </thead>
         <tbody id="articlesTableBody">
-          <tr>
-            <td colspan="5" style="text-align: center; color: var(--text-muted); padding: 28px;">
-              Loading articles from Cloudflare database...
-            </td>
-          </tr>
+          <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 28px;">Loading articles...</td></tr>
         </tbody>
       </table>
     </div>
   </div>
-</div>
 
-<!-- Cloudflare Authorization & Zero Trust Gateway Modal -->
-<div id="authKeyModal" class="modal-overlay" onclick="if(event.target === this) closeKeyModal()">
-  <div class="auth-modal-card">
-    <button class="cf-close-btn" onclick="closeKeyModal()">×</button>
-    
-    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 20px;">
-      <div class="brand-icon" style="width: 40px; height: 40px; font-size: 18px;">🔑</div>
-      <div>
-        <div style="font-size: 18px; font-weight: 700; color: #fff;">Cloudflare Authentication</div>
-        <div style="font-size: 12px; color: var(--text-secondary);">SysAdminIQ Publisher Access</div>
-      </div>
-    </div>
-
-    <!-- Section 1: Authorization Key -->
-    <div style="background: var(--bg-input); border: 1px solid var(--border); border-radius: 8px; padding: 16px; margin-bottom: 18px;">
-      <label class="form-label" style="margin-bottom: 6px;" for="authKeyInput">Authorization Key / Token (Optional)</label>
-      <p style="font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; line-height: 1.4;">
-        If your Cloudflare Worker requires a secret key for writes, save it here:
-      </p>
-      <div style="display: flex; gap: 8px;">
-        <input
-          type="password"
-          id="authKeyInput"
-          placeholder="Paste your Authorization Key..."
-          style="margin-bottom: 0; flex: 1;"
-        >
-        <button type="button" class="btn btn-secondary btn-sm" onclick="toggleKeyVisibility()" id="toggleKeyBtn" style="white-space: nowrap; padding: 0 12px;">
-          👁️
-        </button>
-      </div>
-      <div style="display: flex; gap: 8px; margin-top: 12px;">
-        <button type="button" class="btn btn-primary btn-sm" onclick="saveAuthKey()" style="flex: 1;">
-          💾 Save Authorization Key
-        </button>
-        <button type="button" class="btn btn-secondary btn-sm" onclick="clearAuthKey()" id="clearKeyBtn">
-          Clear
-        </button>
-      </div>
-    </div>
-
-    <!-- Section 2: Real Cloudflare Zero Trust Gateway Link -->
-    <div style="background: rgba(243, 128, 32, 0.08); border: 1px solid rgba(243, 128, 32, 0.3); border-radius: 8px; padding: 16px;">
-      <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px;">
-        <span style="color: var(--cf-orange); font-size: 16px;">🛡️</span>
-        <span style="font-size: 13px; font-weight: 700; color: var(--cf-orange);">Cloudflare Zero Trust (Email PIN Login)</span>
-      </div>
-      <p style="font-size: 12px; color: #cbd5e1; line-height: 1.5; margin-bottom: 12px;">
-        To authenticate via Cloudflare Access and receive your PIN in Gmail, open the official portal:
-      </p>
-      <a
-        href="https://tiny-pine-a9b7.cloudflareaccess.com"
-        target="_blank"
-        class="btn btn-secondary btn-sm"
-        style="display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; text-decoration: none; font-weight: 600; background: rgba(243, 128, 32, 0.15); color: #fff; border-color: rgba(243, 128, 32, 0.4);"
-      >
-        🌐 Open tiny-pine-a9b7.cloudflareaccess.com ↗
-      </a>
-      <p style="font-size: 11px; color: var(--text-muted); margin-top: 8px; text-align: center;">
-        Cloudflare will prompt for baijucm@gmail.com and deliver your one-time code to Gmail.
-      </p>
-    </div>
-  </div>
 </div>
 
 <!-- Toast -->
@@ -846,20 +769,10 @@ textarea {
 
 <script>
 const API_BASE = "https://sysadminiq-api.baijucm.workers.dev";
-const AUTH_STORAGE_KEY = "sysadminiq_auth_key";
-const CF_TOKEN_STORAGE_KEY = "cf_api_token";
-const LEGACY_AUTH_KEY = "sysadminiq_publisher_token";
-
 let selectedFiles = [];
 let uploadedAttachments = [];
 let allArticles = [];
 let editingArticleId = null;
-
-function getAuthKey() {
-  return localStorage.getItem(AUTH_STORAGE_KEY) || 
-         localStorage.getItem(CF_TOKEN_STORAGE_KEY) || 
-         localStorage.getItem(LEGACY_AUTH_KEY) || "";
-}
 
 function showToast(msg, type = "info") {
   const toast = document.getElementById("toast");
@@ -871,73 +784,150 @@ function showToast(msg, type = "info") {
   }, 4000);
 }
 
-// Authorization Modal Handlers
-function openKeyModal() {
-  const modal = document.getElementById("authKeyModal");
-  const input = document.getElementById("authKeyInput");
-  input.value = getAuthKey();
-  modal.classList.add("active");
+// Rich Text & Callout Format Helpers
+function insertFormat(before, after, placeholder) {
+  const ta = document.getElementById("content");
+  const start = ta.selectionStart;
+  const end = ta.selectionEnd;
+  const selected = ta.value.substring(start, end) || placeholder;
+  const replacement = before + selected + after;
+  ta.value = ta.value.substring(0, start) + replacement + ta.value.substring(end);
+  ta.focus();
+  ta.selectionStart = start + before.length;
+  ta.selectionEnd = start + before.length + selected.length;
+  updateLivePreview();
 }
 
-function closeKeyModal() {
-  document.getElementById("authKeyModal").classList.remove("active");
+function insertCallout(type, title) {
+  const ta = document.getElementById("content");
+  const text = `\n:::${type} [${title}]\nWrite callout message here...\n:::\n`;
+  const start = ta.selectionStart;
+  ta.value = ta.value.substring(0, start) + text + ta.value.substring(start);
+  ta.focus();
+  updateLivePreview();
 }
 
-function toggleKeyVisibility() {
-  const input = document.getElementById("authKeyInput");
-  const btn = document.getElementById("toggleKeyBtn");
-  if (input.type === "password") {
-    input.type = "text";
-    btn.textContent = "🔒";
+function insertCodeBlock(lang) {
+  const ta = document.getElementById("content");
+  const text = `\n\`\`\`${lang}\n# ${lang} diagnostic command\n\`\`\`\n`;
+  const start = ta.selectionStart;
+  ta.value = ta.value.substring(0, start) + text + ta.value.substring(start);
+  ta.focus();
+  updateLivePreview();
+}
+
+function insertTable() {
+  const ta = document.getElementById("content");
+  const text = `\n| Component | Diagnostic Check | Expected Status |\n| :--- | :--- | :--- |\n| Network NIC | esxcli network nic list | Link Up / 10Gbps |\n| Storage Path | esxcli storage nmp device list | Active (I/O) |\n`;
+  const start = ta.selectionStart;
+  ta.value = ta.value.substring(0, start) + text + ta.value.substring(start);
+  ta.focus();
+  updateLivePreview();
+}
+
+// Tab switcher between Editor and Live Preview
+function switchEditorTab(mode) {
+  const ta = document.getElementById("content");
+  const preview = document.getElementById("previewBox");
+  const btnEdit = document.getElementById("tabEditor");
+  const btnPrev = document.getElementById("tabPreview");
+
+  if (mode === 'preview') {
+    btnEdit.classList.remove('active');
+    btnPrev.classList.add('active');
+    ta.style.display = 'none';
+    preview.style.display = 'block';
+    updateLivePreview();
   } else {
-    input.type = "password";
-    btn.textContent = "👁️";
+    btnPrev.classList.remove('active');
+    btnEdit.classList.add('active');
+    preview.style.display = 'none';
+    ta.style.display = 'block';
   }
 }
 
-function saveAuthKey() {
-  const key = document.getElementById("authKeyInput").value.trim();
-  if (!key) {
-    alert("Please enter an Authorization Key.");
+function updateLivePreview() {
+  const raw = document.getElementById("content").value;
+  const preview = document.getElementById("previewBox");
+  if (!preview) return;
+  preview.innerHTML = renderFormattedContent(raw);
+}
+
+function renderFormattedContent(raw) {
+  if (!raw) return '<p style="color:var(--text-muted); font-style:italic;">No content to preview.</p>';
+
+  // Format callouts
+  let html = raw.replace(/:::(\w+)\s*\[(.*?)\]([\s\S]*?):::/g, (match, type, title, body) => {
+    return `
+      <div class="callout callout-${type}">
+        <div class="callout-header">${escapeHtml(title)}</div>
+        <div>${escapeHtml(body.trim()).replace(/\n/g, '<br>')}</div>
+      </div>
+    `;
+  });
+
+  // Code blocks
+  html = html.replace(/```(\w+)?\n([\s\S]*?)```/g, (match, lang, code) => {
+    return `<pre style="background:#090e1a; padding:12px; border-radius:6px; margin:10px 0; border:1px solid #202d48; color:#34d399; font-family:monospace; white-space:pre-wrap;">${escapeHtml(code.trim())}</pre>`;
+  });
+
+  // Headings
+  html = html.replace(/^### (.*$)/gim, '<h3 style="color:#60a5fa; margin:14px 0 6px 0; font-size:15px;">$1</h3>');
+  html = html.replace(/^## (.*$)/gim, '<h2 style="color:#fff; margin:16px 0 8px 0; font-size:17px;">$1</h2>');
+  html = html.replace(/^# (.*$)/gim, '<h1 style="color:#fff; margin:18px 0 10px 0; font-size:20px;">$1</h1>');
+
+  // Bold & Italic
+  html = html.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
+  html = html.replace(/\*(.*?)\*/g, '<i>$1</i>');
+  html = html.replace(/`(.*?)`/g, '<code style="background:#090e1a; padding:2px 6px; border-radius:4px; color:#38bdf8;">$1</code>');
+
+  return html.replace(/\n\n/g, '<br><br>');
+}
+
+// AI Playbook Generation with Google Gemini via full-stack server
+async function generateAiPlaybook() {
+  const topic = document.getElementById("aiTopicInput").value.trim();
+  if (!topic) {
+    showToast("Please enter a topic or issue title.", "error");
+    document.getElementById("aiTopicInput").focus();
     return;
   }
-  localStorage.setItem(AUTH_STORAGE_KEY, key);
-  localStorage.setItem(CF_TOKEN_STORAGE_KEY, key);
-  localStorage.setItem(LEGACY_AUTH_KEY, key);
-  closeKeyModal();
-  updateAuthUI();
-  showToast("Authorization key saved successfully!", "success");
-}
 
-function clearAuthKey() {
-  if (confirm("Remove saved authorization key?")) {
-    localStorage.removeItem(AUTH_STORAGE_KEY);
-    localStorage.removeItem(CF_TOKEN_STORAGE_KEY);
-    localStorage.removeItem(LEGACY_AUTH_KEY);
-    document.getElementById("authKeyInput").value = "";
-    updateAuthUI();
-    showToast("Authorization key removed.", "info");
-  }
-}
+  const btn = document.getElementById("generateAiPlaybookBtn");
+  btn.disabled = true;
+  btn.textContent = "✨ Generating with Gemini...";
 
-function updateAuthUI() {
-  const pill = document.getElementById("authStatusPill");
-  const label = document.getElementById("authStatusLabel");
-  const storedKey = getAuthKey();
+  try {
+    const platform = document.getElementById("platform").value;
+    const res = await fetch("/api/ai/generate-playbook", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ topic, platform })
+    });
 
-  if (storedKey) {
-    pill.className = "status-pill auth-key";
-    label.textContent = "Authorization Key Active";
-  } else {
-    pill.className = "status-pill";
-    label.textContent = "Connected to Worker API";
+    if (!res.ok) throw new Error("AI server responded with " + res.status);
+    const data = await res.json();
+
+    if (data.title) document.getElementById("title").value = data.title;
+    if (data.category) document.getElementById("category").value = data.category;
+    if (data.content) {
+      document.getElementById("content").value = data.content;
+      updateLivePreview();
+    }
+
+    showToast("AI playbook drafted successfully!", "success");
+  } catch (err) {
+    showToast("AI generation error: " + err.message, "error");
+  } finally {
+    btn.disabled = false;
+    btn.textContent = "✨ Draft Playbook with Gemini";
   }
 }
 
 // File Attachment Handlers
 const fileInput = document.getElementById("articleAttachments");
 fileInput.addEventListener("change", function(e) {
-  selectedFiles = Array.from(e.target.files);
+  selectedFiles = [...selectedFiles, ...Array.from(e.target.files)];
   renderFileList();
 });
 
@@ -951,21 +941,25 @@ function renderFileList() {
         <div class="file-chip-name">
           <span>📎</span>
           <span><b>${escapeHtml(f.name)}</b></span>
-          <span style="color:var(--text-muted); font-size:11px;">[Uploaded & Attached]</span>
+          <span style="color:var(--text-muted); font-size:11px;">[Ready & Attached]</span>
         </div>
-        <span class="file-chip-remove" onclick="removeAttachment(${i})">✕ Remove</span>
+        <div style="display:flex; gap:8px;">
+          <button type="button" class="btn btn-secondary btn-sm" onclick="insertFileRef('${escapeHtml(f.name)}')">Insert in Body</button>
+          <span class="file-chip-remove" onclick="removeAttachment(${i})">✕ Remove</span>
+        </div>
       </div>
     `).join("");
   }
 
   if (selectedFiles.length > 0) {
-    html += selectedFiles.map(f => `
+    html += selectedFiles.map((f, i) => `
       <div class="file-chip" style="border-style:dashed;">
         <div class="file-chip-name">
           <span>📁</span>
           <span>${escapeHtml(f.name)}</span>
-          <span style="color:var(--text-muted); font-size:11px;">(${Math.round(f.size / 1024)} KB ready to upload)</span>
+          <span style="color:var(--text-muted); font-size:11px;">(${Math.round(f.size / 1024)} KB pending upload)</span>
         </div>
+        <span class="file-chip-remove" onclick="removeSelectedFile(${i})">✕</span>
       </div>
     `).join("");
   }
@@ -973,64 +967,79 @@ function renderFileList() {
   container.innerHTML = html;
 }
 
+function insertFileRef(name) {
+  const ta = document.getElementById("content");
+  const text = `\n> **Attachment Reference:** [${name}]\n`;
+  const start = ta.selectionStart;
+  ta.value = ta.value.substring(0, start) + text + ta.value.substring(start);
+  ta.focus();
+  updateLivePreview();
+}
+
 function removeAttachment(index) {
   uploadedAttachments.splice(index, 1);
   renderFileList();
 }
 
-// Upload Selected Files (Clean CORS without blocking credentials/headers)
-async function uploadSelectedFiles() {
+function removeSelectedFile(index) {
+  selectedFiles.splice(index, 1);
+  renderFileList();
+}
+
+// Upload ALL Selected Files (Sequentially uploads every chosen file)
+async function uploadAllSelectedFiles() {
   if (selectedFiles.length === 0) {
-    showToast("Please choose or drag a file first.", "error");
+    showToast("Please choose or drag file(s) first.", "error");
     return;
   }
 
-  const file = selectedFiles[0];
   const statusText = document.getElementById("uploadStatusText");
   const uploadBtn = document.getElementById("uploadBtn");
-  
   uploadBtn.disabled = true;
-  statusText.textContent = `Uploading ${file.name}...`;
 
-  const formData = new FormData();
-  formData.append("file", file);
+  const total = selectedFiles.length;
+  let successCount = 0;
 
-  const authKey = getAuthKey();
-  if (authKey) {
-    formData.append("auth_key", authKey);
-  }
+  for (let i = 0; i < total; i++) {
+    const file = selectedFiles[0];
+    statusText.textContent = `Uploading file ${i + 1} of ${total}: ${file.name}...`;
 
-  try {
-    const response = await fetch(API_BASE + "/upload-test", {
-      method: "POST",
-      body: formData
-    });
+    const formData = new FormData();
+    formData.append("file", file);
 
-    if (!response.ok) {
-      throw new Error(`Upload server responded with HTTP ${response.status}`);
+    try {
+      const response = await fetch(API_BASE + "/upload-test", {
+        method: "POST",
+        body: formData
+      });
+
+      if (!response.ok) throw new Error("HTTP " + response.status);
+      const result = await response.json();
+
+      uploadedAttachments.push({
+        name: file.name,
+        type: file.type || "application/octet-stream",
+        size: file.size,
+        key: result.key || result.fileKey || file.name
+      });
+
+      selectedFiles.shift();
+      successCount++;
+      renderFileList();
+    } catch (err) {
+      statusText.textContent = `Upload failed for ${file.name}: ${err.message}`;
+      showToast(`Upload failed for ${file.name}`, "error");
+      uploadBtn.disabled = false;
+      return;
     }
-
-    const result = await response.json();
-    uploadedAttachments.push({
-      name: file.name,
-      type: file.type || "application/octet-stream",
-      size: file.size,
-      key: result.key || result.fileKey || file.name
-    });
-
-    selectedFiles.shift();
-    renderFileList();
-    statusText.textContent = `✓ Uploaded: ${file.name}`;
-    showToast(`File "${file.name}" uploaded successfully!`, "success");
-  } catch (err) {
-    statusText.textContent = `Upload failed: ${err.message}`;
-    showToast(`Upload failed: ${err.message}`, "error");
-  } finally {
-    uploadBtn.disabled = false;
   }
+
+  uploadBtn.disabled = false;
+  statusText.textContent = `✓ Successfully uploaded ${successCount} file(s)!`;
+  showToast(`${successCount} file(s) uploaded and attached!`, "success");
 }
 
-// Publish New or Update Existing Article (Clean CORS without blocking credentials/headers)
+// Publish New or Update Existing Article
 async function publishOrUpdateArticle() {
   const title = document.getElementById("title").value.trim();
   if (!title) {
@@ -1039,12 +1048,15 @@ async function publishOrUpdateArticle() {
     return;
   }
 
+  // If user selected files but forgot to click upload, auto-upload now!
+  if (selectedFiles.length > 0) {
+    await uploadAllSelectedFiles();
+  }
+
   const saveBtn = document.getElementById("saveBtn");
   const isEditing = Boolean(editingArticleId);
   saveBtn.disabled = true;
   saveBtn.textContent = isEditing ? "Updating Article..." : "Publishing Article...";
-
-  const authKey = getAuthKey();
 
   const payload = {
     title: title,
@@ -1055,27 +1067,19 @@ async function publishOrUpdateArticle() {
     attachments: uploadedAttachments
   };
 
-  if (authKey) {
-    payload.auth_key = authKey;
-  }
-
   try {
     let response;
     if (isEditing) {
       payload.id = editingArticleId;
       response = await fetch(API_BASE, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
     } else {
       response = await fetch(API_BASE, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
       });
     }
@@ -1086,7 +1090,6 @@ async function publishOrUpdateArticle() {
     }
 
     showToast(isEditing ? "Article updated successfully!" : "Article published successfully!", "success");
-
     cancelEdit();
     loadExistingArticles();
   } catch (err) {
@@ -1130,13 +1133,14 @@ function editArticle(id) {
   const saveBtn = document.getElementById("saveBtn");
   saveBtn.textContent = "💾 Save Changes / Update Article";
   window.scrollTo({ top: 0, behavior: "smooth" });
+  updateLivePreview();
 }
 
 function cancelEdit() {
   editingArticleId = null;
   document.getElementById("editArticleId").value = "";
   document.getElementById("title").value = "";
-  document.getElementById("category").value = "";
+  document.getElementById("category").value = "Troubleshooting";
   document.getElementById("content").value = "";
   uploadedAttachments = [];
   selectedFiles = [];
@@ -1146,6 +1150,7 @@ function cancelEdit() {
   document.getElementById("formModeIcon").textContent = "📝";
   document.getElementById("cancelEditBtn").style.display = "none";
   document.getElementById("saveBtn").textContent = "🚀 Publish Article";
+  switchEditorTab('edit');
 }
 
 function resetForm() {
@@ -1154,7 +1159,7 @@ function resetForm() {
   }
 }
 
-// Delete Article (Clean CORS DELETE)
+// Delete Article
 async function deleteArticle(id) {
   const article = allArticles.find(a => String(a.id) === String(id));
   const title = article ? article.title : id;
@@ -1163,14 +1168,8 @@ async function deleteArticle(id) {
     return;
   }
 
-  const authKey = getAuthKey();
-  let url = API_BASE + "?id=" + encodeURIComponent(id);
-  if (authKey) {
-    url += "&auth_key=" + encodeURIComponent(authKey);
-  }
-
   try {
-    const response = await fetch(url, {
+    const response = await fetch(API_BASE + "?id=" + encodeURIComponent(id), {
       method: "DELETE"
     });
 
@@ -1190,7 +1189,7 @@ async function deleteArticle(id) {
   }
 }
 
-// Load Existing Articles (Clean CORS GET)
+// Load Existing Articles
 async function loadExistingArticles() {
   const tbody = document.getElementById("articlesTableBody");
   tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 28px;">Fetching articles from Cloudflare API...</td></tr>`;
@@ -1203,7 +1202,7 @@ async function loadExistingArticles() {
     allArticles = Array.isArray(data) ? data : [];
     renderExistingTable();
   } catch (err) {
-    console.warn("Falling back to local knowledge base:", err);
+    console.warn("Falling back to local cache:", err);
     try {
       const local = JSON.parse(localStorage.getItem("sysAdminIQKB_v420") || "{}");
       allArticles = local.articles || [];
@@ -1237,11 +1236,10 @@ function renderExistingTable() {
     const snippet = a.content ? a.content.slice(0, 100) : (Array.isArray(a.symptoms) ? a.symptoms[0] : (a.description || ''));
     const fileCount = (a.attachments && a.attachments.length) || 0;
     const platform = a.platform || 'VMware';
-    const tagClass = getPlatformTagClass(platform);
 
     return `
       <tr>
-        <td><span class="tag-platform ${tagClass}">${escapeHtml(platform)}</span></td>
+        <td><span class="tag-platform">${escapeHtml(platform)}</span></td>
         <td>
           <div style="font-weight: 600; color: #fff;">${escapeHtml(a.title || 'Untitled')}</div>
           <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px; max-width: 600px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
@@ -1249,7 +1247,7 @@ function renderExistingTable() {
           </div>
         </td>
         <td><span style="color: #cbd5e1; font-weight: 500;">${escapeHtml(a.category || 'General')}</span></td>
-        <td>${fileCount > 0 ? `<span style="color:var(--cf-orange); font-weight:600;">📎 ${fileCount}</span>` : '<span style="color:var(--text-muted);">—</span>'}</td>
+        <td>${fileCount > 0 ? `<span style="color:var(--cf-blue); font-weight:600;">📎 ${fileCount}</span>` : '<span style="color:var(--text-muted);">—</span>'}</td>
         <td style="text-align: right; white-space: nowrap;">
           <button class="btn btn-secondary btn-sm" onclick="editArticle('${escapeHtml(a.id)}')" style="margin-right: 6px;">✏️ Edit</button>
           <button class="btn btn-danger btn-sm" onclick="deleteArticle('${escapeHtml(a.id)}')">🗑️ Delete</button>
@@ -1257,18 +1255,6 @@ function renderExistingTable() {
       </tr>
     `;
   }).join("");
-}
-
-function getPlatformTagClass(p) {
-  switch (p) {
-    case 'VMware': return 'tag-vmware';
-    case 'Windows': return 'tag-windows';
-    case 'Linux': return 'tag-linux';
-    case 'Cisco UCS': return 'tag-cisco';
-    case 'AWS': return 'tag-aws';
-    case 'Azure': return 'tag-azure';
-    default: return 'tag-vmware';
-  }
 }
 
 function escapeHtml(str) {
@@ -1279,7 +1265,6 @@ function escapeHtml(str) {
 
 // Initialize on DOM load
 window.addEventListener("DOMContentLoaded", () => {
-  updateAuthUI();
   loadExistingArticles();
 });
 </script>
