@@ -725,7 +725,7 @@ pre {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px;
+  padding: 16px;
 }
 
 .modal-overlay.hidden {
@@ -736,13 +736,54 @@ pre {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
-  max-width: 860px;
-  width: 100%;
-  max-height: 90vh;
+  max-width: calc(100vw - 32px);
+  width: calc(100vw - 32px);
+  max-height: 94vh;
   overflow-y: auto;
-  padding: 28px;
+  padding: 32px 48px;
   position: relative;
-  box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+  box-shadow: 0 25px 60px rgba(0,0,0,0.7);
+  transition: all 0.2s ease;
+}
+
+.modal-box.is-fullscreen {
+  max-width: 100vw !important;
+  width: 100vw !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  border-radius: 0 !important;
+  padding: 36px 48px !important;
+}
+
+.modal-header-actions {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  z-index: 10;
+}
+
+.modal-action-btn {
+  background: rgba(255,255,255,0.08);
+  border: 1px solid var(--border);
+  color: #cbd5e1;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 15px;
+  transition: all 0.15s;
+}
+
+.modal-action-btn:hover {
+  background: rgba(0, 112, 243, 0.25);
+  color: #60a5fa;
+  border-color: #0070f3;
 }
 
 .close-modal {
@@ -758,6 +799,9 @@ pre {
   cursor: pointer;
   font-size: 16px;
   transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .close-modal:hover {
@@ -766,15 +810,24 @@ pre {
 }
 
 .article-detail h1 {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
   color: #fff;
-  margin: 12px 0 6px 0;
-  line-height: 1.3;
+  margin: 12px 0 8px 0;
+  line-height: 1.35;
+}
+
+.article-detail h2 {
+  font-size: 18px;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 20px 0 8px 0;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
+  padding-bottom: 6px;
 }
 
 .article-detail h3 {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.05em;
@@ -782,23 +835,140 @@ pre {
   margin: 18px 0 8px 0;
 }
 
-.article-detail ul, .article-detail ol {
-  padding-left: 20px;
-  font-size: 13px;
-  color: #cbd5e1;
-  margin-bottom: 12px;
+/* Strip any white background bars and black text from pasted Word/OneNote HTML */
+.article-detail,
+.article-detail *,
+#modalContent,
+#modalContent * {
+  /* Prevent background leaking */
 }
 
-.article-detail li {
-  margin-bottom: 6px;
-  line-height: 1.5;
+.article-detail [style*="background:white" i],
+.article-detail [style*="background: white" i],
+.article-detail [style*="background-color:white" i],
+.article-detail [style*="background-color: white" i],
+.article-detail [style*="background:#fff" i],
+.article-detail [style*="background: #fff" i],
+.article-detail [style*="background:#ffffff" i],
+.article-detail [style*="background: #ffffff" i],
+.article-detail [style*="255, 255, 255"],
+.article-detail [style*="255,255,255"],
+#modalContent [style*="background:white" i],
+#modalContent [style*="background: white" i],
+#modalContent [style*="background-color:white" i],
+#modalContent [style*="background-color: white" i],
+#modalContent [style*="background:#fff" i],
+#modalContent [style*="background: #fff" i],
+#modalContent [style*="background:#ffffff" i],
+#modalContent [style*="background: #ffffff" i],
+#modalContent [style*="255, 255, 255"],
+#modalContent [style*="255,255,255"] {
+  background: transparent !important;
+  background-color: transparent !important;
+  border-color: transparent !important;
+}
+
+.article-detail [style*="color:black" i],
+.article-detail [style*="color: black" i],
+.article-detail [style*="color:#000" i],
+.article-detail [style*="color: #000" i],
+.article-detail [style*="color:#000000" i],
+.article-detail [style*="color: #000000" i],
+.article-detail [style*="color:windowtext" i],
+#modalContent [style*="color:black" i],
+#modalContent [style*="color: black" i],
+#modalContent [style*="color:#000" i],
+#modalContent [style*="color: #000" i],
+#modalContent [style*="color:#000000" i],
+#modalContent [style*="color: #000000" i],
+#modalContent [style*="color:windowtext" i] {
+  color: #e2e8f0 !important;
+}
+
+/* Enforce transparent background and no borders on lists and paragraphs */
+.article-detail li,
+.article-detail p,
+.article-detail span,
+#modalContent li,
+#modalContent p {
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+/* Clean Hierarchical Lists and Indentation Alignment */
+.article-detail ul,
+#modalContent ul {
+  list-style-type: disc !important;
+  padding-left: 24px !important;
+  margin: 8px 0 !important;
+}
+
+.article-detail ul ul,
+#modalContent ul ul {
+  list-style-type: circle !important;
+  padding-left: 22px !important;
+  margin: 4px 0 !important;
+}
+
+.article-detail ul ul ul,
+#modalContent ul ul ul {
+  list-style-type: square !important;
+  padding-left: 20px !important;
+  margin: 4px 0 !important;
+}
+
+.article-detail ol,
+#modalContent ol {
+  list-style-type: decimal !important;
+  padding-left: 24px !important;
+  margin: 8px 0 !important;
+}
+
+.article-detail ol ol,
+#modalContent ol ol {
+  list-style-type: lower-alpha !important;
+  padding-left: 22px !important;
+  margin: 4px 0 !important;
+}
+
+.article-detail ol ol ol,
+#modalContent ol ol ol {
+  list-style-type: lower-roman !important;
+  padding-left: 20px !important;
+  margin: 4px 0 !important;
+}
+
+.article-detail li,
+#modalContent li {
+  margin: 5px 0 !important;
+  line-height: 1.65 !important;
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+.article-detail p,
+#modalContent p {
+  margin: 0 0 10px 0;
+  line-height: 1.65;
+  color: #cbd5e1;
+  font-size: 14px;
+}
+
+.article-detail b,
+.article-detail strong,
+#modalContent b,
+#modalContent strong {
+  color: #ffffff;
+  font-weight: 700;
 }
 
 /* Secure In-Website Document Viewer Modal */
 .secure-viewer-modal {
-  max-width: 1020px;
-  width: 95%;
-  height: 85vh;
+  max-width: calc(100vw - 32px);
+  width: calc(100vw - 32px);
+  height: 92vh;
   display: flex;
   flex-direction: column;
   padding: 0;
@@ -1164,34 +1334,107 @@ pre {
 
 /* OneNote-Style Visual Editor Canvas */
 .onenote-canvas {
-  min-height: 380px;
-  max-height: 700px;
+  min-height: 480px;
+  max-height: 78vh;
   overflow-y: auto;
   background: #070b14;
   border: 1px solid var(--border);
   border-top: none;
   border-radius: 0 0 var(--radius-md) var(--radius-md);
-  padding: 24px 28px;
+  padding: 26px 32px;
   color: #f1f5f9;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-size: 14px;
   line-height: 1.7;
   outline: none;
   cursor: text;
+  width: 100%;
+  box-sizing: border-box;
 }
+
 .onenote-canvas:focus {
   border-color: #0070f3;
   box-shadow: 0 0 0 3px rgba(0, 112, 243, 0.2);
 }
+
 .onenote-canvas:empty:before {
   content: attr(placeholder);
   color: #64748b;
   pointer-events: none;
   display: block;
 }
-.onenote-canvas p { margin: 0 0 10px 0; }
+
+/* Fullscreen mode for OneNote Editor */
+.onenote-fullscreen-active {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 99999 !important;
+  background: #070b14 !important;
+  padding: 20px 32px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  width: 100vw !important;
+}
+
+.onenote-fullscreen-active .onenote-canvas {
+  flex: 1 !important;
+  max-height: none !important;
+  height: calc(100vh - 190px) !important;
+  border-radius: 0 0 8px 8px !important;
+}
+
+/* Clean Hierarchical Lists for Canvas */
+.onenote-canvas ul {
+  list-style-type: disc !important;
+  padding-left: 24px !important;
+  margin: 8px 0 !important;
+}
+.onenote-canvas ul ul {
+  list-style-type: circle !important;
+  padding-left: 22px !important;
+  margin: 4px 0 !important;
+}
+.onenote-canvas ul ul ul {
+  list-style-type: square !important;
+  padding-left: 20px !important;
+  margin: 4px 0 !important;
+}
+.onenote-canvas ol {
+  list-style-type: decimal !important;
+  padding-left: 24px !important;
+  margin: 8px 0 !important;
+}
+.onenote-canvas ol ol {
+  list-style-type: lower-alpha !important;
+  padding-left: 22px !important;
+  margin: 4px 0 !important;
+}
+.onenote-canvas ol ol ol {
+  list-style-type: lower-roman !important;
+  padding-left: 20px !important;
+  margin: 4px 0 !important;
+}
+.onenote-canvas li {
+  margin: 5px 0 !important;
+  line-height: 1.65 !important;
+  color: #cbd5e1;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.onenote-canvas p {
+  margin: 0 0 10px 0;
+  line-height: 1.65;
+  color: #cbd5e1;
+}
+.onenote-canvas b, .onenote-canvas strong {
+  color: #ffffff;
+  font-weight: 700;
+}
 .onenote-canvas h1 {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 800;
   color: #fff;
   margin: 20px 0 10px 0;
@@ -1199,10 +1442,10 @@ pre {
   padding-bottom: 6px;
 }
 .onenote-canvas h2 {
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 700;
   color: #f8fafc;
-  margin: 16px 0 8px 0;
+  margin: 18px 0 8px 0;
 }
 .onenote-canvas h3 {
   font-size: 15px;
@@ -1210,10 +1453,6 @@ pre {
   color: #60a5fa;
   margin: 14px 0 6px 0;
 }
-.onenote-canvas ul, .onenote-canvas ol {
-  margin: 8px 0 12px 24px;
-}
-.onenote-canvas li { margin: 4px 0; }
 .onenote-canvas blockquote {
   border-left: 4px solid #38bdf8;
   margin: 12px 0;
@@ -1236,8 +1475,10 @@ pre {
   color: #1e293b;
   border-radius: 8px;
   padding: 40px 48px;
-  max-width: 900px;
-  margin: 0 auto;
+  max-width: 100%;
+  width: 100%;
+  margin: 0;
+  box-sizing: border-box;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
   font-size: 14px;
@@ -1254,3 +1495,114 @@ pre {
 .secure-viewer-docx-content th { background: #f1f5f9; padding: 10px 14px; border: 1px solid #cbd5e1; font-weight: 700; text-align: left; }
 .secure-viewer-docx-content td { padding: 8px 12px; border: 1px solid #cbd5e1; }
 .secure-viewer-docx-content strong { font-weight: 700; color: #0f172a; }
+
+/* Document & Copy-Paste Alignment Preservation */
+.onenote-canvas [align="center"],
+.docx-extracted-content [align="center"],
+.docx-body [align="center"],
+.secure-viewer-docx-content [align="center"],
+.onenote-table [align="center"],
+.onenote-table th[align="center"],
+.onenote-table td[align="center"],
+.secure-viewer-docx-content th[align="center"],
+.secure-viewer-docx-content td[align="center"],
+.align-center,
+.text-center,
+[align="center"] {
+  text-align: center !important;
+}
+
+.onenote-canvas [align="right"],
+.docx-extracted-content [align="right"],
+.docx-body [align="right"],
+.secure-viewer-docx-content [align="right"],
+.onenote-table [align="right"],
+.onenote-table th[align="right"],
+.onenote-table td[align="right"],
+.secure-viewer-docx-content th[align="right"],
+.secure-viewer-docx-content td[align="right"],
+.align-right,
+.text-right,
+[align="right"] {
+  text-align: right !important;
+}
+
+.onenote-canvas [align="justify"],
+.docx-extracted-content [align="justify"],
+.docx-body [align="justify"],
+.secure-viewer-docx-content [align="justify"],
+.onenote-table [align="justify"],
+.onenote-table th[align="justify"],
+.onenote-table td[align="justify"],
+.secure-viewer-docx-content th[align="justify"],
+.secure-viewer-docx-content td[align="justify"],
+.align-justify,
+.text-justify,
+[align="justify"] {
+  text-align: justify !important;
+}
+
+.onenote-canvas [align="left"],
+.docx-extracted-content [align="left"],
+.docx-body [align="left"],
+.secure-viewer-docx-content [align="left"],
+.onenote-table [align="left"],
+.onenote-table th[align="left"],
+.onenote-table td[align="left"],
+.secure-viewer-docx-content th[align="left"],
+.secure-viewer-docx-content td[align="left"],
+.align-left,
+.text-left,
+[align="left"] {
+  text-align: left !important;
+}
+
+.onenote-table [valign="top"], .secure-viewer-docx-content [valign="top"], [valign="top"] { vertical-align: top !important; }
+.onenote-table [valign="middle"], .secure-viewer-docx-content [valign="middle"], [valign="middle"] { vertical-align: middle !important; }
+.onenote-table [valign="bottom"], .secure-viewer-docx-content [valign="bottom"], [valign="bottom"] { vertical-align: bottom !important; }
+
+/* Modal Fullscreen Mode */
+.modal-fullscreen-active .modal-box {
+  width: 100vw !important;
+  max-width: 100vw !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  border-radius: 0 !important;
+  border: none !important;
+}
+.modal-fullscreen-active {
+  padding: 0 !important;
+}
+
+/* In-Page AI Tools Workspace & Multi-Model Panel */
+.ai-tools-model-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 18px;
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+.ai-prompt-preview-box {
+  margin-top: 14px;
+  padding: 14px 18px;
+  background: #070c17;
+  border: 1px solid #1e293b;
+  border-radius: 8px;
+}
+.ai-prompt-preview-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #38bdf8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+

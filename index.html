@@ -9,6 +9,9 @@
 <meta property="og:description" content="AI-Powered Infrastructure Troubleshooting Knowledge Base, diagnostic analyzer, command library, and playbooks across VMware, Windows, Linux, AWS, Azure, and Cisco UCS.">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="alternate icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -370,16 +373,19 @@
         ></textarea>
 
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-          <div style="display:flex; gap:10px;">
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
             <button id="runAiBtn" class="primary" onclick="submitAiQuery()">
               ✨ Ask Google Gemini
             </button>
-            <button id="openExternalAiBtn" class="secondary" onclick="openExternalAi()">
-              🌐 Launch in Selected AI ↗
+            <button id="copyPromptBtn" class="secondary" onclick="copyEngineeredPrompt()" title="Copy prompt with engineered sysadmin context">
+              📋 Copy Prompt
+            </button>
+            <button id="openExternalAiBtn" class="secondary" onclick="openExternalAi()" style="display:none;" title="Open model in external tab (optional)">
+              🌐 Launch External Tab ↗
             </button>
           </div>
           <span id="aiStatusNote" style="font-size: 12px; color: var(--text-muted);">
-            Powered by Google Gemini Flash
+            Active Model: Google Gemini Flash (In-App) • Generates solution directly in webpage
           </span>
         </div>
       </div>
@@ -544,8 +550,11 @@
 
 <!-- Article Detail Modal -->
 <div id="articleModal" class="modal-overlay hidden">
-  <div class="modal-box">
-    <button id="closeModal" class="close-modal" onclick="closeArticleModal()">✕</button>
+  <div class="modal-box" id="articleModalBox">
+    <div class="modal-header-actions">
+      <button type="button" class="modal-action-btn" id="modalFullscreenBtn" onclick="toggleArticleModalFullscreen()" title="Toggle Fullscreen">⛶</button>
+      <button id="closeModal" class="close-modal" style="position:static;" onclick="closeArticleModal()" title="Close">✕</button>
+    </div>
     <div id="modalContent"></div>
   </div>
 </div>
@@ -565,6 +574,8 @@
         <button class="secure-viewer-btn" id="secureZoomIn" onclick="zoomSecureViewer(0.2)" title="Zoom In">🔍 +</button>
         <button class="secure-viewer-btn" id="secureZoomOut" onclick="zoomSecureViewer(-0.2)" title="Zoom Out">🔍 -</button>
         <button class="secure-viewer-btn" id="secureResetZoom" onclick="resetSecureZoom()" title="Reset Zoom">100%</button>
+        <button class="secure-viewer-btn" id="secureViewerFsBtn" onclick="toggleSecureViewerFullscreen()" title="Toggle Fullscreen">⛶ Fullscreen</button>
+        <button class="secure-viewer-btn" id="secureViewerDlBtn" onclick="downloadCurrentViewerFile()" title="Download File">⬇ Download</button>
         <button class="close-modal" style="position:static;" onclick="closeSecureViewer()">✕</button>
       </div>
     </div>
