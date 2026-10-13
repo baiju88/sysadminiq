@@ -1,55 +1,594 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SysAdminIQ — AI-Powered Infrastructure Troubleshooting</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SysAdminIQ Knowledge Base</title>
+<meta name="description" content="AI-Powered Infrastructure Troubleshooting Knowledge Base, diagnostic analyzer, command library, and playbooks across VMware, Windows, Linux, AWS, Azure, and Cisco UCS.">
+<meta property="og:title" content="SysAdminIQ Knowledge Base">
+<meta property="og:description" content="AI-Powered Infrastructure Troubleshooting Knowledge Base, diagnostic analyzer, command library, and playbooks across VMware, Windows, Linux, AWS, Azure, and Cisco UCS.">
+<meta property="og:type" content="website">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="alternate icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
 </head>
+
 <body>
-<header class="topbar">
-  <div class="brand"><div class="logo">IQ</div><div><h1>SysAdminIQ</h1><p>AI-Powered Infrastructure Troubleshooting</p></div></div>
-  <div class="top-actions"><button class="icon-btn" id="themeBtn" title="Toggle theme">◐</button><button class="header-btn primary" id="exportBtn">Export case</button></div>
+
+<!-- Top Header -->
+<header>
+  <div class="header-inner">
+    <a href="#" class="brand" onclick="nav('dashboard'); return false;">
+      <div class="brand-icon">IQ</div>
+      <div class="brand-text">
+        <h1>SysAdminIQ</h1>
+        <p>AI-Powered Infrastructure Troubleshooting</p>
+      </div>
+    </a>
+
+    <!-- Global Multi-Search in Header -->
+    <div class="header-search">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        id="globalSearchInput"
+        placeholder="Search playbooks, commands, logs, scripts or web..."
+        onkeydown="if(event.key==='Enter') executeGlobalSearch()"
+      >
+      <button type="button" class="web-search-btn" onclick="executeInternetSearch()" title="Search the Internet">
+        🌐 Web ↗
+      </button>
+    </div>
+
+    <!-- Right Header Actions (Status indicator removed per user request) -->
+    <div class="header-actions">
+      <button class="btn-ai-quick" onclick="nav('ai-assistant')">
+        ✨ AI Tools
+      </button>
+      <a href="publisher.html" target="_blank" class="btn-publisher">
+        🔑 Publisher Portal ↗
+      </a>
+    </div>
+  </div>
 </header>
-<div class="notice hero-strip">⚡ <b>SysAdminIQ</b> — one workspace for <b>VMware, Windows, Linux, AWS and Azure</b>. Diagnose faster, follow evidence-first runbooks, and keep your operational knowledge in one place.</div>
-<div class="layout">
-<aside>
-  <div class="side-label">WORKSPACE</div>
-  <button class="nav active" data-view="dashboard"><span class="nav-ico">▦</span> Dashboard</button>
-  <button class="nav" data-view="assistant"><span class="nav-ico">✦</span> Troubleshooting Assistant</button>
-  <button class="nav" data-view="knowledge"><span class="nav-ico">⌕</span> Knowledge Base</button>
-  <button class="nav" data-view="internet"><span class="nav-ico">◎</span> Internet Search</button>
-  <button class="nav" data-view="logs"><span class="nav-ico">☰</span> Log Explorer</button>
-  <div class="side-label">MAIN CATEGORIES</div>
-  <button class="platform-nav" data-platform="VMware"><span>VM</span> VMware</button>
-  <button class="platform-nav" data-platform="Windows"><span>W</span> Windows</button>
-  <button class="platform-nav" data-platform="Linux"><span>L</span> Linux</button>
-  <button class="platform-nav" data-platform="AWS"><span>A</span> AWS</button>
-  <button class="platform-nav" data-platform="Azure"><span>AZ</span> Azure</button>
-  <div class="side-label">TOOLS</div>
-  <button class="nav" data-view="commands"><span class="nav-ico">⌘</span> Command Library</button>
-  <button class="nav" data-view="scripts"><span class="nav-ico">▸</span> Scripts</button>
-  <button class="nav" data-view="resources"><span class="nav-ico">↗</span> Resources</button>
-  <div class="side-label">MANAGEMENT</div>
-  <button class="nav admin-nav" data-view="admin"><span class="nav-ico">⚙</span> Content Manager</button>
-  <hr><div class="side-label">FILTERS</div><div id="categoryFilters"></div>
-</aside>
-<main>
-<section id="dashboard" class="view active">
-  <div class="welcome"><div class="eyebrow">SYSADMINIQ · INFRASTRUCTURE OPERATIONS</div><h2>Find the signal. Fix the problem.</h2><p>Search an error, paste logs, or choose a platform to get focused troubleshooting guidance, commands, and runbooks.</p><div class="searchbar"><input id="globalSearch" placeholder="Try: host not responding, Windows service failed, Linux disk full, AWS EC2..."><button id="searchBtn">Search</button></div></div>
-  <div class="stats" id="stats"></div>
-  <div class="section-intro"><div><h3>Main platforms</h3><p>Choose your environment and jump straight into the right knowledge.</p></div><span class="pill">5 platforms</span></div><div class="platform-grid" id="platformCards"></div>
-  <div class="section-intro"><div><h3>Operations toolkit</h3><p>Common tools for investigation, automation, and knowledge management.</p></div></div><div class="grid" id="quickCards"></div>
-  <div class="section-intro"><div><h3>Featured runbooks</h3><p>Practical troubleshooting workflows you can open and adapt.</p></div><button class="secondary" onclick="nav('knowledge')">View all knowledge →</button></div><div id="recentArticles" class="article-grid"></div>
-</section>
-<section id="assistant" class="view"><div class="panel"><h2>✦ Troubleshooting Assistant</h2><p>Describe the issue or paste an error/log excerpt. The assistant correlates symptoms with your local knowledge base and creates a prioritized investigation plan.</p><textarea id="issueInput" rows="9" placeholder="Example: ESXi host is pingable but shows Not Responding in vCenter. host web UI is slow. vpxa errors appear in logs."></textarea><div class="assistant-controls"><select id="versionSelect"><option>Auto detect version</option><option>vSphere 6.7</option><option>vSphere 7.x</option><option>vSphere 8.x</option><option>Windows Server</option><option>Linux</option><option>AWS</option><option>Azure</option></select><select id="severitySelect"><option>Production impact unknown</option><option>Critical / outage</option><option>High impact</option><option>Low impact</option></select><button id="analyzeBtn">Analyze issue</button></div></div><div id="analysisOutput"></div></section>
-<section id="knowledge" class="view"><div class="page-head"><div><div class="eyebrow">KNOWLEDGE</div><h2>Knowledge Base</h2><p>Search curated system administration troubleshooting articles and runbooks.</p></div></div><div class="toolbar"><input id="kbSearch" placeholder="Search title, symptom, error, log, command..."><select id="kbPlatform"><option value="all">All platforms</option><option>VMware</option><option>Windows</option><option>Linux</option><option>AWS</option><option>Azure</option></select><select id="kbCategory"><option value="all">All subcategories</option></select></div><div id="kbResults" class="article-grid"></div></section>
-<section id="internet" class="view"><div class="panel"><h2>🌐 Internet Troubleshooting Search</h2><p>Search the web directly from the portal. Results are displayed below — no new Chrome tab is required.</p><div class="toolbar"><input id="internetSearch" placeholder="Example: ESXi host not responding vCenter 8.0"><select id="internetScope"><option value="official">Official Broadcom / VMware sources</option><option value="all">General internet search</option></select><button id="internetSearchBtn">Search Internet</button></div><div class="notice">Tip: include the exact error, product and version. Official mode searches Broadcom Knowledge Base content.</div><div id="internetStatus" class="internet-status"></div><div id="internetResults" class="internet-results"></div></div></section>
-<section id="logs" class="view"><div class="panel"><h2>Log Explorer</h2><p>Paste a relevant excerpt. Pattern matching highlights common infrastructure components and likely next checks.</p><textarea id="logInput" rows="12" placeholder="Paste vpxd.log, hostd.log, vpxa.log, vmkernel.log, Windows event text or Linux log lines here..."></textarea><button id="inspectLogBtn">Inspect logs</button></div><div id="logOutput"></div><div class="panel"><h3>Log map</h3><div id="logMap"></div></div></section>
-<section id="commands" class="view"><div class="page-head"><div><div class="eyebrow">TOOLS</div><h2>Command Library</h2><p>Fast access to common VMware, Windows, Linux and cloud administration commands.</p></div></div><div class="toolbar"><input id="commandSearch" placeholder="Find a command..."></div><div id="commandResults" class="command-list"></div></section>
-<section id="scripts" class="view"><div class="panel"><h2>Automation & Scripts</h2><p>Store PowerCLI, PowerShell, Bash and cloud CLI scripts. Validate in a non-production environment before use.</p></div><div id="scriptResults" class="article-grid"></div></section>
-<section id="resources" class="view"><div class="page-head"><div><div class="eyebrow">REFERENCE</div><h2>Resources</h2><p>Keep trusted vendor documentation and internal runbooks in one place.</p></div></div><div class="toolbar"><input id="resourceSearch" placeholder="Search resources..."><select id="resourceCategory"><option value="all">All categories</option></select></div><div id="resourceResults" class="article-grid"></div></section>
-<section id="admin" class="view"><div class="panel"><div class="admin-head"><div><div class="eyebrow">ADMINISTRATION</div><h2>⚙ Content Manager</h2><p>Manage articles, scripts, commands and resources without editing code.</p></div><div class="admin-actions"><button class="secondary" id="backupBtn">Export KB backup</button><button class="secondary" id="importBtn">Import KB backup</button><input id="importFile" type="file" accept="application/json" hidden></div></div><div class="backend-status" id="backendStatus"><span class="status-dot offline"></span> Checking storage...</div><div class="tabs"><button class="tab active" data-admin="articles">Knowledge Articles</button><button class="tab" data-admin="scripts">Scripts</button><button class="tab" data-admin="commands">Commands</button><button class="tab" data-admin="resources">Resources</button></div><div id="adminContent"></div></div></section>
-</main></div>
-<div id="articleModal" class="modal hidden"><div class="modal-card"><button class="close" id="closeModal">×</button><div id="modalContent"></div></div></div>
-<script src="data.js"></script><script src="app.js"></script>
-</body></html>
+
+<!-- Top Announcement Ribbon matching previous design -->
+<div class="top-announcement-bar">
+  <span class="badge-bolt">⚡</span>
+  <span>
+    <b>SysAdminIQ</b> — one workspace for <b>VMware</b>, <b>Windows</b>, <b>Linux</b>, <b>Cisco UCS</b>, <b>AWS</b> and <b>Azure</b>. Diagnose faster, follow expert playbooks.
+  </span>
+</div>
+
+<!-- Main Application Layout with Left-Side Workspace Sidebar -->
+<div class="app-layout">
+
+  <!-- Left Sidebar (Matching screenshot hierarchy) -->
+  <aside class="app-sidebar">
+
+    <!-- Section 1: WORKSPACE -->
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Workspace</div>
+      
+      <div class="sidebar-item active" data-view="dashboard" onclick="nav('dashboard')">
+        <div class="sidebar-item-left">
+          <span class="sidebar-item-icon">📊</span>
+          <span class="sidebar-item-text">Dashboard</span>
+        </div>
+      </div>
+
+      <div class="sidebar-item" data-view="ai-assistant" onclick="nav('ai-assistant')">
+        <div class="sidebar-item-left">
+          <span class="sidebar-item-icon">✨</span>
+          <span class="sidebar-item-text">AI Assistant</span>
+        </div>
+        <span class="count-badge" style="background:rgba(139,92,246,0.2); color:#c4b5fd;">Gemini+</span>
+      </div>
+
+      <div class="sidebar-item" data-view="knowledge" onclick="nav('knowledge')">
+        <div class="sidebar-item-left">
+          <span class="sidebar-item-icon">📖</span>
+          <span class="sidebar-item-text">Knowledge</span>
+        </div>
+      </div>
+
+      <div class="sidebar-item" data-view="research" onclick="nav('research')">
+        <div class="sidebar-item-left">
+          <span class="sidebar-item-icon">🌐</span>
+          <span class="sidebar-item-text">Research</span>
+        </div>
+        <span class="count-badge">Web</span>
+      </div>
+
+      <div class="sidebar-item" data-view="logs" onclick="nav('logs')">
+        <div class="sidebar-item-left">
+          <span class="sidebar-item-icon">📋</span>
+          <span class="sidebar-item-text">Logs</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: MAIN CATEGORIES (With official SVG Logos) -->
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Main Categories</div>
+
+      <div class="sidebar-item" data-platform="VMware" onclick="filterByPlatform('VMware')">
+        <div class="sidebar-item-left">
+          <span class="sidebar-item-icon" id="sidebarLogo-VMware"></span>
+          <span class="sidebar-item-text">VMware</span>
+        </div>
+      </div>
+
+      <div class="sidebar-item" data-platform="Windows" onclick="filterByPlatform('Windows')">
+        <div class="sidebar-item-left">
+          <span class="sidebar-item-icon" id="sidebarLogo-Windows"></span>
+          <span class="sidebar-item-text">Windows</span>
+        </div>
+      </div>
+
+      <div class="sidebar-item" data-platform="Linux" onclick="filterByPlatform('Linux')">
+        <div class="sidebar-item-left">
+          <span class="sidebar-item-icon" id="sidebarLogo-Linux"></span>
+          <span class="sidebar-item-text">Linux</span>
+        </div>
+      </div>
+
+      <div class="sidebar-item" data-platform="Cisco UCS" onclick="filterByPlatform('Cisco UCS')">
+        <div class="sidebar-item-left">
+          <span class="sidebar-item-icon" id="sidebarLogo-Cisco"></span>
+          <span class="sidebar-item-text">Cisco UCS</span>
+        </div>
+      </div>
+
+      <div class="sidebar-item" data-platform="AWS" onclick="filterByPlatform('AWS')">
+        <div class="sidebar-item-left">
+          <span class="sidebar-item-icon" id="sidebarLogo-AWS"></span>
+          <span class="sidebar-item-text">AWS</span>
+        </div>
+      </div>
+
+      <div class="sidebar-item" data-platform="Azure" onclick="filterByPlatform('Azure')">
+        <div class="sidebar-item-left">
+          <span class="sidebar-item-icon" id="sidebarLogo-Azure"></span>
+          <span class="sidebar-item-text">Azure</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: TOOLS -->
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Tools</div>
+
+      <div class="sidebar-item" data-view="commands" onclick="nav('commands')">
+        <div class="sidebar-item-left">
+          <span class="sidebar-item-icon">⌘</span>
+          <span class="sidebar-item-text">Commands</span>
+        </div>
+      </div>
+
+      <div class="sidebar-item" data-view="scripts" onclick="nav('scripts')">
+        <div class="sidebar-item-left">
+          <span class="sidebar-item-icon">⚡</span>
+          <span class="sidebar-item-text">Automation</span>
+        </div>
+      </div>
+
+      <div class="sidebar-item" data-view="resources" onclick="nav('resources')">
+        <div class="sidebar-item-left">
+          <span class="sidebar-item-icon">🔧</span>
+          <span class="sidebar-item-text">Resources</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 4: MANAGEMENT -->
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Management</div>
+
+      <a href="publisher.html" target="_blank" class="sidebar-item">
+        <div class="sidebar-item-left">
+          <span class="sidebar-item-icon">⚙️</span>
+          <span class="sidebar-item-text">Administration</span>
+        </div>
+        <span style="font-size: 11px; color: var(--cf-blue);">↗</span>
+      </a>
+    </div>
+
+    <!-- Section 5: FILTERS (Interactive checkboxes with counts matching screenshot) -->
+    <div class="sidebar-section">
+      <div class="sidebar-section-title">Filters</div>
+
+      <div class="sidebar-filter-item">
+        <label>
+          <input type="checkbox" id="filter-VMware" onchange="toggleSidebarFilter('VMware')">
+          <span>VMware</span>
+        </label>
+        <span class="filter-count" id="count-VMware">0</span>
+      </div>
+
+      <div class="sidebar-filter-item">
+        <label>
+          <input type="checkbox" id="filter-Windows" onchange="toggleSidebarFilter('Windows')">
+          <span>Windows</span>
+        </label>
+        <span class="filter-count" id="count-Windows">0</span>
+      </div>
+
+      <div class="sidebar-filter-item">
+        <label>
+          <input type="checkbox" id="filter-Linux" onchange="toggleSidebarFilter('Linux')">
+          <span>Linux</span>
+        </label>
+        <span class="filter-count" id="count-Linux">0</span>
+      </div>
+
+      <div class="sidebar-filter-item">
+        <label>
+          <input type="checkbox" id="filter-Cisco UCS" onchange="toggleSidebarFilter('Cisco UCS')">
+          <span>Cisco UCS</span>
+        </label>
+        <span class="filter-count" id="count-Cisco">0</span>
+      </div>
+
+      <div class="sidebar-filter-item">
+        <label>
+          <input type="checkbox" id="filter-AWS" onchange="toggleSidebarFilter('AWS')">
+          <span>AWS</span>
+        </label>
+        <span class="filter-count" id="count-AWS">0</span>
+      </div>
+
+      <div class="sidebar-filter-item">
+        <label>
+          <input type="checkbox" id="filter-Azure" onchange="toggleSidebarFilter('Azure')">
+          <span>Azure</span>
+        </label>
+        <span class="filter-count" id="count-Azure">0</span>
+      </div>
+    </div>
+
+  </aside>
+
+  <!-- Main Content Workspace Area -->
+  <main class="app-main">
+
+    <!-- 1. DASHBOARD VIEW -->
+    <div id="dashboard" class="view active">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+          <div style="max-width: 820px;">
+            <span style="font-size:12px; font-weight:700; color:var(--cf-blue); text-transform:uppercase; letter-spacing:0.05em;">
+              Enterprise Infrastructure Workspace
+            </span>
+            <h2 style="font-size:24px; font-weight:800; margin-top:4px; color:#fff;">
+              IT Infrastructure Troubleshooting & Diagnostics
+            </h2>
+            <p style="font-size:13px; color:var(--text-secondary); margin-top:6px; line-height:1.6;">
+              Production playbooks, real-time error log pattern matcher, diagnostic commands, and recovery workflows across VMware vSphere, Windows Server, Linux, Cisco UCS, AWS, and Azure.
+            </p>
+          </div>
+          <button class="btn-ai-quick" onclick="nav('ai-assistant')">
+            ✨ Ask Gemini AI →
+          </button>
+        </div>
+      </div>
+
+      <!-- Select Technology Platform with Genuine SVG Logos -->
+      <div>
+        <h3 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 12px; display:flex; align-items:center; gap:8px;">
+          <span>Select Technology Platform</span>
+        </h3>
+        <div id="platformGrid" class="platform-grid"></div>
+      </div>
+
+      <!-- Essential Diagnostic Playbooks -->
+      <div style="margin-top: 32px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <h3 style="font-size: 16px; font-weight: 700; color: #fff;">
+            Essential Diagnostic Playbooks
+          </h3>
+          <button class="primary" onclick="nav('knowledge')" style="padding:6px 14px; font-size:12px;">
+            View All Playbooks →
+          </button>
+        </div>
+        <div id="recentArticles" class="articles-grid"></div>
+      </div>
+    </div>
+
+    <!-- 2. AI ASSISTANT VIEW (Multi-AI Model Hub: Gemini, ChatGPT, Claude, Perplexity, DeepSeek) -->
+    <div id="ai-assistant" class="view">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
+          <div>
+            <h3 style="font-size:18px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px;">
+              <span>✨</span>
+              <span>AI Infrastructure Assistant & Multi-Model Hub</span>
+            </h3>
+            <p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">
+              Troubleshoot incidents, analyze logs, generate recovery scripts, and create content with Google Gemini, ChatGPT, Claude, Perplexity, and DeepSeek.
+            </p>
+          </div>
+        </div>
+
+        <!-- AI Model Selector Tabs -->
+        <div class="ai-model-tabs">
+          <button class="ai-tab-btn active" id="tab-gemini" onclick="selectAiModel('gemini')">
+            <span>✨ Google Gemini (Live In-App)</span>
+          </button>
+          <button class="ai-tab-btn" id="tab-chatgpt" onclick="selectAiModel('chatgpt')">
+            <span>🟢 ChatGPT (OpenAI)</span>
+          </button>
+          <button class="ai-tab-btn" id="tab-claude" onclick="selectAiModel('claude')">
+            <span>🟣 Claude (Anthropic)</span>
+          </button>
+          <button class="ai-tab-btn" id="tab-perplexity" onclick="selectAiModel('perplexity')">
+            <span>🔵 Perplexity (Web Grounded)</span>
+          </button>
+          <button class="ai-tab-btn" id="tab-deepseek" onclick="selectAiModel('deepseek')">
+            <span>🔴 DeepSeek (Reasoning & CLI)</span>
+          </button>
+        </div>
+
+        <!-- Quick Incident Prompt Chips -->
+        <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">
+          Suggested Troubleshooting Prompts:
+        </div>
+        <div class="ai-prompts-grid">
+          <div class="ai-prompt-chip" onclick="applyAiPrompt('VMware ESXi host PSOD with NOT_IMPLEMENTED in vmkernel. Analyze root cause and recovery steps.')">
+            🔴 <b>VMware:</b> PSOD NOT_IMPLEMENTED vmkernel
+          </div>
+          <div class="ai-prompt-chip" onclick="applyAiPrompt('Cisco UCS Manager: Fabric Interconnect Subordinate cluster state degraded. Check VIP failover and Ethernet uplink.')">
+            🌉 <b>Cisco UCS:</b> FI Subordinate Degraded Cluster
+          </div>
+          <div class="ai-prompt-chip" onclick="applyAiPrompt('Linux: System high iowait with kswapd0 100% CPU. Diagnose memory pressure and disk bottleneck.')">
+            🐧 <b>Linux:</b> kswapd0 100% CPU & high iowait
+          </div>
+          <div class="ai-prompt-chip" onclick="applyAiPrompt('Windows Server: Kerberos Pre-Authentication Failure Event ID 4771 with Failure Code 0x18. Remediate account lockouts.')">
+            🪟 <b>Windows:</b> Kerberos Event ID 4771 Code 0x18
+          </div>
+        </div>
+
+        <!-- Target Platform & Query Input -->
+        <div style="display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap;">
+          <select id="aiPlatformSelect" style="flex:1; min-width:180px; margin-bottom:0;">
+            <option value="VMware">Platform: VMware vSphere</option>
+            <option value="Cisco UCS">Platform: Cisco UCS</option>
+            <option value="Windows">Platform: Windows Server</option>
+            <option value="Linux">Platform: Linux (RHEL/Ubuntu)</option>
+            <option value="AWS">Platform: AWS Cloud</option>
+            <option value="Azure">Platform: Microsoft Azure</option>
+          </select>
+        </div>
+
+        <textarea
+          id="aiPromptInput"
+          rows="5"
+          placeholder="Describe infrastructure incident, paste error message, or ask for diagnosis/script..."
+        ></textarea>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button id="runAiBtn" class="primary" onclick="submitAiQuery()">
+              ✨ Ask Google Gemini
+            </button>
+            <button id="copyPromptBtn" class="secondary" onclick="copyEngineeredPrompt()" title="Copy prompt with engineered sysadmin context">
+              📋 Copy Prompt
+            </button>
+            <button id="openExternalAiBtn" class="secondary" onclick="openExternalAi()" style="display:none;" title="Open model in external tab (optional)">
+              🌐 Launch External Tab ↗
+            </button>
+          </div>
+          <span id="aiStatusNote" style="font-size: 12px; color: var(--text-muted);">
+            Active Model: Google Gemini Flash (In-App) • Generates solution directly in webpage
+          </span>
+        </div>
+      </div>
+
+      <!-- AI Response Output Panel -->
+      <div id="aiOutputPanel" class="result-panel" style="display:none;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+          <h2 style="margin-bottom:0; display:flex; align-items:center; gap:8px;">
+            <span>🤖</span>
+            <span>Gemini AI Diagnostic Solution</span>
+          </h2>
+          <div style="display:flex; gap:8px;">
+            <button class="secondary" onclick="copyAiOutput()" style="padding:4px 10px; font-size:11px;">
+              📋 Copy Solution
+            </button>
+            <button class="secondary" onclick="exportAiToPublisher()" style="padding:4px 10px; font-size:11px; color:#60a5fa;">
+              📝 Open in Publisher Portal ↗
+            </button>
+          </div>
+        </div>
+        <div id="aiOutputContent" class="article-detail" style="background:#090e1a; padding:20px; border-radius:8px; border:1px solid var(--border);"></div>
+      </div>
+    </div>
+
+    <!-- 3. KNOWLEDGE BASE VIEW -->
+    <div id="knowledge" class="view">
+      <div class="card">
+        <h3 style="font-size:17px; font-weight:700; color:#fff; margin-bottom:12px;">Search & Filter Playbooks</h3>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <input id="kbSearch" type="text" placeholder="Search keywords, errors, PSOD, event ID, certificate..." style="flex:2; min-width:260px; margin-bottom:0;">
+          <select id="kbPlatform" style="flex:1; min-width:160px; margin-bottom:0;"></select>
+          <select id="kbCategory" style="flex:1; min-width:160px; margin-bottom:0;"></select>
+        </div>
+      </div>
+
+      <div id="kbResults" class="articles-grid"></div>
+    </div>
+
+    <!-- 4. RESEARCH & MULTI-CONTENT SEARCH VIEW -->
+    <div id="research" class="view">
+      <div class="card">
+        <h3 style="font-size:18px; font-weight:800; color:#fff; margin-bottom:6px; display:flex; align-items:center; gap:8px;">
+          <span>🌐</span>
+          <span>Unified Multi-Content Research & Internet Search</span>
+        </h3>
+        <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">
+          Search across knowledge articles, diagnostic commands, automation scripts, logs, and external vendor documentation portals simultaneously.
+        </p>
+
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <input
+            id="researchInput"
+            type="text"
+            placeholder="Enter search terms (e.g. Cisco UCS fabric interconnect, ESXi PSOD, kerberos 4771)..."
+            style="flex:3; min-width:280px; margin-bottom:0;"
+            onkeydown="if(event.key==='Enter') executeResearchSearch()"
+          >
+          <button class="primary" onclick="executeResearchSearch()">
+            🔍 Search Workspace
+          </button>
+        </div>
+
+        <!-- Multi-Content Tabs -->
+        <div class="search-filter-tabs">
+          <button class="search-filter-tab active" data-type="all" onclick="filterResearchTab('all')">
+            All Content (<span id="researchCount-all">0</span>)
+          </button>
+          <button class="search-filter-tab" data-type="articles" onclick="filterResearchTab('articles')">
+            📖 Playbooks (<span id="researchCount-articles">0</span>)
+          </button>
+          <button class="search-filter-tab" data-type="commands" onclick="filterResearchTab('commands')">
+            ⌘ Commands (<span id="researchCount-commands">0</span>)
+          </button>
+          <button class="search-filter-tab" data-type="scripts" onclick="filterResearchTab('scripts')">
+            ⚡ Scripts (<span id="researchCount-scripts">0</span>)
+          </button>
+          <button class="search-filter-tab" data-type="logs" onclick="filterResearchTab('logs')">
+            📋 Logs (<span id="researchCount-logs">0</span>)
+          </button>
+        </div>
+
+        <!-- External Internet Search Launchers -->
+        <div style="margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--border);">
+          <div style="font-size:12px; font-weight:700; color:var(--text-muted); margin-bottom:8px; text-transform:uppercase;">
+            Search External Portals & Technical Internet:
+          </div>
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
+            <button class="secondary" onclick="launchWebSearch('broadcom')" style="font-size:12px;">
+              🌐 Broadcom VMware KB ↗
+            </button>
+            <button class="secondary" onclick="launchWebSearch('cisco')" style="font-size:12px;">
+              🌐 Cisco UCS Technical Docs ↗
+            </button>
+            <button class="secondary" onclick="launchWebSearch('microsoft')" style="font-size:12px;">
+              🌐 Microsoft Learn & TechNet ↗
+            </button>
+            <button class="secondary" onclick="launchWebSearch('google')" style="font-size:12px;">
+              🔍 Google Search ↗
+            </button>
+            <button class="secondary" onclick="launchWebSearch('stackoverflow')" style="font-size:12px;">
+              💬 Stack Overflow ↗
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="researchResults"></div>
+    </div>
+
+    <!-- 5. LOG INSPECTOR VIEW -->
+    <div id="logs" class="view">
+      <div class="card">
+        <h3 style="font-size:17px; font-weight:700; color:#fff; margin-bottom:6px;">Real-Time Log Inspector</h3>
+        <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">
+          Paste raw log excerpts to automatically identify originating components (vpxd, hostd, vmkernel, fdm, certificate, APD).
+        </p>
+        <textarea id="logInput" rows="7" placeholder="Paste raw log lines here..."></textarea>
+        <div style="display:flex; gap:10px;">
+          <button id="inspectLogBtn" class="primary">Inspect Logs</button>
+          <button class="secondary" onclick="sendLogsToAi()">✨ Analyze with Gemini AI</button>
+        </div>
+      </div>
+
+      <div id="logOutput"></div>
+    </div>
+
+    <!-- 6. COMMANDS & CLI VIEW -->
+    <div id="commands" class="view">
+      <div class="card">
+        <h3 style="font-size:17px; font-weight:700; color:#fff; margin-bottom:12px;">Diagnostic Commands & Cheat Sheets</h3>
+        <input id="commandSearch" type="text" placeholder="Search commands by name, syntax, or platform..." style="margin-bottom:0;">
+      </div>
+
+      <div id="commandResults"></div>
+    </div>
+
+    <!-- 7. AUTOMATION SCRIPTS VIEW -->
+    <div id="scripts" class="view">
+      <div class="card">
+        <h3 style="font-size:17px; font-weight:700; color:#fff; margin-bottom:4px;">Automation & Remediation Scripts</h3>
+        <p style="font-size:13px; color:var(--text-secondary);">PowerCLI, Bash Watchdog, and PowerShell health scripts with 1-click copy.</p>
+      </div>
+
+      <div id="scriptResults"></div>
+    </div>
+
+    <!-- 8. RESOURCES VIEW -->
+    <div id="resources" class="view">
+      <div class="card">
+        <h3 style="font-size:17px; font-weight:700; color:#fff; margin-bottom:12px;">Architecture Guides & Documentation</h3>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <input id="resourceSearch" type="text" placeholder="Search documentation and portal links..." style="flex:2; min-width:240px; margin-bottom:0;">
+          <select id="resourceCategory" style="flex:1; min-width:160px; margin-bottom:0;"></select>
+        </div>
+      </div>
+
+      <div id="resourceResults" class="articles-grid"></div>
+    </div>
+
+  </main>
+</div>
+
+<!-- Article Detail Modal -->
+<div id="articleModal" class="modal-overlay hidden">
+  <div class="modal-box" id="articleModalBox">
+    <div class="modal-header-actions">
+      <button type="button" class="modal-action-btn" id="modalFullscreenBtn" onclick="toggleArticleModalFullscreen()" title="Toggle Fullscreen">⛶</button>
+      <button id="closeModal" class="close-modal" style="position:static;" onclick="closeArticleModal()" title="Close">✕</button>
+    </div>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<!-- Secure In-Website Document & Attachment Viewer Modal (Download Restricted) -->
+<div id="secureViewerModal" class="modal-overlay hidden">
+  <div class="modal-box secure-viewer-modal">
+    <div class="secure-viewer-header">
+      <div class="secure-viewer-title">
+        <span id="secureViewerIcon" style="font-size:18px;">📎</span>
+        <div>
+          <div id="secureViewerFilename" style="font-weight:700; color:#fff; font-size:14px;">Document Viewer</div>
+          <span class="secure-badge">🔒 Secure View-Only • Download Restricted</span>
+        </div>
+      </div>
+      <div class="secure-viewer-controls">
+        <button class="secure-viewer-btn" id="secureZoomIn" onclick="zoomSecureViewer(0.2)" title="Zoom In">🔍 +</button>
+        <button class="secure-viewer-btn" id="secureZoomOut" onclick="zoomSecureViewer(-0.2)" title="Zoom Out">🔍 -</button>
+        <button class="secure-viewer-btn" id="secureResetZoom" onclick="resetSecureZoom()" title="Reset Zoom">100%</button>
+        <button class="secure-viewer-btn" id="secureViewerFsBtn" onclick="toggleSecureViewerFullscreen()" title="Toggle Fullscreen">⛶ Fullscreen</button>
+        <button class="secure-viewer-btn" id="secureViewerDlBtn" onclick="downloadCurrentViewerFile()" title="Download File">⬇ Download</button>
+        <button class="close-modal" style="position:static;" onclick="closeSecureViewer()">✕</button>
+      </div>
+    </div>
+    <div class="secure-viewer-body" id="secureViewerBody" oncontextmenu="return false;">
+      <!-- Content injected by JavaScript -->
+    </div>
+    <div class="secure-viewer-watermark">
+      SysAdminIQ In-App Document Inspection
+    </div>
+  </div>
+</div>
+
+<!-- Load Scripts -->
+<script type="module" src="app.js"></script>
+</body>
+</html>
