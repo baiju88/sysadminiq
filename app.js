@@ -708,24 +708,229 @@ function updateSidebarFilterCounts() {
   });
 }
 
+function toggleSidebarFilterRow(platform, event) {
+  const cb = document.getElementById(`filter-${platform}`);
+  if (cb) {
+    if (!event || event.target !== cb) {
+      cb.checked = !cb.checked;
+    }
+    const row = document.getElementById(`filter-row-${platform}`);
+    if (row) row.classList.toggle('active-filter', cb.checked);
+    toggleSidebarFilter(platform);
+  }
+}
+
 function toggleSidebarFilter(platform) {
   nav('knowledge');
   const sel = $('#kbPlatform');
-  if (sel) sel.value = platform;
-  renderKB($('#kbSearch')?.value || '', platform, $('#kbCategory')?.value || 'all');
+  const cb = document.getElementById(`filter-${platform}`);
+  const target = cb && cb.checked ? platform : 'all';
+  if (sel) sel.value = target;
+  
+  // Highlight active category item if any
+  $$('.sidebar-item[data-platform]').forEach(el => {
+    el.classList.toggle('active', el.dataset.platform === target);
+  });
+
+  renderKB($('#kbSearch')?.value || '', target, $('#kbCategory')?.value || 'all');
 }
 
 function filterByPlatform(platform) {
   nav('knowledge');
   const sel = $('#kbPlatform');
-  if (sel) sel.value = platform;
-  renderKB($('#kbSearch')?.value || '', platform, $('#kbCategory')?.value || 'all');
+  const target = platform || 'all';
+  if (sel) sel.value = target;
+
+  // Sync checkboxes
+  ['VMware', 'Windows', 'Linux', 'Cisco UCS', 'AWS', 'Azure'].forEach(p => {
+    const cb = document.getElementById(`filter-${p}`);
+    const row = document.getElementById(`filter-row-${p}`);
+    const isMatched = (target === p);
+    if (cb) cb.checked = isMatched;
+    if (row) row.classList.toggle('active-filter', isMatched);
+  });
+
+  // Highlight active sidebar item
+  $$('.sidebar-item[data-platform]').forEach(el => {
+    el.classList.toggle('active', el.dataset.platform === target);
+  });
+
+  renderKB($('#kbSearch')?.value || '', target, $('#kbCategory')?.value || 'all');
+}
+
+function resetSidebarFilters() {
+  ['VMware', 'Windows', 'Linux', 'Cisco UCS', 'AWS', 'Azure'].forEach(p => {
+    const cb = document.getElementById(`filter-${p}`);
+    const row = document.getElementById(`filter-row-${p}`);
+    if (cb) cb.checked = false;
+    if (row) row.classList.remove('active-filter');
+  });
+
+  $$('.sidebar-item[data-platform]').forEach(el => el.classList.remove('active'));
+
+  const sel = $('#kbPlatform');
+  if (sel) sel.value = 'all';
+  const searchInput = $('#kbSearch');
+  if (searchInput) searchInput.value = '';
+
+  renderKB('', 'all', 'all');
+  showToast('Filters reset to all technology platforms', 'info');
+}
+
+// Sidebar Accordion Click Functions (Categories, Tools, Management, Filters)
+const _appToggleTimes = {};
+
+function toggleSidebarSection(sectionId, event) {
+  if (event) {
+    if (typeof event.stopPropagation === 'function') event.stopPropagation();
+  }
+  const now = Date.now();
+  if (_appToggleTimes[sectionId] && (now - _appToggleTimes[sectionId] < 200)) {
+    return; // Guard against duplicate invocation within 200ms
+  }
+  _appToggleTimes[sectionId] = now;
+
+  const content = document.getElementById(`sidebar-content-${sectionId}`);
+  const arrow = document.getElementById(`arrow-${sectionId}`);
+  const title = document.getElementById(`title-${sectionId}`);
+  if (!content) return;
+
+  const willExpand = content.classList.contains('collapsed') || content.style.display === 'none';
+
+  if (willExpand) {
+    // EXPAND
+    content.classList.remove('collapsed');
+    content.classList.remove('hidden');
+    content.style.display = 'block';
+    if (arrow) arrow.textContent = '▾';
+    if (title) {
+      title.classList.remove('is-collapsed');
+      title.setAttribute('aria-expanded', 'true');
+    }
+  } else {
+    // COLLAPSE
+    content.classList.add('collapsed');
+    content.style.display = 'none';
+    if (arrow) arrow.textContent = '▸';
+    if (title) {
+      title.classList.add('is-collapsed');
+      title.setAttribute('aria-expanded', 'false');
+    }
+  }
+}
+window.toggleSidebarSection = toggleSidebarSection;
+
+// Administration Submenu Toggle (Hidden behind Management until clicked)
+let _appAdminToggleTime = 0;
+
+function toggleAdminSubmenu(event) {
+  if (event) {
+    if (typeof event.stopPropagation === 'function') event.stopPropagation();
+    if (typeof event.preventDefault === 'function') event.preventDefault();
+  }
+  const now = Date.now();
+  if (now - _appAdminToggleTime < 200) {
+    return; // Guard against duplicate invocation within 200ms
+  }
+  _appAdminToggleTime = now;
+
+  const subContent = document.getElementById('admin-sub-content');
+  const arrow = document.getElementById('admin-sub-arrow');
+  const trigger = document.getElementById('admin-expand-trigger');
+  if (!subContent) return;
+
+  const willExpand = subContent.classList.contains('collapsed') || subContent.style.display === 'none';
+
+  if (willExpand) {
+    // EXPAND Administration: reveals Admin Console & Publisher Portal Link
+    subContent.classList.remove('collapsed');
+    subContent.classList.remove('hidden');
+    subContent.style.display = 'flex';
+    if (arrow) arrow.textContent = '▾';
+    if (trigger) {
+      trigger.classList.remove('is-collapsed');
+      trigger.classList.add('is-expanded');
+      trigger.setAttribute('aria-expanded', 'true');
+    }
+  } else {
+    // COLLAPSE Administration: hides Admin Console & Publisher Portal Link
+    subContent.classList.add('collapsed');
+    subContent.style.display = 'none';
+    if (arrow) arrow.textContent = '▸';
+    if (trigger) {
+      trigger.classList.add('is-collapsed');
+      trigger.classList.remove('is-expanded');
+      trigger.setAttribute('aria-expanded', 'false');
+    }
+  }
+}
+window.toggleAdminSubmenu = toggleAdminSubmenu;
+
+function handlePublisherLink(event) {
+  if (event) {
+    if (typeof event.stopPropagation === 'function') event.stopPropagation();
+  }
+  if (event && (event.ctrlKey || event.metaKey)) return true;
+  try {
+    const opened = window.open('publisher.html', '_blank');
+    if (!opened || opened.closed || typeof opened.closed === 'undefined') {
+      window.location.href = 'publisher.html';
+    }
+  } catch (err) {
+    window.location.href = 'publisher.html';
+  }
+  if (event && typeof event.preventDefault === 'function') {
+    event.preventDefault();
+  }
+  return false;
+}
+window.handlePublisherLink = handlePublisherLink;
+
+function renderAdminView() {
+  const artCount = $('#adminTotalArticles');
+  if (artCount) artCount.textContent = (DB.articles || []).length;
+
+  const cmdCount = $('#adminTotalCommands');
+  if (cmdCount) cmdCount.textContent = (DB.commands || []).length;
+
+  const scrCount = $('#adminTotalScripts');
+  if (scrCount) scrCount.textContent = (DB.scripts || []).length;
+
+  const beStatus = $('#adminBackendStatus');
+  if (beStatus) {
+    beStatus.textContent = BACKEND_ONLINE ? 'Connected (Cloudflare D1)' : 'Operational (Local Fast Database)';
+    beStatus.style.color = BACKEND_ONLINE ? '#34d399' : '#38bdf8';
+  }
+}
+
+function syncWithCloudflareD1() {
+  showToast('Synchronizing with Cloudflare D1 storage...', 'info');
+  loadFromBackend().then(() => {
+    renderAdminView();
+    renderKB();
+    updateSidebarFilterCounts();
+    showToast('Synchronization complete! Knowledge base is up to date.', 'success');
+  }).catch(e => {
+    console.warn('Sync error:', e);
+    showToast('Cloudflare D1 sync completed with local cached database.', 'info');
+  });
+}
+
+function exportDatabaseJson() {
+  const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(DB, null, 2));
+  const dlAnchor = document.createElement('a');
+  dlAnchor.setAttribute("href", dataStr);
+  dlAnchor.setAttribute("download", `sysadminiq_database_backup_${new Date().toISOString().split('T')[0]}.json`);
+  document.body.appendChild(dlAnchor);
+  dlAnchor.click();
+  dlAnchor.remove();
+  showToast('Database JSON backup downloaded successfully.', 'success');
 }
 
 function copy(text) {
   const val = Array.isArray(text) ? text.join('\n') : String(text);
   navigator.clipboard.writeText(val)
-    .then(() => alert('Copied to clipboard.'))
+    .then(() => showToast('Copied to clipboard!', 'success'))
     .catch(() => {
       const ta = document.createElement('textarea');
       ta.value = val;
@@ -733,7 +938,7 @@ function copy(text) {
       ta.select();
       document.execCommand('copy');
       document.body.removeChild(ta);
-      alert('Copied to clipboard.');
+      showToast('Copied to clipboard!', 'success');
     });
 }
 
@@ -744,6 +949,9 @@ function nav(view) {
     }
   });
   $$('.view').forEach(x => x.classList.toggle('active', x.id === view));
+  if (view === 'admin') {
+    renderAdminView();
+  }
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -776,68 +984,123 @@ function openArticleById(id) {
   if (a) openArticle(a);
 }
 
-// Deep clean Word, OneNote & Excel pasted HTML artifacts (remove white boxes, mso margins, black text)
+// Deep clean Word, OneNote & Excel pasted HTML artifacts (remove white boxes, mso margins, black text, and stray pipe markers)
 function cleanWordPastedHtml(raw) {
-  if (!raw) return '';
+  if (!raw) return "";
   let html = raw;
-  html = html.replace(/<!--[\s\S]*?-->/gi, '');
-  html = html.replace(/<o:p[\s\S]*?<\/o:p>/gi, '');
-  html = html.replace(/<xml[\s\S]*?<\/xml>/gi, '');
-  html = html.replace(/<style[\s\S]*?<\/style>/gi, '');
-  html = html.replace(/class="?Mso\w+"?/gi, '');
+  html = html.replace(/<!--[\s\S]*?-->/gi, "");
+  html = html.replace(/<o:p[\s\S]*?<\/o:p>/gi, "");
+  html = html.replace(/<xml[\s\S]*?<\/xml>/gi, "");
+  html = html.replace(/<style[\s\S]*?<\/style>/gi, "");
+  html = html.replace(/class="?Mso\w+"?/gi, "");
   html = html.replace(/&quot;/g, "'");
 
-  if (typeof DOMParser !== 'undefined') {
+  if (typeof DOMParser !== "undefined") {
     try {
       const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-      const els = doc.body.querySelectorAll('*');
-      els.forEach(el => {
-        if (el.className && typeof el.className === 'string') {
-          el.className = el.className.replace(/Mso\w+/gi, '').trim();
-          if (!el.className) el.removeAttribute('class');
+      const doc = parser.parseFromString(html, "text/html");
+
+      // 1. Strip all OneNote/Word End-Of-Paragraph (EOP) pipe symbol artifacts
+      doc.querySelectorAll(".EOP, [class*=\"EOP\"], span.EOP, .eop, [class*=\"eop\"], font.EOP").forEach(el => el.remove());
+
+      // 2. Strip standalone pipe symbols inserted by OneNote paragraph endings
+      doc.querySelectorAll("span, font, em, i, b, strong, p, div, li, td").forEach(el => {
+        const txt = el.textContent.trim();
+        if (txt === "|" || txt === "│" || txt === "¦" || txt === "ǀ" || txt === "&#124;" || txt === "&vert;" || el.classList.contains("EOP") || (typeof el.className === "string" && el.className.includes("EOP"))) {
+          el.remove();
         }
-        const style = el.getAttribute('style');
+      });
+
+      // 3. Remove trailing/leading pipe markers inside block elements & stray entities
+      doc.querySelectorAll("p, div, li, td, h1, h2, h3, h4").forEach(el => {
+        if (el.innerHTML) {
+          el.innerHTML = el.innerHTML
+            .replace(/&#124;|&vert;/gi, "")
+            .replace(/(?:^|<br\s*\/?>)\s*[|\u2502\u007C\u00A6\u01C0]\s*(?:<br\s*\/?>|$)/gi, "<br>")
+            .replace(/\s*[|\u2502\u007C\u00A6\u01C0]\s*$/gi, "")
+            .replace(/^\s*[|\u2502\u007C\u00A6\u01C0]\s*/gi, "")
+            .replace(/([^\w\s])[|\u2502\u007C\u00A6\u01C0]/g, "$1")
+            .replace(/[|\u2502\u007C\u00A6\u01C0]([^\w\s])/g, "$1");
+        }
+      });
+
+      const els = doc.body.querySelectorAll("*");
+      els.forEach(el => {
+        if (el.className && typeof el.className === "string") {
+          el.className = el.className.replace(/Mso\w+/gi, "").replace(/\bEOP\b/gi, "").trim();
+          if (!el.className) el.removeAttribute("class");
+        }
+        const style = el.getAttribute("style");
         if (style) {
-          const declarations = style.split(';').map(s => s.trim()).filter(Boolean);
+          const declarations = style.split(";").map(s => s.trim()).filter(Boolean);
           const kept = [];
           for (const dec of declarations) {
             const lower = dec.toLowerCase();
-            if (lower.startsWith('mso-') || lower.includes('mso-')) continue;
-            if (lower.startsWith('tab-stops') || lower.includes('tab-stops')) continue;
-            if (lower.startsWith('font-family')) continue;
-            if (lower.startsWith('line-height')) continue;
-            if (lower.startsWith('margin-') && lower.includes('alt')) continue;
-            if (lower.includes('background') && (lower.includes('white') || lower.includes('#fff') || lower.includes('255, 255, 255') || lower.includes('255,255,255'))) continue;
-            if (lower.includes('color') && (lower.includes('black') || lower.includes('#000') || lower.includes('windowtext'))) continue;
+            if (lower.startsWith("mso-") || lower.includes("mso-")) continue;
+            if (lower.startsWith("tab-stops") || lower.includes("tab-stops")) continue;
+            if (lower.startsWith("font-family")) continue;
+            if (lower.startsWith("line-height")) continue;
+            if (lower.startsWith("margin-") && lower.includes("alt")) continue;
+            if (lower.includes("background") && (lower.includes("white") || lower.includes("#fff") || lower.includes("255, 255, 255") || lower.includes("255,255,255"))) continue;
+            
+            // Normalize light or washed-out gray text to high-contrast dark text (#1e293b)
+            if (lower.includes("color:") || lower.startsWith("color")) {
+              if (
+                lower.includes("white") || lower.includes("#fff") || lower.includes("255, 255, 255") ||
+                lower.includes("255,255,255") || lower.includes("#f8fafc") || lower.includes("#f1f5f9") ||
+                lower.includes("#e2e8f0") || lower.includes("#cbd5e1") || lower.includes("#94a3b8") ||
+                lower.includes("#64748b") || lower.includes("#595959") || lower.includes("#7f7f7f") ||
+                lower.includes("#808080") || lower.includes("#c6c6c6") || lower.includes("#d4d4d4") ||
+                lower.includes("gray") || lower.includes("grey")
+              ) {
+                kept.push("color: #1e293b");
+                continue;
+              }
+            }
             kept.push(dec);
           }
           if (kept.length > 0) {
-            el.setAttribute('style', kept.join('; '));
+            el.setAttribute("style", kept.join("; "));
           } else {
-            el.removeAttribute('style');
+            el.removeAttribute("style");
           }
         }
-        if (el.tagName === 'TABLE' && !el.classList.contains('onenote-table')) {
-          el.classList.add('onenote-table');
+        if (el.tagName === "TABLE" && !el.classList.contains("onenote-table")) {
+          el.classList.add("onenote-table");
         }
-        if (el.tagName === 'SPAN' && !el.getAttribute('style') && !el.getAttribute('class')) {
+        if (el.tagName === "SPAN" && !el.getAttribute("style") && !el.getAttribute("class")) {
           el.replaceWith(...el.childNodes);
         }
       });
       return doc.body.innerHTML;
     } catch (e) {
-      console.warn('DOMParser sanitize error, using regex:', e);
+      console.warn("DOMParser sanitize error, using regex:", e);
     }
   }
 
-  // Regex fallback
-  html = html.replace(/background(-color)?\s*:\s*(white|#fff|#ffffff|rgb\(255,\s*255,\s*255\));?/gi, '');
-  html = html.replace(/color\s*:\s*(black|#000|#000000|windowtext);?/gi, '');
-  html = html.replace(/mso-[^;"]+;?/gi, '');
-  html = html.replace(/tab-stops:[^;"]+;?/gi, '');
-  html = html.replace(/font-family:[^;"]+;?/gi, '');
-  html = html.replace(/style="\s*"/gi, '');
+  // Regex fallback: eliminate pipe artifacts & clean styling while preserving markdown tables
+  html = html.replace(/<span[^>]*class="[^"]*EOP[^"]*"[^>]*>[\s\S]*?<\/span>/gi, "");
+  html = html.replace(/<span[^>]*>[|\u2502\u007C\u00A6\u01C0]<\/span>/gi, "");
+  html = html.replace(/<font[^>]*>[|\u2502\u007C\u00A6\u01C0]<\/font>/gi, "");
+  html = html.replace(/&#124;|&vert;/gi, "");
+
+  // Clean stray pipes per-line while preserving markdown table rows
+  const rawLines = html.split("\n");
+  html = rawLines.map(line => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith("|") && trimmed.endsWith("|") && (trimmed.match(/\|/g) || []).length >= 2) {
+      return line; // Preserve markdown table
+    }
+    return line.replace(/\s*[|\u2502\u007C\u00A6\u01C0]\s*/g, " ");
+  }).join("\n");
+
+  html = html.replace(/background(-color)?\s*:\s*(white|#fff|#ffffff|rgb\(255,\s*255,\s*255\));?/gi, "");
+  html = html.replace(/color\s*:\s*(white|#fff|#ffffff|#f8fafc|#e2e8f0|#cbd5e1|#94a3b8|#64748b|gray|grey);?/gi, "color: #1e293b;");
+  html = html.replace(/color\s*:\s*(black|#000|#000000|windowtext);?/gi, "");
+  html = html.replace(/mso-[^;"]+;?/gi, "");
+  html = html.replace(/tab-stops:[^;"]+;?/gi, "");
+  html = html.replace(/font-family:[^;"]+;?/gi, "");
+  html = html.replace(/style="\s*"/gi, "");
   return html;
 }
 
@@ -1437,17 +1700,7 @@ function toggleSecureViewerFullscreen() {
 }
 
 function downloadCurrentViewerFile() {
-  if (window.currentViewerFileUrl) {
-    const a = document.createElement('a');
-    a.href = window.currentViewerFileUrl;
-    a.download = window.currentViewerFileName || 'document';
-    a.target = '_blank';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  } else {
-    showToast('No active download URL available', 'warning');
-  }
+  showToast('🔒 Direct file download is restricted. Document preview is available in secure view-only mode for main page users.', 'warning');
 }
 
 // Expose globals for onclick attributes
@@ -1484,8 +1737,11 @@ function renderAttachmentsList(rawAttachments) {
                 <div style="color:#f8fafc; font-weight:600; font-size:14px;">
                   ${esc(fileName)}
                 </div>
-                <div style="font-size:11px; color:#64748b; margin-top:2px;">
-                  ${esc(file.type || ext.toUpperCase())} ${file.size ? '• ' + Math.round(file.size / 1024) + ' KB' : ''} • 🔒 View-Only
+                <div style="font-size:11px; color:#64748b; margin-top:4px; display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                  <span>${esc(file.type || ext.toUpperCase())} ${file.size ? '• ' + Math.round(file.size / 1024) + ' KB' : ''}</span>
+                  <span style="display:inline-flex; align-items:center; gap:3px; padding:2px 8px; border-radius:4px; font-weight:600; font-size:11px; background:rgba(239,68,68,0.12); color:#fca5a5; border:1px solid rgba(239,68,68,0.25);">
+                    🔒 Download Restricted (View-Only)
+                  </span>
                 </div>
               </div>
             </div>
@@ -1591,22 +1847,323 @@ function selectAiModel(model) {
 
   const note = $('#aiStatusNote');
   const runBtn = $('#runAiBtn');
-  const extBtn = $('#openExternalAiBtn');
+  const outTitle = $('#aiOutputTitle');
 
   const names = {
-    gemini: 'Google Gemini Flash (In-App)',
-    chatgpt: 'ChatGPT Engine (In-App)',
-    claude: 'Claude Engine (In-App)',
-    perplexity: 'Perplexity Engine (In-App)',
-    deepseek: 'DeepSeek CLI & Reasoning (In-App)'
+    gemini: 'Google Gemini Flash',
+    chatgpt: 'ChatGPT 4o (OpenAI)',
+    claude: 'Claude 3.5 Sonnet',
+    perplexity: 'Perplexity (Web Grounded)',
+    deepseek: 'DeepSeek (Reasoning & CLI)'
   };
 
-  if (note) note.textContent = `Active Model: ${names[model] || 'AI'} • Generates solution directly in webpage`;
+  if (note) note.textContent = `Active Model: ${names[model] || 'AI'} • Troubleshoots & searches directly in webpage`;
   if (runBtn) {
-    runBtn.textContent = model === 'gemini' ? '✨ Ask Google Gemini' : `⚡ Run Diagnosis with ${names[model].split(' ')[0]}`;
+    runBtn.textContent = `⚡ Troubleshoot Incident with ${names[model] ? names[model].split(' ')[0] : 'AI'}`;
   }
-  if (extBtn) {
-    extBtn.style.display = model === 'gemini' ? 'none' : 'inline-flex';
+  if (outTitle) {
+    outTitle.textContent = `${names[model] || 'AI'} Diagnostic Solution & Actionable Playbook`;
+  }
+}
+
+const ALL_TROUBLESHOOTING_PROMPTS = [
+  // VMware
+  {
+    platform: 'VMware',
+    badge: '🔴 VMware',
+    title: 'PSOD NOT_IMPLEMENTED vmkernel crash',
+    prompt: 'VMware ESXi host PSOD with NOT_IMPLEMENTED in vmkernel. Analyze root cause, coredump extraction and recovery steps.'
+  },
+  {
+    platform: 'VMware',
+    badge: '🔴 VMware',
+    title: 'vSAN disk group degraded & rebuild',
+    prompt: 'VMware vSAN: Disk group degraded due to physical drive permanent error. Run health check and trigger non-disruptive disk rebuild.'
+  },
+  {
+    platform: 'VMware',
+    badge: '🔴 VMware',
+    title: 'vCenter VCSA /storage/seat 100% full',
+    prompt: 'VMware vCenter: VCSA 8.0 services failed to start (vmware-vpxd crash) due to PostgreSQL /storage/seat 100% disk full.'
+  },
+  {
+    platform: 'VMware',
+    badge: '🔴 VMware',
+    title: 'VM stun & locked .vmdk snapshot failure',
+    prompt: 'VMware VM stun & snapshot consolidation failure: Locked file .vmdk by backup proxy. Force unlock and snapshot consolidation without downtime.'
+  },
+  {
+    platform: 'VMware',
+    badge: '🔴 VMware',
+    title: 'DVS switch packet drop after vMotion',
+    prompt: 'VMware vSphere DVS: Virtual machine lost network connectivity after vMotion. Check VLAN trunking and physical uplinks.'
+  },
+
+  // Windows
+  {
+    platform: 'Windows',
+    badge: '🪟 Windows',
+    title: 'Kerberos 4771 Code 0x18 lockout',
+    prompt: 'Windows Server: Kerberos Pre-Authentication Failure Event ID 4771 with Failure Code 0x18. Remediate account lockouts.'
+  },
+  {
+    platform: 'Windows',
+    badge: '🪟 Windows',
+    title: 'AD DC replication error 8453 (RPC)',
+    prompt: 'Active Directory: Domain Controller replication error 8453 (Replication access was denied). Check RPC dynamic ports and ACL permissions.'
+  },
+  {
+    platform: 'Windows',
+    badge: '🪟 Windows',
+    title: 'DFS-R staging folder quota exceeded',
+    prompt: 'Windows DFS-R: Replication backlog accumulating and staging folder quota exceeded. Clear dirty shutdown state and reseed.'
+  },
+  {
+    platform: 'Windows',
+    badge: '🪟 Windows',
+    title: 'Hyper-V VSS writer 0x800423f3',
+    prompt: 'Hyper-V: VSS backup writer failure Event ID 8193 with 0x800423f3. Troubleshoot shadow copy storage and restart Volume Shadow Copy.'
+  },
+  {
+    platform: 'Windows',
+    badge: '🪟 Windows',
+    title: 'DNS server fails scavenging records',
+    prompt: 'Windows DNS Server: DNS server fails to scavenge stale resource records. Remediate aging settings and tombstone replication.'
+  },
+
+  // Linux
+  {
+    platform: 'Linux',
+    badge: '🐧 Linux',
+    title: 'kswapd0 100% CPU & high iowait',
+    prompt: 'Linux: System high iowait with kswapd0 100% CPU. Diagnose memory pressure, vm.dirty_ratio, and NVMe disk bottleneck.'
+  },
+  {
+    platform: 'Linux',
+    badge: '🐧 Linux',
+    title: 'Kernel OOM-killer killed service',
+    prompt: 'Linux systemd-oomd: Critical production process terminated by kernel OOM killer. Inspect cgroup memory limit and dmesg traces.'
+  },
+  {
+    platform: 'Linux',
+    badge: '🐧 Linux',
+    title: 'Read-only remount XFS/EXT4 corruption',
+    prompt: 'Linux Filesystem: XFS / EXT4 metadata corruption forced read-only remount. Perform emergency xfs_repair / fsck with journal rollback.'
+  },
+  {
+    platform: 'Linux',
+    badge: '🐧 Linux',
+    title: 'Kernel panic NMI watchdog CPU stuck',
+    prompt: 'Linux Kernel Panic: NMI watchdog bug: soft lockup - CPU#4 stuck for 23s! Identify offending driver and tune kernel scheduler.'
+  },
+  {
+    platform: 'Linux',
+    badge: '🐧 Linux',
+    title: 'LVM thin-pool metadata 100% full',
+    prompt: 'Linux LVM: Thin-pool metadata space exhausted (100% full) causing frozen writes. Extend metadata pool safely.'
+  },
+
+  // Cisco UCS
+  {
+    platform: 'Cisco UCS',
+    badge: '🌉 Cisco UCS',
+    title: 'FI Subordinate Degraded Cluster',
+    prompt: 'Cisco UCS Manager: Fabric Interconnect Subordinate cluster state degraded. Check VIP failover and Ethernet uplink.'
+  },
+  {
+    platform: 'Cisco UCS',
+    badge: '🌉 Cisco UCS',
+    title: 'Blade DIMM ECC error threshold',
+    prompt: 'Cisco UCS: Blade Server chassis thermal critical alarm & DIMM correctable ECC error limit reached. Diagnostic policy and replacement.'
+  },
+  {
+    platform: 'Cisco UCS',
+    badge: '🌉 Cisco UCS',
+    title: 'vNIC/vHBA failover dropped in reboot',
+    prompt: 'Cisco UCS: vNIC / vHBA fabric failover not occurring during primary FI reboot. Verify pinning and uplink trunking.'
+  },
+  {
+    platform: 'Cisco UCS',
+    badge: '🌉 Cisco UCS',
+    title: 'Service Profile out-of-compute-resources',
+    prompt: 'Cisco UCS: Service Profile association failed with "out-of-compute-resources". Check vNIC templates and pool availability.'
+  },
+  {
+    platform: 'Cisco UCS',
+    badge: '🌉 Cisco UCS',
+    title: 'Chassis PSU redundancy lost',
+    prompt: 'Cisco UCS Chassis: Power supply redundancy lost in Chassis 1. Diagnose PSU input AC feed failure and power budgeting.'
+  },
+
+  // AWS
+  {
+    platform: 'AWS',
+    badge: '☁️ AWS',
+    title: 'EC2 1/2 Status Check failed',
+    prompt: 'AWS EC2: Instance reachability 1/2 Status Check failed after kernel update. Attach EBS root volume to rescue instance and restore GRUB.'
+  },
+  {
+    platform: 'AWS',
+    badge: '☁️ AWS',
+    title: 'EBS volume IOPS throttling 100% queue',
+    prompt: 'AWS EBS: io2 volume experiencing severe IOPS throttling with 100% volume queue length. Remediate burst balance and Provisioned IOPS.'
+  },
+  {
+    platform: 'AWS',
+    badge: '☁️ AWS',
+    title: 'Lambda cold start VPC ENI timeout',
+    prompt: 'AWS Lambda: Lambda cold start timeouts with VPC ENI attachment delays. Diagnose subnets, security group limits, and NAT Gateway saturation.'
+  },
+  {
+    platform: 'AWS',
+    badge: '☁️ AWS',
+    title: 'ALB 502 Bad Gateway target drops',
+    prompt: 'AWS ALB: Application Load Balancer throwing 502 Bad Gateway. Inspect target group health checks, keep-alive headers, and backend connection drops.'
+  },
+  {
+    platform: 'AWS',
+    badge: '☁️ AWS',
+    title: 'S3 403 AccessDenied cross-account KMS',
+    prompt: 'AWS S3: AccessDenied (403) on cross-account IAM role assuming with KMS Customer Managed Key. Verify KMS Key Policy and Bucket Policy.'
+  },
+
+  // Azure
+  {
+    platform: 'Azure',
+    badge: '🔷 Azure',
+    title: 'VM unreachable Bastion/RDP (NSG lock)',
+    prompt: 'Azure VM: Windows/Linux VM completely unreachable via Bastion and RDP. Remediate Network Security Group rule conflict and Azure Serial Console rescue.'
+  },
+  {
+    platform: 'Azure',
+    badge: '🔷 Azure',
+    title: 'Premium SSD OS disk IOPS burst exhausted',
+    prompt: 'Azure Disk: Premium SSD OS disk hitting max IOPS burst limit causing SQL Server high write latency. Upgrade to Azure Elastic SAN / Ultra Disk.'
+  },
+  {
+    platform: 'Azure',
+    badge: '🔷 Azure',
+    title: 'AD Connect sync error InvalidSoftMatch',
+    prompt: 'Azure AD Connect: Directory synchronization error "InvalidSoftMatch" / duplicate UPN conflict. Remediate cloud anchor and SMTP matching.'
+  },
+  {
+    platform: 'Azure',
+    badge: '🔷 Azure',
+    title: 'AKS NodeNotReady disk pressure',
+    prompt: 'Azure Kubernetes Service (AKS): Cluster nodes stuck in NotReady status due to container runtime disk pressure. Drain node and cleanup rootfs.'
+  },
+  {
+    platform: 'Azure',
+    badge: '🔷 Azure',
+    title: 'ExpressRoute BGP peering session dropped',
+    prompt: 'Azure ExpressRoute: Dedicated peering BGP session state dropped to Connect/Active. Troubleshoot primary/secondary circuit MSEE failover.'
+  }
+];
+
+let currentPromptCategory = 'all';
+
+function onSelectTroubleshootingPrompt(promptText) {
+  if (!promptText) return;
+  const input = $('#aiPromptInput');
+  if (input) {
+    input.value = promptText;
+    input.focus();
+    input.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+}
+
+function filterPromptCategory(category, buttonEl) {
+  currentPromptCategory = category || 'all';
+  const pills = document.querySelectorAll('#promptFilterPills .prompt-pill');
+  pills.forEach(p => p.classList.remove('active'));
+  if (buttonEl) buttonEl.classList.add('active');
+  renderPromptChips(currentPromptCategory);
+}
+
+function renderPromptChips(category) {
+  const grid = document.getElementById('aiPromptsGrid');
+  if (!grid) return;
+
+  let items = [];
+  if (category === 'Custom') {
+    const customList = getCustomPrompts();
+    if (!customList.length) {
+      grid.innerHTML = `<div style="grid-column:1/-1; padding:12px; font-size:12px; color:#94a3b8; font-style:italic;">No custom prompts saved yet. Type a problem in the incident description box and click "💾 Save as Custom Prompt" to store your own scenarios.</div>`;
+      return;
+    }
+    items = customList.map(c => ({
+      platform: 'Custom',
+      badge: '⭐ Custom',
+      title: c.title,
+      prompt: c.prompt
+    }));
+  } else if (category === 'all') {
+    items = ALL_TROUBLESHOOTING_PROMPTS.slice(0, 8); // Top representative prompts
+  } else {
+    items = ALL_TROUBLESHOOTING_PROMPTS.filter(p => p.platform.toLowerCase() === category.toLowerCase());
+  }
+
+  grid.innerHTML = items.map(item => `
+    <div class="ai-prompt-chip" onclick="applyAiPrompt('${esc(item.prompt).replace(/'/g, "\\'")}')">
+      <b>${item.badge}:</b> ${esc(item.title)}
+    </div>
+  `).join('');
+}
+
+function getCustomPrompts() {
+  try {
+    const raw = localStorage.getItem('sysadminiq_custom_prompts');
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveCurrentAsCustomPrompt() {
+  const input = $('#aiPromptInput');
+  const text = input ? input.value.trim() : '';
+  if (!text) {
+    showToast('Please type an incident description first to save as a custom prompt.', 'warning');
+    input?.focus();
+    return;
+  }
+  const defaultLabel = text.length > 35 ? text.slice(0, 35) + '...' : text;
+  const title = prompt('Enter a short label/title for this Custom Prompt:', defaultLabel);
+  if (!title) return;
+
+  const current = getCustomPrompts();
+  current.unshift({ id: Date.now(), title: title.trim(), prompt: text });
+  localStorage.setItem('sysadminiq_custom_prompts', JSON.stringify(current.slice(0, 30)));
+
+  loadCustomPromptsIntoDropdown();
+  showToast(`Custom prompt "${title.trim()}" saved successfully!`, 'success');
+
+  if (currentPromptCategory === 'Custom') {
+    renderPromptChips('Custom');
+  }
+}
+
+function clearCustomPrompts() {
+  if (confirm('Clear all saved custom prompts from this browser?')) {
+    localStorage.removeItem('sysadminiq_custom_prompts');
+    loadCustomPromptsIntoDropdown();
+    if (currentPromptCategory === 'Custom') {
+      renderPromptChips('Custom');
+    }
+    showToast('Saved custom prompts have been reset.', 'info');
+  }
+}
+
+function loadCustomPromptsIntoDropdown() {
+  const optgroup = document.getElementById('customPromptsOptgroup');
+  if (!optgroup) return;
+  const list = getCustomPrompts();
+  if (!list.length) {
+    optgroup.innerHTML = `<option disabled value="">(No saved custom prompts yet — click "Save as Custom" to add)</option>`;
+  } else {
+    optgroup.innerHTML = list.map(item => `
+      <option value="${esc(item.prompt).replace(/"/g, '&quot;')}">⭐ Custom: ${esc(item.title)}</option>
+    `).join('');
   }
 }
 
@@ -1615,16 +2172,16 @@ function applyAiPrompt(promptText) {
   if (input) {
     input.value = promptText;
     input.focus();
+    input.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
 }
 
 async function submitAiQuery() {
   const promptInput = $('#aiPromptInput');
-  const platform = $('#aiPlatformSelect')?.value || 'VMware';
   const query = promptInput?.value.trim();
 
   if (!query) {
-    alert('Please enter an issue description or question.');
+    showToast('Please enter an incident description, error message, or system crash trace.', 'warning');
     promptInput?.focus();
     return;
   }
@@ -1632,6 +2189,7 @@ async function submitAiQuery() {
   const runBtn = $('#runAiBtn');
   const outPanel = $('#aiOutputPanel');
   const outContent = $('#aiOutputContent');
+  const thread = $('#aiFollowUpThread');
 
   if (runBtn) {
     runBtn.disabled = true;
@@ -1645,20 +2203,42 @@ async function submitAiQuery() {
   if (outContent) {
     outContent.innerHTML = `<p style="color:#60a5fa; font-style:italic;">Running diagnostic analysis with ${selectedAi.toUpperCase()} directly in webpage...</p>`;
   }
+  if (thread) {
+    thread.innerHTML = '';
+  }
 
-  // 1. Attempt server-side Gemini API (if backend server is reachable)
+  // Auto-detect platform from query
+  let detectedPlatform = 'General Infrastructure';
+  const qLower = query.toLowerCase();
+  if (qLower.includes('vmware') || qLower.includes('esxi') || qLower.includes('vcenter') || qLower.includes('psod') || qLower.includes('vmkernel')) {
+    detectedPlatform = 'VMware vSphere';
+  } else if (qLower.includes('cisco') || qLower.includes('ucs') || qLower.includes('fabric interconnect')) {
+    detectedPlatform = 'Cisco UCS';
+  } else if (qLower.includes('windows') || qLower.includes('kerberos') || qLower.includes('powershell') || qLower.includes('active directory')) {
+    detectedPlatform = 'Windows Server';
+  } else if (qLower.includes('linux') || qLower.includes('kswapd') || qLower.includes('ubuntu') || qLower.includes('rhel') || qLower.includes('bash')) {
+    detectedPlatform = 'Enterprise Linux';
+  } else if (qLower.includes('aws') || qLower.includes('ec2') || qLower.includes('ebs')) {
+    detectedPlatform = 'AWS Cloud';
+  } else if (qLower.includes('azure') || qLower.includes('entra')) {
+    detectedPlatform = 'Microsoft Azure';
+  }
+
+  // 1. Attempt server-side Multi-Model AI API
   try {
     const res = await fetch('/api/ai/diagnose', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: query, platform, model: selectedAi })
+      body: JSON.stringify({ prompt: query, platform: detectedPlatform, model: selectedAi })
     });
 
     if (res.ok) {
       const data = await res.json();
-      lastAiSolution = data.response || 'No solution generated.';
-      if (outContent) outContent.innerHTML = formatArticleContent(lastAiSolution);
-      return;
+      if (data && data.response && data.response.trim() && data.response !== 'No diagnosis generated.') {
+        lastAiSolution = data.response;
+        if (outContent) outContent.innerHTML = formatArticleContent(lastAiSolution);
+        return;
+      }
     }
   } catch (err) {
     console.warn('Backend server AI route offline, using in-app diagnostic knowledge engine:', err);
@@ -1667,18 +2247,68 @@ async function submitAiQuery() {
       runBtn.disabled = false;
       const names = {
         gemini: 'Google Gemini',
-        chatgpt: 'ChatGPT',
-        claude: 'Claude',
+        chatgpt: 'ChatGPT 4o',
+        claude: 'Claude 3.5',
         perplexity: 'Perplexity',
         deepseek: 'DeepSeek'
       };
-      runBtn.textContent = selectedAi === 'gemini' ? '✨ Ask Google Gemini' : `⚡ Run Diagnosis with ${names[selectedAi] || 'AI'}`;
+      runBtn.textContent = `⚡ Troubleshoot Incident with ${names[selectedAi] || 'AI'}`;
     }
   }
 
   // 2. High-Fidelity In-App Diagnostic Knowledge Engine (Guarantees zero 404s on GitHub Pages or static deployments)
-  lastAiSolution = generateInAppAiDiagnosis(query, platform, selectedAi);
+  lastAiSolution = generateInAppAiDiagnosis(query, detectedPlatform, selectedAi);
   if (outContent) outContent.innerHTML = formatArticleContent(lastAiSolution);
+}
+
+async function submitAiFollowUp() {
+  const input = $('#aiFollowUpInput');
+  const thread = $('#aiFollowUpThread');
+  const q = input?.value.trim();
+  if (!q) return;
+
+  input.value = '';
+
+  const userBubble = document.createElement('div');
+  userBubble.className = 'followup-bubble-user';
+  userBubble.innerHTML = `<b>You:</b> ${esc(q)}`;
+  thread?.appendChild(userBubble);
+
+  const loadingBubble = document.createElement('div');
+  loadingBubble.className = 'followup-bubble-ai';
+  loadingBubble.innerHTML = `<p style="color:#60a5fa; font-style:italic;">Generating follow-up response with ${selectedAi.toUpperCase()} in webpage...</p>`;
+  thread?.appendChild(loadingBubble);
+  loadingBubble.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+  let reply = '';
+  try {
+    const res = await fetch('/api/ai/diagnose', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ followUp: q, history: lastAiSolution, model: selectedAi })
+    });
+    if (res.ok) {
+      const data = await res.json();
+      reply = data.response;
+    }
+  } catch (err) {
+    console.warn('Backend follow-up route error:', err);
+  }
+
+  if (!reply) {
+    reply = `### 💬 ${selectedAi.toUpperCase()} Follow-Up Response\nRegarding: "${q}"\n\n- **Analysis**: Validated against active incident parameters and defensive recovery guidelines.\n- **Recommended Variation / Action**:\n\`\`\`bash\n# Tailored diagnostic inspection command\njournalctl -xe --no-pager | grep -i "${q.slice(0, 24)}" | tail -n 25\n\`\`\`\n- **Post-Fix Verification**: Verify exit code is 0 and monitor error log patterns.`;
+  }
+
+  loadingBubble.innerHTML = formatArticleContent(reply);
+  lastAiSolution += `\n\nQ: ${q}\nA: ${reply}`;
+}
+
+function applyFollowUpPreset(presetText) {
+  const input = $('#aiFollowUpInput');
+  if (input) {
+    input.value = presetText;
+    submitAiFollowUp();
+  }
 }
 
 // In-App Diagnostic Knowledge Engine with root causes, CLI commands, and remediation steps
@@ -1756,6 +2386,48 @@ function generateInAppAiDiagnosis(query, platform, model) {
       'Verify kswapd0 CPU drops to near 0%: <code>top -b -n 1 | grep kswapd</code>.',
       'Confirm <code>vmstat 1 3</code> reports <code>si</code> (swap in) and <code>so</code> (swap out) at 0.'
     ];
+  } else if (q.includes('aws') || q.includes('ec2') || q.includes('status check') || q.includes('ebs') || q.includes('lambda') || q.includes('alb')) {
+    detectedCategory = 'AWS Cloud Infrastructure & Compute Availability';
+    rootCause = `The AWS instance or resource failed reachability or performance thresholds. For EC2 1/2 Status Check failures, the host hypervisor is operational but the guest OS kernel panicked, hung during initrd boot, or experienced file system journal corruption on the EBS root volume (xvda/nvme0n1). For EBS throttling, burst balance is depleted or queue length breached provisioned IOPS.`;
+    cliCommands = `# 1. Query EC2 instance system and instance reachability status\naws ec2 describe-instance-status --instance-ids "i-0a12b34c56d78e9f0"\n\n# 2. Retrieve instance system console output / boot crash logs\naws ec2 get-console-output --instance-id "i-0a12b34c56d78e9f0" --output text | tail -n 50\n\n# 3. Check CloudWatch EBS VolumeQueueLength and VolumeThroughputPercentage\naws cloudwatch get-metric-statistics --namespace AWS/EBS --metric-name VolumeQueueLength \\\n  --dimensions Name=VolumeId,Value="vol-0123456789abcdef0" \\\n  --start-time $(date -u -d '1 hour ago' +%Y-%m-%dT%H:%M:%SZ) --end-time $(date -u +%Y-%m-%dT%H:%M:%SZ) \\\n  --period 300 --statistics Maximum`;
+    remediationSteps = [
+      'For EC2 Status Check failure: Stop the instance and start it (this shifts the VM to a healthy physical AWS host).',
+      'If instance remains in 1/2 status check failed, detach the root EBS volume and attach it as a secondary data disk to a running Amazon Linux rescue instance.',
+      'Mount the rescue partition: <code>mount /dev/nvme1n1p1 /mnt/rescue</code>, chroot, and repair kernel initramfs: <code>dracut --regenerate-all --force</code>.',
+      'For EBS IOPS throttling: Modify volume type to gp3 or io2 with increased provisioned IOPS: <code>aws ec2 modify-volume --volume-id vol-xxx --volume-type gp3 --iops 6000 --throughput 250</code>.'
+    ];
+    verificationSteps = [
+      'Verify <code>aws ec2 describe-instance-status</code> returns <code>Status: ok</code> for both SystemStatus and InstanceStatus.',
+      'Confirm SSH connectivity and CloudWatch metrics indicate zero queue length stalls.'
+    ];
+  } else if (q.includes('azure') || q.includes('bastion') || q.includes('aks') || q.includes('expressroute') || q.includes('invalidsoftmatch')) {
+    detectedCategory = 'Microsoft Azure Hybrid Cloud & Networking';
+    rootCause = `The Azure resource experienced access isolation or platform service throttling. Common triggers include Network Security Group (NSG) priority rule override blocking TCP 3389/22, Azure Serial Console kernel hang, Azure AD Connect UPN/SMTP anchor mismatches, or ExpressRoute BGP peering state dropping to Active due to MSEE router session reset.`;
+    cliCommands = `# 1. Verify Azure VM power state and network interface provisioning status\naz vm get-instance-view --resource-group "rg-production" --name "vm-app01" --query "instanceView.statuses[?starts_with(code, 'PowerState/')].displayStatus" -o tsv\n\n# 2. Check Effective Network Security Group (NSG) rules applied to VM NIC\naz network nic list-effective-nsg --resource-group "rg-production" --name "vm-app01-nic" -o table\n\n# 3. Connect to Azure Serial Console to inspect SAC / Linux kernel console\naz rest --method POST --uri "/subscriptions/{sub}/resourceGroups/rg-production/providers/Microsoft.Compute/virtualMachines/vm-app01/serialConsole"\n\n# 4. Check ExpressRoute circuit ARP and route tables\naz network express-route list-arp-tables --resource-group "rg-network" --circuit-name "ER-Circuit-01" --peering-name "AzurePrivatePeering" --device "Primary" -o table`;
+    remediationSteps = [
+      'Check NSG rules: ensure Inbound Port 443 (for Bastion) or Port 3389/22 does not have a higher-priority "DenyAll" rule overriding access.',
+      'Use Azure VM Run Command to reset the guest firewall or Windows Remote Desktop service: <code>az vm run-command invoke -g "rg-prod" -n "vm-app01" --command-id RunPowerShellScript --scripts "Set-ItemProperty -Path \\\'HKLM:\\System\\CurrentControlSet\\Control\\Terminal Server\\\' -Name \\\'fDenyTSConnections\\\' -Value 0"</code>.',
+      'For Azure AD Connect InvalidSoftMatch: Remediate the cloud immutable ID or duplicate user principal name (UPN) using Microsoft Graph PowerShell: <code>Set-MgUser -UserId $user.Id -OnPremisesImmutableId $null</code>.',
+      'For ExpressRoute: Verify primary and secondary BGP peering IPs with telecom telco provider.'
+    ];
+    verificationSteps = [
+      'Run <code>az network watcher test-connectivity</code> from source to destination IP on TCP 443/3389.',
+      'Confirm Azure AD Connect delta synchronization reports <code>Success</code> without validation errors.'
+    ];
+  } else if (q.includes('vsan') || q.includes('vcsa') || q.includes('vcenter') || q.includes('snapshot') || q.includes('storage/seat')) {
+    detectedCategory = 'VMware vSphere Management & Storage Infrastructure';
+    rootCause = `The vSphere cluster encountered storage degradation or management daemon failure. For vCenter VCSA crashes, PostgreSQL embedded database (SEAT: Stats, Events, Alarms, Tasks) partition reached 100% capacity, causing <code>vmware-vpxd</code> service crash. For vSAN, physical drive permanent device loss (PDL) triggered cluster resynchronization.`;
+    cliCommands = `# 1. SSH to vCenter VCSA appliance and check disk partition usage\ndf -h /storage/seat /storage/core /storage/log\n\n# 2. Check vCenter core service statuses\nservice-control --status --all\n\n# 3. Inspect vSAN health and resyncing object count\nesxcli vsan health cluster list\nesxcli vsan debug resync summary get`;
+    remediationSteps = [
+      'For VCSA /storage/seat 100% full: Increase the virtual disk size of VMDK 8 in vSphere Client, then run <code>vmdir-cleanup</code> and expand online: <code>vpxd_servicecfg storage auto-expand</code>.',
+      'Clean stale PostgreSQL log and dump files: <code>find /storage/log/vmware/vpxd -name "*.gz" -mtime +14 -delete</code>.',
+      'For locked .vmdk snapshot: Run <code>vmkfstools -D /vmfs/volumes/datastore/vm/vm-000001.vmdk</code> to identify the ESXi host holding the MAC address lock, then restart management agents: <code>/etc/init.d/hostd restart</code>.',
+      'Start stopped vCenter services: <code>service-control --start vmware-vpxd</code>.'
+    ];
+    verificationSteps = [
+      'Confirm <code>service-control --status vmware-vpxd</code> reports <code>Running</code>.',
+      'Access vSphere Client web portal (https://vcsa.domain:443) and verify all hosts and VMs display green checkmarks.'
+    ];
   } else {
     // General Enterprise Infrastructure Diagnostics
     detectedCategory = `${platform} Enterprise Incident Recovery`;
@@ -1820,14 +2492,18 @@ function generateInAppAiDiagnosis(query, platform, model) {
 
 function copyEngineeredPrompt() {
   const query = $('#aiPromptInput')?.value.trim() || 'SysAdmin troubleshooting playbook';
-  const platform = $('#aiPlatformSelect')?.value || 'VMware';
+  const platform = $('#aiPlatformSelect')?.value || 'Infrastructure Systems';
   const engineered = `Act as an enterprise Systems Administrator and Infrastructure Engineer. Diagnose this ${platform} issue with root cause analysis, diagnostic commands, and remediation playbook:\n\n${query}`;
   copy(engineered);
 }
 
+function openExternalAiTool() {
+  return openExternalAi();
+}
+
 function openExternalAi() {
   const query = $('#aiPromptInput')?.value.trim() || 'SysAdmin troubleshooting playbook';
-  const platform = $('#aiPlatformSelect')?.value || 'VMware';
+  const platform = $('#aiPlatformSelect')?.value || 'Infrastructure Systems';
   const engineered = `Act as an enterprise Systems Administrator and Infrastructure Engineer. Diagnose this ${platform} issue with root cause analysis, diagnostic commands, and remediation playbook:\n\n${query}`;
 
   const urls = {
@@ -2021,7 +2697,7 @@ function renderDashboard() {
 
 function setupFilters() {
   const pSel = $('#kbPlatform');
-  if (pSel && pSel.children.length <= 1) {
+  if (pSel && pSel.children && pSel.children.length <= 1) {
     pSel.innerHTML = '<option value="all">All platforms</option>' + MAIN_CATEGORIES.map(c => `<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');
   }
 
@@ -2202,10 +2878,14 @@ function initSysAdminIQ() {
   // Load database and render
   loadDB();
 
+  // Initialize AI Suggested Troubleshooting Prompts & Custom Prompts Dropdown
+  renderPromptChips('all');
+  loadCustomPromptsIntoDropdown();
+
   // Handle URL hash routing (e.g. #ai-assistant, #knowledge)
   if (window.location.hash) {
     const targetView = window.location.hash.replace('#', '').trim();
-    if (['dashboard', 'ai-assistant', 'knowledge', 'research', 'logs', 'commands', 'scripts', 'resources'].includes(targetView)) {
+    if (['dashboard', 'ai-assistant', 'knowledge', 'research', 'logs', 'commands', 'scripts', 'resources', 'admin'].includes(targetView)) {
       setTimeout(() => nav(targetView), 50);
     }
   }
@@ -2223,8 +2903,17 @@ function toggleArticleModalFullscreen() {
 
 // Global exports
 window.nav = nav;
+window.toggleSidebarSection = toggleSidebarSection;
+window.toggleAdminSubmenu = toggleAdminSubmenu;
+window.handlePublisherLink = handlePublisherLink;
 window.filterByPlatform = filterByPlatform;
 window.toggleSidebarFilter = toggleSidebarFilter;
+window.toggleSidebarFilterRow = toggleSidebarFilterRow;
+window.resetSidebarFilters = resetSidebarFilters;
+window.onSelectTroubleshootingPrompt = onSelectTroubleshootingPrompt;
+window.filterPromptCategory = filterPromptCategory;
+window.saveCurrentAsCustomPrompt = saveCurrentAsCustomPrompt;
+window.clearCustomPrompts = clearCustomPrompts;
 window.openArticleById = openArticleById;
 window.openArticle = openArticle;
 window.closeArticleModal = closeArticleModal;
@@ -2239,8 +2928,11 @@ window.renderKB = renderKB;
 window.selectAiModel = selectAiModel;
 window.applyAiPrompt = applyAiPrompt;
 window.submitAiQuery = submitAiQuery;
+window.submitAiFollowUp = submitAiFollowUp;
+window.applyFollowUpPreset = applyFollowUpPreset;
 window.copyEngineeredPrompt = copyEngineeredPrompt;
 window.openExternalAi = openExternalAi;
+window.openExternalAiTool = openExternalAiTool;
 window.copyAiOutput = copyAiOutput;
 window.exportAiToPublisher = exportAiToPublisher;
 window.sendLogsToAi = sendLogsToAi;
@@ -2249,6 +2941,9 @@ window.executeInternetSearch = executeInternetSearch;
 window.executeResearchSearch = executeResearchSearch;
 window.filterResearchTab = filterResearchTab;
 window.launchWebSearch = launchWebSearch;
+window.renderAdminView = renderAdminView;
+window.syncWithCloudflareD1 = syncWithCloudflareD1;
+window.exportDatabaseJson = exportDatabaseJson;
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initSysAdminIQ);

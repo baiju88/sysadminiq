@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SysAdminIQ Knowledge Base</title>
-<meta name="description" content="AI-Powered Infrastructure Troubleshooting Knowledge Base, diagnostic analyzer, command library, and playbooks across VMware, Windows, Linux, AWS, Azure, and Cisco UCS.">
+<meta name="description" content="IT Systems Administration Knowledge Base, diagnostic analyzer, command library, and troubleshooting guide.">
 <meta property="og:title" content="SysAdminIQ Knowledge Base">
-<meta property="og:description" content="AI-Powered Infrastructure Troubleshooting Knowledge Base, diagnostic analyzer, command library, and playbooks across VMware, Windows, Linux, AWS, Azure, and Cisco UCS.">
+<meta property="og:description" content="IT Systems Administration Knowledge Base, diagnostic analyzer, command library, and troubleshooting guide.">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
@@ -28,7 +28,7 @@
       <div class="brand-icon">IQ</div>
       <div class="brand-text">
         <h1>SysAdminIQ</h1>
-        <p>AI-Powered Infrastructure Troubleshooting</p>
+        <p>Next-Gen Infrastructure Intelligence & Rapid Incident Remediation</p>
       </div>
     </a>
 
@@ -46,23 +46,20 @@
       </button>
     </div>
 
-    <!-- Right Header Actions (Status indicator removed per user request) -->
+    <!-- Right Header Actions: Clean 1 Primary Action per Top Bar Contract -->
     <div class="header-actions">
       <button class="btn-ai-quick" onclick="nav('ai-assistant')">
         ✨ AI Tools
       </button>
-      <a href="publisher.html" target="_blank" class="btn-publisher">
-        🔑 Publisher Portal ↗
-      </a>
     </div>
   </div>
 </header>
 
-<!-- Top Announcement Ribbon matching previous design -->
+<!-- Top Announcement Ribbon with latest and suited wording -->
 <div class="top-announcement-bar">
   <span class="badge-bolt">⚡</span>
   <span>
-    <b>SysAdminIQ</b> — one workspace for <b>VMware</b>, <b>Windows</b>, <b>Linux</b>, <b>Cisco UCS</b>, <b>AWS</b> and <b>Azure</b>. Diagnose faster, follow expert playbooks.
+    <b>SysAdminIQ v4.2</b> — Unified Operations & AI Troubleshooting Hub for <b>VMware vSphere 8.x</b>, <b>Windows Server</b>, <b>Enterprise Linux</b>, <b>Cisco UCS</b>, <b>AWS</b> & <b>Azure Hybrid Cloud</b> • In-Webpage Multi-Model Incident Remediation
   </span>
 </div>
 
@@ -114,9 +111,12 @@
       </div>
     </div>
 
-    <!-- Section 2: MAIN CATEGORIES (With official SVG Logos) -->
+    <!-- Section 2: MAIN CATEGORIES (With official SVG Logos & Click Action) -->
     <div class="sidebar-section">
-      <div class="sidebar-section-title">Main Categories</div>
+      <div class="sidebar-section-title clickable-title" onclick="filterByPlatform('all')" title="Click to view all categories">
+        <span>Main Categories</span>
+        <span class="title-action">All ›</span>
+      </div>
 
       <div class="sidebar-item" data-platform="VMware" onclick="filterByPlatform('VMware')">
         <div class="sidebar-item-left">
@@ -161,9 +161,12 @@
       </div>
     </div>
 
-    <!-- Section 3: TOOLS -->
+    <!-- Section 3: TOOLS (Clickable Header & Tools Views) -->
     <div class="sidebar-section">
-      <div class="sidebar-section-title">Tools</div>
+      <div class="sidebar-section-title clickable-title" onclick="nav('commands')" title="Click to open Tools">
+        <span>Tools</span>
+        <span class="title-action">⌘ ›</span>
+      </div>
 
       <div class="sidebar-item" data-view="commands" onclick="nav('commands')">
         <div class="sidebar-item-left">
@@ -187,65 +190,81 @@
       </div>
     </div>
 
-    <!-- Section 4: MANAGEMENT -->
+    <!-- Section 4: MANAGEMENT (Clickable Header, Administration View & Publisher Portal Banner) -->
     <div class="sidebar-section">
-      <div class="sidebar-section-title">Management</div>
+      <div class="sidebar-section-title clickable-title" onclick="nav('admin')" title="Click to open Administration">
+        <span>Management</span>
+        <span class="title-action">⚙️ ›</span>
+      </div>
 
-      <a href="publisher.html" target="_blank" class="sidebar-item">
+      <div class="sidebar-item" data-view="admin" onclick="nav('admin')">
         <div class="sidebar-item-left">
           <span class="sidebar-item-icon">⚙️</span>
           <span class="sidebar-item-text">Administration</span>
         </div>
-        <span style="font-size: 11px; color: var(--cf-blue);">↗</span>
+        <span class="count-badge" style="background:rgba(0,112,243,0.15); color:#60a5fa;">Active</span>
+      </div>
+
+      <!-- Publisher Portal Banner under Management-Administration per user request -->
+      <a href="publisher.html" target="_blank" class="publisher-sidebar-card" title="Open Publisher Portal with Zero Trust Authentication">
+        <div class="pub-card-top">
+          <span class="pub-card-badge">🔑 Publisher Portal</span>
+          <span class="pub-card-arrow">↗</span>
+        </div>
+        <div class="pub-card-title">Publisher Portal</div>
+        <div class="pub-card-desc">Publish, edit, and manage IT playbooks</div>
       </a>
     </div>
 
-    <!-- Section 5: FILTERS (Interactive checkboxes with counts matching screenshot) -->
+    <!-- Section 5: FILTERS (Clickable Header with Reset Action & Interactive Full-Row Click) -->
     <div class="sidebar-section">
-      <div class="sidebar-section-title">Filters</div>
+      <div class="sidebar-section-title clickable-title" onclick="resetSidebarFilters()" title="Click to clear all filters">
+        <span>Filters</span>
+        <span class="title-action">↺ Reset</span>
+      </div>
 
-      <div class="sidebar-filter-item">
-        <label>
+      <div class="sidebar-filter-item" id="filter-row-VMware" onclick="toggleSidebarFilterRow('VMware', event)">
+        <label onclick="event.stopPropagation();">
           <input type="checkbox" id="filter-VMware" onchange="toggleSidebarFilter('VMware')">
           <span>VMware</span>
         </label>
         <span class="filter-count" id="count-VMware">0</span>
       </div>
 
-      <div class="sidebar-filter-item">
-        <label>
+      <div class="sidebar-filter-item" id="filter-row-Windows" onclick="toggleSidebarFilterRow('Windows', event)">
+        <label onclick="event.stopPropagation();">
           <input type="checkbox" id="filter-Windows" onchange="toggleSidebarFilter('Windows')">
           <span>Windows</span>
         </label>
         <span class="filter-count" id="count-Windows">0</span>
       </div>
 
-      <div class="sidebar-filter-item">
-        <label>
+      <div class="sidebar-filter-item" id="filter-row-Linux" onclick="toggleSidebarFilterRow('Linux', event)">
+        <label onclick="event.stopPropagation();">
           <input type="checkbox" id="filter-Linux" onchange="toggleSidebarFilter('Linux')">
           <span>Linux</span>
         </label>
         <span class="filter-count" id="count-Linux">0</span>
       </div>
 
-      <div class="sidebar-filter-item">
-        <label>
+      <div class="sidebar-filter-item" id="filter-row-Cisco UCS" onclick="toggleSidebarFilterRow('Cisco UCS', event)">
+        <label onclick="event.stopPropagation();">
           <input type="checkbox" id="filter-Cisco UCS" onchange="toggleSidebarFilter('Cisco UCS')">
           <span>Cisco UCS</span>
         </label>
         <span class="filter-count" id="count-Cisco">0</span>
       </div>
 
-      <div class="sidebar-filter-item">
-        <label>
+      <div class="sidebar-filter-item" id="filter-row-AWS" onclick="toggleSidebarFilterRow('AWS', event)">
+        <label onclick="event.stopPropagation();">
           <input type="checkbox" id="filter-AWS" onchange="toggleSidebarFilter('AWS')">
           <span>AWS</span>
         </label>
         <span class="filter-count" id="count-AWS">0</span>
       </div>
 
-      <div class="sidebar-filter-item">
-        <label>
+      <div class="sidebar-filter-item" id="filter-row-Azure" onclick="toggleSidebarFilterRow('Azure', event)">
+        <label onclick="event.stopPropagation();">
           <input type="checkbox" id="filter-Azure" onchange="toggleSidebarFilter('Azure')">
           <span>Azure</span>
         </label>
@@ -264,17 +283,17 @@
         <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
           <div style="max-width: 820px;">
             <span style="font-size:12px; font-weight:700; color:var(--cf-blue); text-transform:uppercase; letter-spacing:0.05em;">
-              Enterprise Infrastructure Workspace
+              Enterprise Infrastructure Intelligence
             </span>
             <h2 style="font-size:24px; font-weight:800; margin-top:4px; color:#fff;">
-              IT Infrastructure Troubleshooting & Diagnostics
+              Next-Gen IT Infrastructure Troubleshooting & Diagnostic Intelligence
             </h2>
             <p style="font-size:13px; color:var(--text-secondary); margin-top:6px; line-height:1.6;">
-              Production playbooks, real-time error log pattern matcher, diagnostic commands, and recovery workflows across VMware vSphere, Windows Server, Linux, Cisco UCS, AWS, and Azure.
+              Curated production playbooks, direct in-webpage multi-model AI diagnostics, command libraries, and automated recovery workflows across VMware vSphere, Windows Server, Enterprise Linux, Cisco UCS, AWS, and Azure.
             </p>
           </div>
           <button class="btn-ai-quick" onclick="nav('ai-assistant')">
-            ✨ Ask Gemini AI →
+            ✨ Ask Multi-Model AI →
           </button>
         </div>
       </div>
@@ -301,17 +320,17 @@
       </div>
     </div>
 
-    <!-- 2. AI ASSISTANT VIEW (Multi-AI Model Hub: Gemini, ChatGPT, Claude, Perplexity, DeepSeek) -->
+    <!-- 2. AI ASSISTANT VIEW (Multi-AI Model Hub: Gemini, ChatGPT, Claude, Perplexity, DeepSeek - In-Webpage) -->
     <div id="ai-assistant" class="view">
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
           <div>
             <h3 style="font-size:18px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px;">
               <span>✨</span>
-              <span>AI Infrastructure Assistant & Multi-Model Hub</span>
+              <span>AI Infrastructure Assistant & Multi-Model Hub (In-Webpage)</span>
             </h3>
             <p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">
-              Troubleshoot incidents, analyze logs, generate recovery scripts, and create content with Google Gemini, ChatGPT, Claude, Perplexity, and DeepSeek.
+              Direct in-webpage troubleshooting across Google Gemini, ChatGPT 4o, Claude 3.5, Perplexity, and DeepSeek without opening external tabs.
             </p>
           </div>
         </div>
@@ -319,13 +338,13 @@
         <!-- AI Model Selector Tabs -->
         <div class="ai-model-tabs">
           <button class="ai-tab-btn active" id="tab-gemini" onclick="selectAiModel('gemini')">
-            <span>✨ Google Gemini (Live In-App)</span>
+            <span>✨ Google Gemini Flash</span>
           </button>
           <button class="ai-tab-btn" id="tab-chatgpt" onclick="selectAiModel('chatgpt')">
-            <span>🟢 ChatGPT (OpenAI)</span>
+            <span>🟢 ChatGPT 4o (OpenAI)</span>
           </button>
           <button class="ai-tab-btn" id="tab-claude" onclick="selectAiModel('claude')">
-            <span>🟣 Claude (Anthropic)</span>
+            <span>🟣 Claude 3.5 Sonnet</span>
           </button>
           <button class="ai-tab-btn" id="tab-perplexity" onclick="selectAiModel('perplexity')">
             <span>🔵 Perplexity (Web Grounded)</span>
@@ -354,48 +373,40 @@
           </div>
         </div>
 
-        <!-- Target Platform & Query Input -->
-        <div style="display:flex; gap:12px; margin-bottom:12px; flex-wrap:wrap;">
-          <select id="aiPlatformSelect" style="flex:1; min-width:180px; margin-bottom:0;">
-            <option value="VMware">Platform: VMware vSphere</option>
-            <option value="Cisco UCS">Platform: Cisco UCS</option>
-            <option value="Windows">Platform: Windows Server</option>
-            <option value="Linux">Platform: Linux (RHEL/Ubuntu)</option>
-            <option value="AWS">Platform: AWS Cloud</option>
-            <option value="Azure">Platform: Microsoft Azure</option>
-          </select>
+        <!-- Single Dedicated Full-Width Incident / Problem Column (No platform selection required) -->
+        <div class="ai-incident-column" style="margin-bottom:12px;">
+          <label for="aiPromptInput" style="display:block; font-size:12px; font-weight:700; color:#94a3b8; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.04em;">
+            Incident Description, Error Message or System Crash Trace
+          </label>
+          <textarea
+            id="aiPromptInput"
+            rows="6"
+            placeholder="Enter any incident description, error message, crash stack trace, or system problem (e.g., 'ESXi host PSOD with NOT_IMPLEMENTED in vmkernel', 'Cisco UCS subordinate cluster degraded', 'High iowait with kswapd0 100% CPU', 'Kerberos 4771 code 0x18'). Autodetects technologies without platform selection requirements..."
+            style="width:100%; box-sizing:border-box; font-family:'JetBrains Mono', monospace; font-size:13px; line-height:1.6;"
+          ></textarea>
         </div>
-
-        <textarea
-          id="aiPromptInput"
-          rows="5"
-          placeholder="Describe infrastructure incident, paste error message, or ask for diagnosis/script..."
-        ></textarea>
 
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
           <div style="display:flex; gap:10px; flex-wrap:wrap;">
             <button id="runAiBtn" class="primary" onclick="submitAiQuery()">
-              ✨ Ask Google Gemini
+              ✨ Troubleshoot Incident In-Webpage
             </button>
             <button id="copyPromptBtn" class="secondary" onclick="copyEngineeredPrompt()" title="Copy prompt with engineered sysadmin context">
               📋 Copy Prompt
             </button>
-            <button id="openExternalAiBtn" class="secondary" onclick="openExternalAi()" style="display:none;" title="Open model in external tab (optional)">
-              🌐 Launch External Tab ↗
-            </button>
           </div>
           <span id="aiStatusNote" style="font-size: 12px; color: var(--text-muted);">
-            Active Model: Google Gemini Flash (In-App) • Generates solution directly in webpage
+            Active Model: Google Gemini Flash • Generates structured solution directly in webpage
           </span>
         </div>
       </div>
 
-      <!-- AI Response Output Panel -->
+      <!-- Actionable AI Diagnostic Response Panel -->
       <div id="aiOutputPanel" class="result-panel" style="display:none;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
           <h2 style="margin-bottom:0; display:flex; align-items:center; gap:8px;">
-            <span>🤖</span>
-            <span>Gemini AI Diagnostic Solution</span>
+            <span id="aiOutputIcon">🤖</span>
+            <span id="aiOutputTitle">AI Diagnostic Solution & Actionable Playbook</span>
           </h2>
           <div style="display:flex; gap:8px;">
             <button class="secondary" onclick="copyAiOutput()" style="padding:4px 10px; font-size:11px;">
@@ -407,6 +418,31 @@
           </div>
         </div>
         <div id="aiOutputContent" class="article-detail" style="background:#090e1a; padding:20px; border-radius:8px; border:1px solid var(--border);"></div>
+
+        <!-- Interactive In-Page Follow-Ups -->
+        <div id="aiFollowUpContainer" class="ai-followup-box" style="margin-top:20px; border-top:1px solid rgba(255,255,255,0.1); padding-top:16px;">
+          <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+            <h4 style="font-size:14px; font-weight:700; color:#f8fafc; margin:0; display:flex; align-items:center; gap:8px;">
+              <span>💬</span>
+              <span>Interactive Follow-Up & Command Variations (In-Webpage)</span>
+            </h4>
+            <span style="font-size:12px; color:var(--text-muted);">Maintains active incident session</span>
+          </div>
+          <div style="display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap;">
+            <button type="button" class="btn-chip" onclick="applyFollowUpPreset('Provide PowerShell / PowerCLI equivalent commands')">⚡ PowerShell / PowerCLI Version</button>
+            <button type="button" class="btn-chip" onclick="applyFollowUpPreset('Show Linux Bash watchdog script with automated restart')">🐧 Linux Bash Watchdog</button>
+            <button type="button" class="btn-chip" onclick="applyFollowUpPreset('Explain non-disruptive rollback procedure step-by-step')">🔄 Rollback Playbook</button>
+            <button type="button" class="btn-chip" onclick="applyFollowUpPreset('What diagnostic logs should I inspect before rebooting?')">📋 Pre-Reboot Log Check</button>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <input type="text" id="aiFollowUpInput" placeholder="Ask follow-up question, request command variations, or update error logs..." style="flex:1; margin-bottom:0;" onkeydown="if(event.key==='Enter') submitAiFollowUp()">
+            <button type="button" id="aiFollowUpBtn" class="primary" onclick="submitAiFollowUp()" style="white-space:nowrap;">
+              <span>Send ↵</span>
+            </button>
+          </div>
+          <!-- Thread of follow-up questions & answers rendered here -->
+          <div id="aiFollowUpThread" style="margin-top:14px; display:flex; flex-direction:column; gap:12px;"></div>
+        </div>
       </div>
     </div>
 
@@ -545,6 +581,68 @@
       <div id="resourceResults" class="articles-grid"></div>
     </div>
 
+    <!-- 9. ADMINISTRATION VIEW (Management Workspace) -->
+    <div id="admin" class="view">
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px;">
+          <div>
+            <span style="font-size:12px; font-weight:700; color:var(--cf-blue); text-transform:uppercase; letter-spacing:0.05em;">
+              Management & Administration Console
+            </span>
+            <h2 style="font-size:22px; font-weight:800; margin-top:4px; color:#fff;">
+              SysAdminIQ Portal Administration & Storage Health
+            </h2>
+            <p style="font-size:13px; color:var(--text-secondary); margin-top:6px; line-height:1.6;">
+              Manage knowledge base articles, sync with Cloudflare D1 database and R2 object storage, and configure publisher permissions.
+            </p>
+          </div>
+          <a href="publisher.html" target="_blank" class="primary" style="text-decoration:none; display:inline-flex; align-items:center; gap:8px;">
+            <span>🔑 Launch Publisher Portal ↗</span>
+          </a>
+        </div>
+      </div>
+
+      <!-- Quick Administration KPI Cards -->
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-top:20px;">
+        <div class="card" style="padding:16px;">
+          <div style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase;">Knowledge Base Articles</div>
+          <div id="adminTotalArticles" style="font-size:28px; font-weight:800; color:#38bdf8; margin-top:4px;" class="tabular-nums">0</div>
+          <div style="font-size:12px; color:#64748b; margin-top:4px;">Across 6 technology platforms</div>
+        </div>
+        <div class="card" style="padding:16px;">
+          <div style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase;">Diagnostic Commands</div>
+          <div id="adminTotalCommands" style="font-size:28px; font-weight:800; color:#34d399; margin-top:4px;" class="tabular-nums">0</div>
+          <div style="font-size:12px; color:#64748b; margin-top:4px;">CLI, esxcli, PowerShell, Bash</div>
+        </div>
+        <div class="card" style="padding:16px;">
+          <div style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase;">Automation Scripts</div>
+          <div id="adminTotalScripts" style="font-size:28px; font-weight:800; color:#a78bfa; margin-top:4px;" class="tabular-nums">0</div>
+          <div style="font-size:12px; color:#64748b; margin-top:4px;">PowerCLI & Shell automation</div>
+        </div>
+        <div class="card" style="padding:16px;">
+          <div style="font-size:11px; font-weight:700; color:#94a3b8; text-transform:uppercase;">Cloudflare D1 & R2 Backend</div>
+          <div id="adminBackendStatus" style="font-size:16px; font-weight:700; color:#38bdf8; margin-top:10px;">Operational</div>
+          <div style="font-size:12px; color:#64748b; margin-top:4px;">Zero Trust Authenticated Storage</div>
+        </div>
+      </div>
+
+      <!-- Administrative Operations -->
+      <div class="card" style="margin-top:20px;">
+        <h3 style="font-size:16px; font-weight:700; color:#fff; margin-bottom:12px;">Administrative Operations</h3>
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+          <button type="button" class="primary" onclick="syncWithCloudflareD1()">
+            🔄 Force Re-Sync with Cloudflare D1
+          </button>
+          <button type="button" class="secondary" onclick="exportDatabaseJson()">
+            💾 Export Database JSON Backup
+          </button>
+          <a href="publisher.html" target="_blank" class="secondary" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
+            📝 New Playbook Editor ↗
+          </a>
+        </div>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -575,11 +673,11 @@
         <button class="secure-viewer-btn" id="secureZoomOut" onclick="zoomSecureViewer(-0.2)" title="Zoom Out">🔍 -</button>
         <button class="secure-viewer-btn" id="secureResetZoom" onclick="resetSecureZoom()" title="Reset Zoom">100%</button>
         <button class="secure-viewer-btn" id="secureViewerFsBtn" onclick="toggleSecureViewerFullscreen()" title="Toggle Fullscreen">⛶ Fullscreen</button>
-        <button class="secure-viewer-btn" id="secureViewerDlBtn" onclick="downloadCurrentViewerFile()" title="Download File">⬇ Download</button>
+        <span class="secure-viewonly-badge" style="display:inline-flex; align-items:center; gap:4px; padding:6px 12px; font-size:11px; font-weight:700; color:#fca5a5; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.3); border-radius:6px;" title="File downloads are restricted for main page viewers">🔒 View-Only</span>
         <button class="close-modal" style="position:static;" onclick="closeSecureViewer()">✕</button>
       </div>
     </div>
-    <div class="secure-viewer-body" id="secureViewerBody" oncontextmenu="return false;">
+    <div class="secure-viewer-body" id="secureViewerBody" oncontextmenu="return false;" ondragstart="return false;">
       <!-- Content injected by JavaScript -->
     </div>
     <div class="secure-viewer-watermark">

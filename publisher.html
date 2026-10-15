@@ -4,9 +4,10 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SysAdminIQ Publisher Portal</title>
-<meta name="description" content="Publisher and Authoring Portal for SysAdminIQ knowledge articles with rich formatting, multi-color callouts, file attachments, and AI playbook generation.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3ClinearGradient id='iqGrad' x1='0%25' y1='0%25' x2='100%25' y2='100%25'%3E%3Cstop offset='0%25' stop-color='%23f38020'/%3E%3Cstop offset='100%25' stop-color='%23fa541c'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='64' height='64' rx='14' fill='%230b0f19'/%3E%3Crect x='2' y='2' width='60' height='60' rx='12' fill='url(%23iqGrad)' stroke='%23fdba74' stroke-width='1.5' stroke-opacity='0.5'/%3E%3Ctext x='32' y='42' font-family='-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif' font-size='28' font-weight='900' fill='%23ffffff' text-anchor='middle' letter-spacing='-1'%3EIQ%3C/text%3E%3Ccircle cx='51' cy='14' r='3.5' fill='%23ffffff'/%3E%3C/svg%3E">
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="alternate icon" type="image/svg+xml" href="favicon.svg">
+<link rel="alternate icon" href="favicon.svg">
+<link rel="shortcut icon" href="favicon.svg">
 <link rel="apple-touch-icon" href="favicon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -412,19 +413,59 @@ textarea#content {
   min-height: 320px;
 }
 
-/* Live Preview Box */
+/* Live Preview Box & OneNote Editor (Clean White Sheet for Optimal Visibility) */
+#previewBox, .onenote-canvas {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+}
+
 #previewBox {
   display: none;
-  background: var(--bg-input);
-  border: 1px solid var(--border);
   border-top: none;
   border-radius: 0 0 var(--radius-md) var(--radius-md);
-  padding: 20px;
+  padding: 24px 30px;
   min-height: 320px;
   max-height: 550px;
   overflow-y: auto;
-  font-size: 13px;
-  line-height: 1.6;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+#previewBox h1, #previewBox h2, #previewBox h3, #previewBox h4,
+.onenote-canvas h1, .onenote-canvas h2, .onenote-canvas h3, .onenote-canvas h4 {
+  color: #0f172a !important;
+}
+
+#previewBox p, #previewBox li, #previewBox div,
+.onenote-canvas p, .onenote-canvas li, .onenote-canvas div {
+  color: #1e293b !important;
+}
+
+#previewBox pre, .onenote-canvas pre {
+  background: #0f172a !important;
+  color: #38bdf8 !important;
+  border: 1px solid #1e293b !important;
+  padding: 12px 16px !important;
+  border-radius: 6px !important;
+}
+
+#previewBox table, .onenote-canvas table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 14px 0;
+}
+
+#previewBox th, #previewBox td, .onenote-canvas th, .onenote-canvas td {
+  border: 1px solid #cbd5e1;
+  padding: 8px 12px;
+  color: #1e293b;
+}
+
+#previewBox th, .onenote-canvas th {
+  background: #f1f5f9;
+  font-weight: 700;
+  color: #0f172a;
 }
 
 /* Callouts Styling in Preview and Articles */
@@ -946,15 +987,14 @@ textarea#content {
       <table class="articles-table">
         <thead>
           <tr>
-            <th style="width: 140px;">Platform</th>
-            <th>Title & Snippet</th>
+            <th>Incident / Problem Playbook Title & Description</th>
             <th style="width: 150px;">Category</th>
             <th style="width: 100px;">Files</th>
             <th style="width: 160px; text-align: right;">Actions</th>
           </tr>
         </thead>
         <tbody id="articlesTableBody">
-          <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 28px;">Loading articles...</td></tr>
+          <tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 28px;">Loading articles...</td></tr>
         </tbody>
       </table>
     </div>
@@ -1101,7 +1141,7 @@ function initOneNoteEditor() {
   });
 }
 
-// Sanitize HTML from OneNote/Word/Excel while strictly preserving tables, alignments, fonts, colors, bold/italics
+// Sanitize HTML from OneNote/Word/Excel while strictly preserving tables, alignments, fonts, bold/italics
 function sanitizeOneNoteHtml(raw) {
   if (!raw) return '';
   let html = raw;
@@ -1114,19 +1154,46 @@ function sanitizeOneNoteHtml(raw) {
   html = html.replace(/<xml[\s\S]*?<\/xml>/gi, '');
   html = html.replace(/<style[\s\S]*?<\/style>/gi, '');
   html = html.replace(/class="?Mso\w+"?/gi, '');
+  
+  // Remove OneNote/Word End-Of-Paragraph (EOP) pipe symbol artifacts
+  html = html.replace(/<span[^>]*class="[^"]*EOP[^"]*"[^>]*>[\s\S]*?<\/span>/gi, '');
+  html = html.replace(/<span[^>]*>[|\u2502\u007C\u00A6]<\/span>/gi, '');
+  html = html.replace(/<font[^>]*>[|\u2502\u007C\u00A6]<\/font>/gi, '');
+  html = html.replace(/(<p[^>]*>|<li[^>]*>|<div>|^|\r?\n)\s*[|\u2502\u007C\u00A6]\s+/gi, '$1');
+  html = html.replace(/\s+[|\u2502\u007C\u00A6]\s*(<\/p>|<\/li>|<\/div>|<br\s*\/?>|$|\r?\n)/gi, '$1');
 
   // Strip ONLY mso-* and office-specific directives from inline styles
-  // Strictly PRESERVE text-align, margin, padding, width, height, text-indent,
-  // vertical-align, color, background-color, font-weight, font-style!
+  // Normalize white/light/dull gray text to dark #1e293b so text is 100% visible
   html = html.replace(/style="([^"]*)"/gi, (match, styleVal) => {
     const rules = styleVal
       .split(';')
       .map(r => r.trim())
-      .filter(r => {
-        if (!r) return false;
+      .filter(Boolean)
+      .map(r => {
         const lower = r.toLowerCase();
-        return !lower.startsWith('mso-') && !lower.startsWith('tab-stops') && !lower.startsWith('page-break');
-      });
+        if (lower.startsWith('mso-') || lower.startsWith('tab-stops') || lower.startsWith('page-break')) {
+          return null;
+        }
+        // Normalize light or dull gray text to high contrast dark
+        if (lower.includes('color:') || lower.startsWith('color')) {
+          if (
+            lower.includes('white') || lower.includes('#fff') || lower.includes('#f8fafc') ||
+            lower.includes('#f1f5f9') || lower.includes('#e2e8f0') || lower.includes('#cbd5e1') ||
+            lower.includes('#94a3b8') || lower.includes('#64748b') || lower.includes('#595959') ||
+            lower.includes('#7f7f7f') || lower.includes('#808080') || lower.includes('#c6c6c6') ||
+            lower.includes('#d4d4d4') || lower.includes('255, 255, 255') || lower.includes('255,255,255') ||
+            lower.includes('rgb(88, 88, 91)') || lower.includes('rgb(88,88,91)')
+          ) {
+            return 'color: #1e293b';
+          }
+        }
+        // Remove dark background on copied spans/paragraphs so white canvas shows cleanly
+        if ((lower.includes('background:') || lower.includes('background-color:')) && (lower.includes('#000') || lower.includes('#0b0f19') || lower.includes('#131b2e') || lower.includes('rgb(0, 0, 0)'))) {
+          return null;
+        }
+        return r;
+      })
+      .filter(Boolean);
     return rules.length > 0 ? `style="${rules.join('; ')}"` : '';
   });
 
@@ -2463,21 +2530,23 @@ function renderExistingTable() {
   countEl.textContent = allArticles.length;
 
   if (filtered.length === 0) {
-    tbody.innerHTML = `<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 28px;">No articles found matching search query.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 28px;">No articles found matching search query.</td></tr>`;
     return;
   }
 
   tbody.innerHTML = filtered.map(a => {
-    const snippet = a.content ? a.content.slice(0, 100) : (Array.isArray(a.symptoms) ? a.symptoms[0] : (a.description || ''));
+    const snippet = a.content ? a.content.slice(0, 120) : (Array.isArray(a.symptoms) ? a.symptoms[0] : (a.description || ''));
     const fileCount = parseAttachmentsList(a.attachments).length;
-    const platform = a.platform || 'VMware';
+    const platform = a.platform || '';
 
     return `
       <tr>
-        <td><span class="tag-platform">${escapeHtml(platform)}</span></td>
         <td>
-          <div style="font-weight: 600; color: #fff;">${escapeHtml(a.title || 'Untitled')}</div>
-          <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px; max-width: 600px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+          <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+            ${platform ? `<span class="tag-platform" style="font-size: 11px; padding: 2px 7px;">${escapeHtml(platform)}</span>` : ''}
+            <span style="font-weight: 600; color: #fff; font-size: 14px;">${escapeHtml(a.title || 'Untitled Playbook')}</span>
+          </div>
+          <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px; max-width: 650px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
             ${escapeHtml(snippet)}
           </div>
         </td>
@@ -2525,7 +2594,7 @@ window.addEventListener("DOMContentLoaded", () => {
         <button class="editor-btn" style="color:#f87171;" onclick="closeSecureViewer()">✕ Close</button>
       </div>
     </div>
-    <div class="secure-viewer-body" id="secureViewerBody" style="flex:1; overflow-y:auto; padding:20px; background:#070b14;">
+    <div class="secure-viewer-body" id="secureViewerBody" style="flex:1; overflow-y:auto; padding:24px; background:#f8fafc; color:#0f172a;">
       <!-- Content injected by JavaScript -->
     </div>
   </div>
