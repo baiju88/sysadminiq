@@ -1186,10 +1186,10 @@ function formatArticleContent(raw) {
     `;
   });
 
-  // 5. Markdown Headings (High Contrast Crisp Corporate Sheet)
+  // 5. Markdown Headings (Theme-Adaptive Crisp Corporate Sheet)
   html = html.replace(/^### (.*$)/gim, '<h3 style="color:#0284c7; font-size:15px; font-weight:700; margin:14px 0 6px 0;">$1</h3>');
-  html = html.replace(/^## (.*$)/gim, '<h2 style="color:#0f172a; font-size:18px; font-weight:700; margin:16px 0 8px 0;">$1</h2>');
-  html = html.replace(/^# (.*$)/gim, '<h1 style="color:#0f172a; font-size:22px; font-weight:800; margin:18px 0 10px 0; border-bottom:2px solid #e2e8f0; padding-bottom:6px;">$1</h1>');
+  html = html.replace(/^## (.*$)/gim, '<h2 style="color:var(--text-primary); font-size:18px; font-weight:700; margin:16px 0 8px 0;">$1</h2>');
+  html = html.replace(/^# (.*$)/gim, '<h1 style="color:var(--text-primary); font-size:22px; font-weight:800; margin:18px 0 10px 0; border-bottom:2px solid var(--border); padding-bottom:6px;">$1</h1>');
 
   // 6. Bold, Italic & Inline Code
   html = html.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
@@ -2193,7 +2193,7 @@ async function submitAiQuery() {
 
   if (runBtn) {
     runBtn.disabled = true;
-    runBtn.textContent = '✨ Analyzing in webpage...';
+    runBtn.textContent = '✨ Analyzing incident...';
   }
 
   if (outPanel) {
@@ -2201,36 +2201,43 @@ async function submitAiQuery() {
     outPanel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
   if (outContent) {
-    outContent.innerHTML = `<p style="color:#60a5fa; font-style:italic;">Running diagnostic analysis with ${selectedAi.toUpperCase()} directly in webpage...</p>`;
+    outContent.innerHTML = `<div style="display:flex; align-items:center; gap:10px; color:#38bdf8; padding:16px 0;">
+      <span style="animation:spin 1s linear infinite; display:inline-block;">⚙️</span>
+      <span>Generating diagnostic analysis with ${selectedAi.toUpperCase()} in webpage...</span>
+    </div>`;
   }
   if (thread) {
     thread.innerHTML = '';
   }
 
-  // Auto-detect platform from query
-  let detectedPlatform = 'General Infrastructure';
+  // Robust Technology Detection from Query Keywords
+  let detectedPlatform = 'Enterprise Systems';
   const qLower = query.toLowerCase();
-  if (qLower.includes('vmware') || qLower.includes('esxi') || qLower.includes('vcenter') || qLower.includes('psod') || qLower.includes('vmkernel')) {
+  if (/vmware|esxi|vcenter|vsan|dvs|vmotion|vpxd|vmkernel|psod|vmdk|vmfs|vmnic/.test(qLower)) {
     detectedPlatform = 'VMware vSphere';
-  } else if (qLower.includes('cisco') || qLower.includes('ucs') || qLower.includes('fabric interconnect')) {
+  } else if (/cisco|ucs|fabric interconnect|fi-[ab]|blade|chassis|vhba|vnic/.test(qLower)) {
     detectedPlatform = 'Cisco UCS';
-  } else if (qLower.includes('windows') || qLower.includes('kerberos') || qLower.includes('powershell') || qLower.includes('active directory')) {
+  } else if (/windows|active directory|kerberos|domain controller|ad dc|dfs-r|dfsr|hyper-v|vss|dns server|powershell|gpo/.test(qLower)) {
     detectedPlatform = 'Windows Server';
-  } else if (qLower.includes('linux') || qLower.includes('kswapd') || qLower.includes('ubuntu') || qLower.includes('rhel') || qLower.includes('bash')) {
+  } else if (/linux|kswapd|iowait|oom|systemd|xfs|ext4|nmi watchdog|lvm|thin-pool|rhel|ubuntu|centos|sysctl|journalctl/.test(qLower)) {
     detectedPlatform = 'Enterprise Linux';
-  } else if (qLower.includes('aws') || qLower.includes('ec2') || qLower.includes('ebs')) {
+  } else if (/aws|ec2|ebs|lambda|alb|s3|cloudwatch|kms|route 53|target group/.test(qLower)) {
     detectedPlatform = 'AWS Cloud';
-  } else if (qLower.includes('azure') || qLower.includes('entra')) {
+  } else if (/azure|bastion|aks|expressroute|invalidsoftmatch|nsg|msee|premium ssd/.test(qLower)) {
     detectedPlatform = 'Microsoft Azure';
   }
 
-  // 1. Attempt server-side Multi-Model AI API
+  // 1. Attempt server-side Multi-Model AI API with 12s timeout guard
   try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 12000);
     const res = await fetch('/api/ai/diagnose', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: query, platform: detectedPlatform, model: selectedAi })
+      body: JSON.stringify({ prompt: query, platform: detectedPlatform, model: selectedAi }),
+      signal: controller.signal
     });
+    clearTimeout(timeoutId);
 
     if (res.ok) {
       const data = await res.json();
@@ -2241,14 +2248,14 @@ async function submitAiQuery() {
       }
     }
   } catch (err) {
-    console.warn('Backend server AI route offline, using in-app diagnostic knowledge engine:', err);
+    console.warn('Backend server AI route offline or timed out, using high-fidelity in-app diagnostic knowledge engine:', err);
   } finally {
     if (runBtn) {
       runBtn.disabled = false;
       const names = {
-        gemini: 'Google Gemini',
+        gemini: 'Google Gemini Flash',
         chatgpt: 'ChatGPT 4o',
-        claude: 'Claude 3.5',
+        claude: 'Claude 3.5 Sonnet',
         perplexity: 'Perplexity',
         deepseek: 'DeepSeek'
       };
@@ -2256,7 +2263,7 @@ async function submitAiQuery() {
     }
   }
 
-  // 2. High-Fidelity In-App Diagnostic Knowledge Engine (Guarantees zero 404s on GitHub Pages or static deployments)
+  // 2. High-Fidelity In-App Diagnostic Knowledge Engine (Offline & Static Resilient)
   lastAiSolution = generateInAppAiDiagnosis(query, detectedPlatform, selectedAi);
   if (outContent) outContent.innerHTML = formatArticleContent(lastAiSolution);
 }
@@ -2311,32 +2318,98 @@ function applyFollowUpPreset(presetText) {
   }
 }
 
-// In-App Diagnostic Knowledge Engine with root causes, CLI commands, and remediation steps
+// High-Fidelity In-App Diagnostic Knowledge Engine (Offline, Static & GitHub Pages Resilient)
 function generateInAppAiDiagnosis(query, platform, model) {
-  const q = query.toLowerCase();
+  const q = (query || '').toLowerCase();
   const modelLabels = {
-    gemini: 'Google Gemini 2.5 Flash',
-    chatgpt: 'ChatGPT 4o Infrastructure Specialist',
-    claude: 'Claude 3.5 Sonnet Systems Engineer',
-    perplexity: 'Perplexity Infrastructure Grounding Engine',
+    gemini: 'Google Gemini Flash Diagnostic Specialist',
+    chatgpt: 'ChatGPT 4o Enterprise Systems Architect',
+    claude: 'Claude 3.5 Sonnet Senior Systems Engineer',
+    perplexity: 'Perplexity Infrastructure Grounded Engine',
     deepseek: 'DeepSeek V3 Systems Reasoning Engine'
   };
   const activeLabel = modelLabels[model] || 'SysAdminIQ AI Diagnostic Engine';
 
-  // Topic Detection
-  let detectedCategory = 'General Systems Diagnostics';
+  // Technology classification flags
+  const isVMware = /vmware|esxi|vcenter|vsan|dvs|vmotion|vpxd|vmkernel|psod|vmdk|vmfs|vmnic/.test(q) || /vmware|esxi|vcenter|vsan/.test((platform || '').toLowerCase());
+  const isCisco = /cisco|ucs|fabric interconnect|fi-[ab]|blade|chassis|vhba|vnic/.test(q) || /cisco|ucs/.test((platform || '').toLowerCase());
+  const isWindows = /windows|active directory|kerberos|domain controller|ad dc|dfs-r|dfsr|hyper-v|vss|dns server|powershell|gpo/.test(q) || /windows/.test((platform || '').toLowerCase());
+  const isLinux = /linux|kswapd|iowait|oom|systemd|xfs|ext4|nmi watchdog|lvm|thin-pool|rhel|ubuntu|centos|sysctl|journalctl/.test(q) || /linux/.test((platform || '').toLowerCase());
+  const isAzure = /azure|bastion|aks|expressroute|invalidsoftmatch|nsg|msee|premium ssd/.test(q) || /azure/.test((platform || '').toLowerCase());
+  const isAWS = /aws|ec2|ebs|lambda|alb|s3|cloudwatch|kms|route 53|target group/.test(q) || /aws/.test((platform || '').toLowerCase());
+
+  let targetPlatform = isVMware ? 'VMware vSphere' :
+                       isCisco ? 'Cisco UCS' :
+                       isWindows ? 'Windows Server' :
+                       isLinux ? 'Enterprise Linux' :
+                       isAzure ? 'Microsoft Azure' :
+                       isAWS ? 'AWS Cloud' : (platform || 'Enterprise Systems');
+
+  let detectedCategory = '';
   let rootCause = '';
   let cliCommands = '';
+  let cautionNote = 'Ensure change control verification is recorded and redundant paths are monitored before bouncing production interfaces, services, or storage paths.';
   let remediationSteps = [];
   let verificationSteps = [];
 
-  if (q.includes('psod') || q.includes('vmkernel') || q.includes('not_implemented') || q.includes('purple screen')) {
-    detectedCategory = 'VMware ESXi Kernel & Driver Stability';
+  // ==========================================
+  // 1. VMWARE VSPHERE & VSAN SCENARIOS
+  // ==========================================
+  if (q.includes('dvs') || (q.includes('vmotion') && (q.includes('network') || q.includes('vlan') || q.includes('uplink') || q.includes('lost') || q.includes('drop') || q.includes('packet')))) {
+    detectedCategory = 'VMware vSphere Distributed Switch (vDS) & vMotion Network Recovery';
+    targetPlatform = 'VMware vSphere';
+    rootCause = `The virtual machine dropped network reachability immediately following a vMotion migration between ESXi hosts. Common root causes include:<br>
+1. <b>Physical Switch VLAN Trunking Mismatch:</b> The Top-of-Rack (TOR) physical switch port connected to the destination host's uplinks (vmnic) does not permit the VM portgroup VLAN tag in its 802.1Q trunk list.<br>
+2. <b>MTU Size Discrepancy:</b> Destination vDS or physical uplink is set to standard 1500 MTU while the VM or source vSwitch utilized 9000 Jumbo Frames.<br>
+3. <b>Stale Physical Switch CAM/MAC Table:</b> The upstream physical switch failed to learn the VM MAC on the new port because the Reverse ARP (RARP) broadcast emitted post-vMotion was dropped or delayed.<br>
+4. <b>Teaming & Failover Discrepancy:</b> Destination host uplinks assigned as Active are mapped to inconsistent physical VLAN trunks.`;
+    cliCommands = `# 1. List physical NIC link states and negotiation speeds on destination ESXi host
+esxcli network nic list
+
+# 2. Inspect Distributed Virtual Switch (vDS) and portgroup VLAN configuration
+esxcli network vswitch dvs vmware list
+esxcli network vswitch dvs vmware portgroup list
+
+# 3. Test VMkernel and gateway MTU reachability (1472 = 1500 MTU, 8972 = Jumbo 9000 MTU)
+vmkping -I vmk0 <Gateway_IP> -d -s 1472
+vmkping -I vmk0 <Gateway_IP> -d -s 8972
+
+# 4. Check for dropped packets and CRC errors on destination physical uplinks
+esxcli network nic stats get -n vmnic0
+esxcli network nic stats get -n vmnic1
+
+# 5. Inspect active VM virtual ports and MAC learning on vDS
+esxcli network vswitch dvs vmware port list | grep -E "Port ID|Client Name|MAC Address"`;
+    remediationSteps = [
+      'Verify upstream physical switch port configuration for destination host uplinks: ensure VLAN ID is in the permitted trunk (<code>switchport trunk allowed vlan add &lt;VLAN_ID&gt;</code>).',
+      'Confirm MTU consistency across all physical switch interfaces, vDS switches, and VMkernel adapters (e.g., 1500 vs 9000 Jumbo Frames).',
+      'Force MAC address table re-learning: edit VM network adapter in vCenter, uncheck and re-check "Connected", or toggle virtual adapter state.',
+      'Verify "Notify Switches" is set to "Yes" in vDS Portgroup Teaming and Failover policies to ensure RARP broadcast upon vMotion.',
+      'Run vDS Health Check in vCenter (vDS -> Monitor -> Health Check) and confirm "VLAN and MTU" status is Normal across all cluster hosts.'
+    ];
+    verificationSteps = [
+      'Confirm VM receives ICMP reply from default gateway and external subnet.',
+      'Verify <code>esxcli network nic stats get</code> confirms zero dropped packets.',
+      'Perform test vMotion migration back and forth to validate continuous network reachability.'
+    ];
+
+  } else if (q.includes('psod') || q.includes('vmkernel') || q.includes('not_implemented') || q.includes('purple screen')) {
+    detectedCategory = 'VMware ESXi Kernel & Driver Stability (PSOD)';
+    targetPlatform = 'VMware vSphere';
     rootCause = `The host encountered an unrecoverable kernel trap in <code>vmkernel</code> (NOT_IMPLEMENTED exception). This condition typically occurs when an unsupported device driver opcode is dispatched to the storage HBA (e.g., lsi_mr3, smartpqi, or qfle3) or during firmware-driver parity mismatch under heavy I/O queue pressure.`;
-    cliCommands = `# 1. Extract the crash core dump and backtrace log\nesxcli system coredump file get\nesxcli system coredump partition get\n\n# 2. Check storage controller driver and firmware revision\nesxcli storage core adapter list\nesxcli software vib list | grep -E "lsi|smartpqi|bnxt|qfle3"\n\n# 3. Check VMkernel log timestamps leading up to PSOD\nzcat /var/run/log/vmkernel.*.gz | grep -iE "NOT_IMPLEMENTED|exception|assert" | tail -n 40`;
+    cliCommands = `# 1. Extract the crash core dump and backtrace log
+esxcli system coredump file get
+esxcli system coredump partition get
+
+# 2. Check storage controller driver and firmware revision
+esxcli storage core adapter list
+esxcli software vib list | grep -E "lsi|smartpqi|bnxt|qfle3"
+
+# 3. Check VMkernel log timestamps leading up to PSOD
+zcat /var/run/log/vmkernel.*.gz | grep -iE "NOT_IMPLEMENTED|exception|assert" | tail -n 40`;
     remediationSteps = [
       'Collect the coredump partition using <code>esxcfg-dumppart --copy --dumpfilenm /vmfs/volumes/datastore1/esxi-dump.core</code>.',
-      'Check the VMware Compatibility Guide (VCG / HCL) for exact matching of the PCIe controller firmware (BIOS/UEFI) and async VIB driver version.',
+      'Check the VMware Compatibility Guide (VCG / HCL) for exact matching of PCIe controller firmware (BIOS/UEFI) and async VIB driver version.',
       'If async driver was recently upgraded, downgrade or apply vendor hotfix VIB via ESXi Maintenance Mode: <code>esxcli software vib install -d /vmfs/volumes/datastore1/driver-bundle.zip</code>.',
       'Reboot ESXi host and verify host power management profile in UEFI is set to OS Control or Static High Performance.'
     ];
@@ -2344,10 +2417,226 @@ function generateInAppAiDiagnosis(query, platform, model) {
       'Verify host uptime: <code>uptime</code> and check memory health: <code>esxcli hardware memory get</code>.',
       'Verify datastore paths are active without path thrashing: <code>esxcli storage nmp device list</code>.'
     ];
-  } else if (q.includes('cisco') || q.includes('ucs') || q.includes('subordinate') || q.includes('cluster') || q.includes('degraded') || q.includes('fabric interconnect')) {
-    detectedCategory = 'Cisco UCS Fabric Interconnect High Availability';
-    rootCause = `The Cisco UCS 6200/6300/6400 Fabric Interconnect HA cluster heartbeat link (L1/L2 cross-connect) experienced communication degradation or heartbeat loss. The Subordinate FI cannot reliably synchronize its state machine with the Primary FI, placing the cluster into DEGRADED state to prevent split-brain.`;
-    cliCommands = `# 1. Connect to Cisco UCS Manager CLI (SSH to VIP or FI-A/B)\nshow cluster state\nshow cluster extended-state\n\n# 2. Inspect physical L1 and L2 cross-connect link health\nshow interface eth1/1\nshow interface eth1/2\nshow tech-support cluster | head -n 40\n\n# 3. Verify NTP synchronization across both FIs\nshow clock\nshow ntp status`;
+
+  } else if (q.includes('vsan') && (q.includes('disk') || q.includes('degraded') || q.includes('rebuild'))) {
+    detectedCategory = 'VMware vSAN Storage Health & Disk Group Rebuild';
+    targetPlatform = 'VMware vSphere';
+    rootCause = `A physical capacity or cache drive in a vSAN disk group reported a Permanent Device Loss (PDL) or SMART read/write threshold breach. vSAN transitioned the affected disk group into Degraded status to prevent silent data corruption and initiated an object rebuild cycle to restore RAID-1/RAID-5 quorum.`;
+    cliCommands = `# 1. Check vSAN cluster health and component resyncing status
+esxcli vsan health cluster list
+esxcli vsan debug resync summary get
+
+# 2. Inspect disk group physical device states and CMMDS membership
+esxcli vsan storage list | grep -E "Device|In CMMDS|State"
+
+# 3. Identify disk NAA identifier and physical enclosure slot
+esxcli storage core device list -d <naa_id>`;
+    remediationSteps = [
+      'Confirm whether rebuild traffic is throttled: navigate to vSAN Cluster -> Configure -> vSAN -> Advanced Options.',
+      'Evacuate or remove degraded disk group if drive is unresponsive: <code>esxcli vsan storage remove -s &lt;naa_id&gt;</code>.',
+      'Physically replace faulty SAS/NVMe drive and add new disk to the storage pool: <code>esxcli vsan storage add -d &lt;capacity_naa&gt; -s &lt;cache_naa&gt;</code>.',
+      'Verify vSAN object compliance: trigger "Check Infrastructure & Resync Status" from vSphere Client.'
+    ];
+    verificationSteps = [
+      'Verify <code>esxcli vsan health cluster list</code> returns all Green status.',
+      'Ensure <code>esxcli vsan debug resync summary get</code> reports 0 remaining bytes to resync.'
+    ];
+
+  } else if ((q.includes('vcsa') || q.includes('vcenter') || q.includes('vpxd')) && (q.includes('storage') || q.includes('seat') || q.includes('full') || q.includes('100%'))) {
+    detectedCategory = 'VMware vCenter VCSA /storage/seat Disk Full & Service Recovery';
+    targetPlatform = 'VMware vSphere';
+    rootCause = `The PostgreSQL database partition (/storage/seat: Stats, Events, Alarms, Tasks) on the VCSA appliance reached 100% utilization. PostgreSQL terminated active transaction workers, preventing the core <code>vmware-vpxd</code> service from binding sockets and resulting in 503 Service Unavailable.`;
+    cliCommands = `# 1. SSH to vCenter VCSA shell and inspect disk partition usage
+df -h /storage/seat /storage/core /storage/log
+
+# 2. Check vCenter core service statuses
+service-control --status --all
+
+# 3. Clean old compressed log bundles to restore immediate breathing room
+find /storage/log/vmware/vpxd -name "*.gz" -mtime +14 -delete`;
+    remediationSteps = [
+      'In vSphere Client / parent ESXi host, increase virtual disk VMDK 8 (SEAT partition) size by at least 25 GB.',
+      'SSH into VCSA appliance and trigger online filesystem expansion: <code>vpxd_servicecfg storage auto-expand</code>.',
+      'Restart vCenter core management daemons: <code>service-control --start --all</code>.',
+      'Configure database retention policy in vCenter Settings: reduce Tasks & Events retention from 180 days to 30 days.'
+    ];
+    verificationSteps = [
+      'Verify <code>df -h /storage/seat</code> reports less than 80% utilization.',
+      'Confirm <code>service-control --status vmware-vpxd</code> reports <b>Running</b> and login to vSphere Client loads cleanly.'
+    ];
+
+  } else if ((q.includes('snapshot') || q.includes('stun') || q.includes('locked')) && (q.includes('vmdk') || q.includes('vmware') || q.includes('consolidation'))) {
+    detectedCategory = 'VMware VM Stun & Locked .vmdk Snapshot Consolidation Failure';
+    targetPlatform = 'VMware vSphere';
+    rootCause = `A virtual machine base disk or delta snapshot .vmdk remains locked by a backup appliance proxy or an ESXi host that suffered an abrupt network drop during hotadd backup. Subsequent consolidation fails with "The file is locked by another process".`;
+    cliCommands = `# 1. Identify which ESXi host holds the VMFS file lock on the delta VMDK
+vmkfstools -D /vmfs/volumes/datastore/VM_NAME/VM_NAME-000001.vmdk
+
+# 2. Extract VMID for consolidation
+vim-cmd vmsvc/getallvms | grep -i "VM_NAME"
+
+# 3. Trigger command-line snapshot consolidation
+vim-cmd vmsvc/snapshot.consolidate <VMID>`;
+    remediationSteps = [
+      'Examine the MAC address in the <code>vmkfstools -D</code> output header to identify the locking ESXi host.',
+      'SSH to the locking host and restart management agents if backup proxy unmount hung: <code>/etc/init.d/hostd restart</code>.',
+      'If VMFS lock persists, power off backup proxy VM and remove secondary disks.',
+      'Run snapshot consolidation: right click VM -> Snapshots -> Consolidate.'
+    ];
+    verificationSteps = [
+      'Verify vSphere Client shows "Needs Consolidation: No" in VM Summary.',
+      'Confirm VM datastore directory contains only base .vmdk disks without residual delta files.'
+    ];
+
+  // ==========================================
+  // 2. WINDOWS SERVER & ACTIVE DIRECTORY
+  // ==========================================
+  } else if (q.includes('4771') || (q.includes('kerberos') && q.includes('lockout')) || q.includes('0x18')) {
+    detectedCategory = 'Windows Active Directory & Kerberos Pre-Auth Lockout (0x18)';
+    targetPlatform = 'Windows Server';
+    rootCause = `Kerberos Pre-Authentication Failure Event ID 4771 with Failure Code <code>0x18</code> indicates invalid credentials supplied during AS-REQ ticket exchange. Stale cached credentials in Windows Credential Manager, automated Scheduled Tasks, or disconnected RDP sessions trigger rapid account lockouts.`;
+    cliCommands = `# 1. Query DC Security log for Event 4771 Code 0x18 to extract Caller IP
+Get-WinEvent -FilterHashtable @{LogName='Security';Id=4771} -MaxEvents 25 | 
+  Where-Object { $_.Properties[4].Value -eq '0x18' } | 
+  Select-Object TimeCreated, @{N='User';E={$_.Properties[0].Value}}, @{N='ClientIP';E={$_.Properties[6].Value}}
+
+# 2. Check user lockout status and bad password counter
+Get-ADUser -Identity "TargetUser" -Properties BadPwdCount, BadPasswordTime, LockedOut
+
+# 3. Purge cached Kerberos ticket on caller workstation
+klist purge`;
+    remediationSteps = [
+      'Trace Caller IP identified from Event 4771 to pinpoint the workstation or mobile endpoint.',
+      'Inspect client endpoint for scheduled tasks, persistent mapped drives, or Windows Credential Manager entries.',
+      'Unlock the Active Directory user account: <code>Unlock-ADAccount -Identity "TargetUser"</code>.',
+      'If caller is a mobile MDM device, re-authenticate or re-enroll the ActiveSync profile.'
+    ];
+    verificationSteps = [
+      'Verify BadPwdCount returns 0: <code>Get-ADUser "TargetUser" -Properties BadPwdCount</code>.',
+      'Monitor DC Security log for 15 minutes to confirm no new 4771 failure events appear.'
+    ];
+
+  } else if (q.includes('8453') || (q.includes('replication') && (q.includes('denied') || q.includes('rpc') || q.includes('active directory')))) {
+    detectedCategory = 'Active Directory DC Replication Error 8453 (Access Denied / RPC Ports)';
+    targetPlatform = 'Windows Server';
+    rootCause = `Domain Controller Active Directory replication failed with Win32 Error 8453 ("Replication access was denied"). This error is caused by missing "Replicating Directory Changes" permissions on the naming context root, RPC dynamic port exhaustion, or Kerberos SPN duplication across domain controllers.`;
+    cliCommands = `# 1. Inspect Active Directory replication summary and inbound neighbor status
+repadmin /replsummary
+repadmin /showrepl * /csv > repl_status.csv
+
+# 2. Test RPC endpoint mapper and dynamic RPC connectivity to partner DC
+Test-NetConnection -ComputerName "DC02.domain.com" -Port 135
+Test-NetConnection -ComputerName "DC02.domain.com" -Port 445
+
+# 3. Run dcdiag replication and SPN verification tests
+dcdiag /test:Replication /v
+setspn -X`;
+    remediationSteps = [
+      'Verify replication permissions: in ADSI Edit, connect to domain partition root, verify "Enterprise Domain Controllers" has "Replicating Directory Changes All" permissions.',
+      'Ensure RPC dynamic port range (TCP 49152-65535) is not blocked by intermediate firewalls between branch and core DCs.',
+      'If SPN duplicates exist, remove duplicate registration: <code>setspn -D &lt;SPN&gt; &lt;AccountName&gt;</code>.',
+      'Force synchronous replication across all naming contexts: <code>repadmin /syncall /AePdq</code>.'
+    ];
+    verificationSteps = [
+      'Verify <code>repadmin /showrepl</code> reports "Last attempt was successful" for all naming contexts.',
+      'Confirm <code>dcdiag /test:Replication</code> passes with zero errors.'
+    ];
+
+  } else if (q.includes('dfs-r') || q.includes('dfsr') || (q.includes('staging') && q.includes('quota'))) {
+    detectedCategory = 'Windows DFS-R Replication Backlog & Staging Quota Recovery';
+    targetPlatform = 'Windows Server';
+    rootCause = `The DFS Replication service halted replication because the staging folder reached 90% of its configured quota, or dirty database shutdown occurred after an abrupt power event. Large files exceeding available staging headroom cause persistent replication backlogs.`;
+    cliCommands = `# 1. Query DFSR backlog between sending and receiving partners
+Get-DfsrBacklog -SendingMember "FS01" -ReceivingMember "FS02" -GroupName "CorpShare"
+
+# 2. Check DFSR staging folder size and cleanup state
+wmic /namespace:\\root\microsoftdfs path dfsrreplicatedfolderinfo get replicationgroupname,replicatedfoldername,stagingfoldersizeinmb
+
+# 3. Query DFS-R event log for Event ID 4202 (Staging full) or 2212 (Dirty shutdown)
+Get-WinEvent -FilterHashtable @{LogName='DFS Replication';Id=4202,2212} -MaxEvents 15`;
+    remediationSteps = [
+      'Increase staging folder quota: in DFS Management console, set Staging Quota to at least 64 GB for high-change shares.',
+      'If dirty shutdown occurred (Event 2212), resume auto recovery: <code>wmic /namespace:\\root\microsoftdfs path dfsrmachineconfig set StopReplicationOnAutoRecovery=0</code>.',
+      'Restart DFS-R service: <code>Restart-Service DFSR</code>.',
+      'Monitor backlog draining: run <code>dfsrdiag backlog /rgname:"Corp" /rfname:"Data" /smem:FS01 /rmem:FS02</code>.'
+    ];
+    verificationSteps = [
+      'Verify <code>Get-DfsrBacklog</code> count reaches 0.',
+      'Confirm files created on FS01 appear on FS02 within replication SLA.'
+    ];
+
+  // ==========================================
+  // 3. ENTERPRISE LINUX & KERNEL
+  // ==========================================
+  } else if (q.includes('kswapd') || (q.includes('iowait') && q.includes('memory'))) {
+    detectedCategory = 'Linux Kernel Memory Management & Storage Bottlenecks (kswapd0)';
+    targetPlatform = 'Enterprise Linux';
+    rootCause = `The Linux kernel asynchronous memory reclaim daemon (<code>kswapd0</code>) spiked to 100% CPU due to high memory watermarks breached under heavy I/O. The system thrashing occurs as the page allocator aggressively flushes dirty pages and scans page tables.`;
+    cliCommands = `# 1. Inspect memory usage, swap rate, and disk I/O wait
+free -h
+vmstat 1 5
+iostat -xz 1 5
+
+# 2. Identify top memory consuming processes and page cache breakdown
+ps aux --sort=-%mem | head -n 15
+cat /proc/meminfo | grep -E "MemFree|MemAvailable|Buffers|Cached|Dirty|SwapTotal|SwapFree"
+
+# 3. Check kernel slab allocator allocation
+slabtop -s c -o | head -n 20`;
+    remediationSteps = [
+      'Reduce kernel swappiness temporarily to avoid thrashing: <code>sysctl vm.swappiness=10</code> (persist in <code>/etc/sysctl.conf</code>).',
+      'Increase <code>vm.min_free_kbytes</code> to provide sufficient buffer headroom: <code>sysctl vm.min_free_kbytes=131072</code>.',
+      'If page cache is bloated and causing I/O choke, safely flush dirty pages: <code>sync; echo 3 > /proc/sys/vm/drop_caches</code>.',
+      'Identify memory leaks in running services (e.g. Java JVM heap exhaustion) and restart the offending daemon.'
+    ];
+    verificationSteps = [
+      'Verify kswapd0 CPU drops to near 0%: <code>top -b -n 1 | grep kswapd</code>.',
+      'Confirm <code>vmstat 1 3</code> reports <code>si</code> (swap in) and <code>so</code> (swap out) at 0.'
+    ];
+
+  } else if (q.includes('oom') || q.includes('oom-killer') || q.includes('oomd')) {
+    detectedCategory = 'Linux Kernel Out-of-Memory (OOM) Killer & cgroup Memory Pressure';
+    targetPlatform = 'Enterprise Linux';
+    rootCause = `The Linux kernel invoked the OOM killer because total physical RAM and swap space were completely exhausted. The kernel calculated oom_score for running processes and sent SIGKILL (signal 9) to the highest-scoring candidate to protect kernel stability.`;
+    cliCommands = `# 1. Extract kernel OOM killer invocation logs and killed PID
+dmesg -T | grep -iE "oom|killed process|out of memory" | tail -n 30
+
+# 2. Inspect systemd-oomd service logs and cgroup memory limits
+journalctl -u systemd-oomd --since "1 hour ago"
+systemd-cgtop -m
+
+# 3. Check current memory limits per slice
+cat /sys/fs/cgroup/memory/memory.limit_in_bytes`;
+    remediationSteps = [
+      'Identify the killed service (e.g. mysqld, java, container daemon) and inspect its memory limits.',
+      'Configure systemd service MemoryMax or MemoryHigh in <code>/etc/systemd/system/myservice.service.d/override.conf</code>.',
+      'Add dedicated emergency swap space if system runs without swap: <code>fallocate -l 8G /swapfile && chmod 600 /swapfile && mkswap /swapfile && swapon /swapfile</code>.',
+      'Restart the impacted production service cleanly: <code>systemctl restart &lt;service&gt;</code>.'
+    ];
+    verificationSteps = [
+      'Verify service is active: <code>systemctl status &lt;service&gt;</code>.',
+      'Confirm <code>dmesg -T</code> shows no new OOM invocations.'
+    ];
+
+  // ==========================================
+  // 4. CISCO UCS & FABRIC INTERCONNECT
+  // ==========================================
+  } else if (isCisco && (q.includes('subordinate') || q.includes('cluster') || q.includes('degraded') || q.includes('heartbeat') || q.includes('failover'))) {
+    detectedCategory = 'Cisco UCS Fabric Interconnect High Availability & Cluster Recovery';
+    targetPlatform = 'Cisco UCS';
+    rootCause = `The Cisco UCS Fabric Interconnect HA cluster heartbeat link (L1/L2 cross-connect) experienced communication degradation or heartbeat loss. The Subordinate FI cannot reliably synchronize its state machine with the Primary FI, placing the cluster into DEGRADED state to prevent split-brain.`;
+    cliCommands = `# 1. Connect to Cisco UCS Manager CLI (SSH to VIP or FI-A/B)
+show cluster state
+show cluster extended-state
+
+# 2. Inspect physical L1 and L2 cross-connect link health
+show interface eth1/1
+show interface eth1/2
+show tech-support cluster | head -n 40
+
+# 3. Verify NTP synchronization across both FIs
+show clock
+show ntp status`;
     remediationSteps = [
       'Verify physical cable integrity of L1 and L2 cluster links between Fabric Interconnect A and B.',
       'Check for management network VIP conflict or ARP poisoning on the upstream management switch.',
@@ -2358,132 +2647,162 @@ function generateInAppAiDiagnosis(query, platform, model) {
       'Run <code>show cluster state</code>: Primary should be <b>HA READY</b> and Subordinate should be <b>HA READY</b>.',
       'Verify Virtual IP (VIP) responds with 0% packet loss from external management workstation.'
     ];
-  } else if (q.includes('kerberos') || q.includes('4771') || q.includes('0x18') || q.includes('active directory') || q.includes('lockout')) {
-    detectedCategory = 'Windows Active Directory & Kerberos Security';
-    rootCause = `Kerberos Pre-Authentication Failure Event ID 4771 with Status Code <code>0x18</code> signifies that the user/service account supplied bad credentials (wrong password or expired Kerberos ticket). Stale cached credentials in scheduled tasks, Windows Credential Manager, or disconnected RDP sessions commonly trigger persistent account lockouts.`;
-    cliCommands = `# 1. Query DC Security Event Log for Event 4771 with Failure Code 0x18\nGet-WinEvent -FilterHashtable @{LogName='Security';Id=4771} -MaxEvents 20 | \n  Where-Object { $_.Properties[4].Value -eq '0x18' } | \n  Select-Object TimeCreated, @{N='User';E={$_.Properties[0].Value}}, @{N='ClientIP';E={$_.Properties[6].Value}}\n\n# 2. Identify the source caller workstation causing repeated lockouts\nGet-ADUser -Identity "TargetUser" -Properties * | Select-Object Name, BadPwdCount, BadPasswordTime, LockedOut\n\n# 3. Purge cached Kerberos tickets on caller endpoint\nklist purge`;
-    remediationSteps = [
-      'Trace Client IP Address reported in the Event 4771 details to identify the physical computer or VM generating repeated bad auth requests.',
-      'Check for automated processes on the client machine: Windows Scheduled Tasks running under old account password, Windows Services, mounted network drives, or Credential Manager entries.',
-      'If source IP belongs to a smartphone or mobile MDM, remove and re-add Microsoft Exchange ActiveSync profile.',
-      'Unlock the account in AD: <code>Unlock-ADAccount -Identity "TargetUser"</code>.'
-    ];
-    verificationSteps = [
-      'Verify bad password count resets to 0: <code>Get-ADUser "TargetUser" -Properties BadPwdCount</code>.',
-      'Monitor Security log on DC for 15 minutes to confirm no new 4771 events with Code 0x18 occur.'
-    ];
-  } else if (q.includes('kswapd') || q.includes('iowait') || q.includes('linux') || q.includes('memory') || q.includes('load')) {
-    detectedCategory = 'Linux Kernel Memory Management & Storage Bottlenecks';
-    rootCause = `The Linux kernel asynchronous memory reclaim daemon (<code>kswapd0</code>) has spiked to 100% CPU due to severe page allocator pressure. The system is scanning page tables aggressively because low memory watermarks have been breached, leading to high disk iowait as pages are swapped to disk or flushed from the dirty page cache.`;
-    cliCommands = `# 1. Check system memory utilization, swap usage, and CPU iowait\nfree -h\nvmstat 1 5\niostat -xz 1 5\n\n# 2. Identify top memory-consuming processes and dirty cache\nps aux --sort=-%mem | head -n 15\ncat /proc/meminfo | grep -E "MemFree|MemAvailable|Buffers|Cached|Dirty|SwapTotal|SwapFree"\n\n# 3. Inspect kernel slab allocator usage\nslabtop -s c -o | head -n 20`;
-    remediationSteps = [
-      'Reduce kernel swappiness temporarily to avoid thrashing: <code>sysctl vm.swappiness=10</code> (persist in <code>/etc/sysctl.conf</code>).',
-      'Increase <code>vm.min_free_kbytes</code> to provide sufficient buffer headroom: <code>sysctl vm.min_free_kbytes=131072</code>.',
-      'If page cache is bloated and causing I/O choke, safely flush dirty pages: <code>sync; echo 3 > /proc/sys/vm/drop_caches</code>.',
-      'Identify memory leak in running services (e.g., Java JVM heap exhaustion or unbuffered log daemons) and restart the offending daemon.'
-    ];
-    verificationSteps = [
-      'Verify kswapd0 CPU drops to near 0%: <code>top -b -n 1 | grep kswapd</code>.',
-      'Confirm <code>vmstat 1 3</code> reports <code>si</code> (swap in) and <code>so</code> (swap out) at 0.'
-    ];
-  } else if (q.includes('aws') || q.includes('ec2') || q.includes('status check') || q.includes('ebs') || q.includes('lambda') || q.includes('alb')) {
+
+  // ==========================================
+  // 5. AWS CLOUD INFRASTRUCTURE
+  // ==========================================
+  } else if (isAWS) {
     detectedCategory = 'AWS Cloud Infrastructure & Compute Availability';
-    rootCause = `The AWS instance or resource failed reachability or performance thresholds. For EC2 1/2 Status Check failures, the host hypervisor is operational but the guest OS kernel panicked, hung during initrd boot, or experienced file system journal corruption on the EBS root volume (xvda/nvme0n1). For EBS throttling, burst balance is depleted or queue length breached provisioned IOPS.`;
-    cliCommands = `# 1. Query EC2 instance system and instance reachability status\naws ec2 describe-instance-status --instance-ids "i-0a12b34c56d78e9f0"\n\n# 2. Retrieve instance system console output / boot crash logs\naws ec2 get-console-output --instance-id "i-0a12b34c56d78e9f0" --output text | tail -n 50\n\n# 3. Check CloudWatch EBS VolumeQueueLength and VolumeThroughputPercentage\naws cloudwatch get-metric-statistics --namespace AWS/EBS --metric-name VolumeQueueLength \\\n  --dimensions Name=VolumeId,Value="vol-0123456789abcdef0" \\\n  --start-time $(date -u -d '1 hour ago' +%Y-%m-%dT%H:%M:%SZ) --end-time $(date -u +%Y-%m-%dT%H:%M:%SZ) \\\n  --period 300 --statistics Maximum`;
+    targetPlatform = 'AWS Cloud';
+    rootCause = `The AWS cloud instance or managed resource failed reachability or performance thresholds. For EC2 1/2 Status Check failures, the host hypervisor is operational but the guest OS kernel panicked, hung during initrd boot, or experienced file system journal corruption on the EBS root volume (xvda/nvme0n1).`;
+    cliCommands = `# 1. Query EC2 instance system and instance reachability status
+aws ec2 describe-instance-status --instance-ids "i-0a12b34c56d78e9f0"
+
+# 2. Retrieve instance system console output / boot crash logs
+aws ec2 get-console-output --instance-id "i-0a12b34c56d78e9f0" --output text | tail -n 50
+
+# 3. Check CloudWatch EBS VolumeQueueLength and VolumeThroughputPercentage
+aws cloudwatch get-metric-statistics --namespace AWS/EBS --metric-name VolumeQueueLength \
+  --dimensions Name=VolumeId,Value="vol-0123456789abcdef0" \
+  --start-time $(date -u -d '1 hour ago' +%Y-%m-%dT%H:%M:%SZ) --end-time $(date -u +%Y-%m-%dT%H:%M:%SZ) \
+  --period 300 --statistics Maximum`;
     remediationSteps = [
       'For EC2 Status Check failure: Stop the instance and start it (this shifts the VM to a healthy physical AWS host).',
-      'If instance remains in 1/2 status check failed, detach the root EBS volume and attach it as a secondary data disk to a running Amazon Linux rescue instance.',
-      'Mount the rescue partition: <code>mount /dev/nvme1n1p1 /mnt/rescue</code>, chroot, and repair kernel initramfs: <code>dracut --regenerate-all --force</code>.',
+      'If instance remains in 1/2 status check failed, detach the root EBS volume and attach it as a secondary data disk to a rescue instance.',
+      'Mount the rescue partition, chroot, and repair kernel initramfs: <code>dracut --regenerate-all --force</code>.',
       'For EBS IOPS throttling: Modify volume type to gp3 or io2 with increased provisioned IOPS: <code>aws ec2 modify-volume --volume-id vol-xxx --volume-type gp3 --iops 6000 --throughput 250</code>.'
     ];
     verificationSteps = [
       'Verify <code>aws ec2 describe-instance-status</code> returns <code>Status: ok</code> for both SystemStatus and InstanceStatus.',
       'Confirm SSH connectivity and CloudWatch metrics indicate zero queue length stalls.'
     ];
-  } else if (q.includes('azure') || q.includes('bastion') || q.includes('aks') || q.includes('expressroute') || q.includes('invalidsoftmatch')) {
+
+  // ==========================================
+  // 6. MICROSOFT AZURE CLOUD
+  // ==========================================
+  } else if (isAzure) {
     detectedCategory = 'Microsoft Azure Hybrid Cloud & Networking';
-    rootCause = `The Azure resource experienced access isolation or platform service throttling. Common triggers include Network Security Group (NSG) priority rule override blocking TCP 3389/22, Azure Serial Console kernel hang, Azure AD Connect UPN/SMTP anchor mismatches, or ExpressRoute BGP peering state dropping to Active due to MSEE router session reset.`;
-    cliCommands = `# 1. Verify Azure VM power state and network interface provisioning status\naz vm get-instance-view --resource-group "rg-production" --name "vm-app01" --query "instanceView.statuses[?starts_with(code, 'PowerState/')].displayStatus" -o tsv\n\n# 2. Check Effective Network Security Group (NSG) rules applied to VM NIC\naz network nic list-effective-nsg --resource-group "rg-production" --name "vm-app01-nic" -o table\n\n# 3. Connect to Azure Serial Console to inspect SAC / Linux kernel console\naz rest --method POST --uri "/subscriptions/{sub}/resourceGroups/rg-production/providers/Microsoft.Compute/virtualMachines/vm-app01/serialConsole"\n\n# 4. Check ExpressRoute circuit ARP and route tables\naz network express-route list-arp-tables --resource-group "rg-network" --circuit-name "ER-Circuit-01" --peering-name "AzurePrivatePeering" --device "Primary" -o table`;
+    targetPlatform = 'Microsoft Azure';
+    rootCause = `The Azure resource experienced access isolation or platform service throttling. Common triggers include Network Security Group (NSG) priority rule override blocking TCP 3389/22, Azure Serial Console kernel hang, Azure AD Connect UPN/SMTP anchor mismatches, or ExpressRoute BGP peering state dropping to Active.`;
+    cliCommands = `# 1. Verify Azure VM power state and network interface provisioning status
+az vm get-instance-view --resource-group "rg-production" --name "vm-app01" --query "instanceView.statuses[?starts_with(code, 'PowerState/')].displayStatus" -o tsv
+
+# 2. Check Effective Network Security Group (NSG) rules applied to VM NIC
+az network nic list-effective-nsg --resource-group "rg-production" --name "vm-app01-nic" -o table
+
+# 3. Connect to Azure Serial Console to inspect SAC / Linux kernel console
+az rest --method POST --uri "/subscriptions/{sub}/resourceGroups/rg-production/providers/Microsoft.Compute/virtualMachines/vm-app01/serialConsole"`;
     remediationSteps = [
       'Check NSG rules: ensure Inbound Port 443 (for Bastion) or Port 3389/22 does not have a higher-priority "DenyAll" rule overriding access.',
-      'Use Azure VM Run Command to reset the guest firewall or Windows Remote Desktop service: <code>az vm run-command invoke -g "rg-prod" -n "vm-app01" --command-id RunPowerShellScript --scripts "Set-ItemProperty -Path \\\'HKLM:\\System\\CurrentControlSet\\Control\\Terminal Server\\\' -Name \\\'fDenyTSConnections\\\' -Value 0"</code>.',
-      'For Azure AD Connect InvalidSoftMatch: Remediate the cloud immutable ID or duplicate user principal name (UPN) using Microsoft Graph PowerShell: <code>Set-MgUser -UserId $user.Id -OnPremisesImmutableId $null</code>.',
-      'For ExpressRoute: Verify primary and secondary BGP peering IPs with telecom telco provider.'
+      'Use Azure VM Run Command to reset guest firewall or RDP: <code>az vm run-command invoke -g "rg-prod" -n "vm-app01" --command-id RunPowerShellScript --scripts "Set-ItemProperty -Path \'HKLM:\\System\\CurrentControlSet\\Control\\Terminal Server\' -Name \'fDenyTSConnections\' -Value 0"</code>.',
+      'For Azure AD Connect InvalidSoftMatch: Remediate the cloud immutable ID using Microsoft Graph PowerShell: <code>Set-MgUser -UserId $user.Id -OnPremisesImmutableId $null</code>.',
+      'For ExpressRoute: Verify primary and secondary BGP peering IPs with telecom provider.'
     ];
     verificationSteps = [
       'Run <code>az network watcher test-connectivity</code> from source to destination IP on TCP 443/3389.',
       'Confirm Azure AD Connect delta synchronization reports <code>Success</code> without validation errors.'
     ];
-  } else if (q.includes('vsan') || q.includes('vcsa') || q.includes('vcenter') || q.includes('snapshot') || q.includes('storage/seat')) {
-    detectedCategory = 'VMware vSphere Management & Storage Infrastructure';
-    rootCause = `The vSphere cluster encountered storage degradation or management daemon failure. For vCenter VCSA crashes, PostgreSQL embedded database (SEAT: Stats, Events, Alarms, Tasks) partition reached 100% capacity, causing <code>vmware-vpxd</code> service crash. For vSAN, physical drive permanent device loss (PDL) triggered cluster resynchronization.`;
-    cliCommands = `# 1. SSH to vCenter VCSA appliance and check disk partition usage\ndf -h /storage/seat /storage/core /storage/log\n\n# 2. Check vCenter core service statuses\nservice-control --status --all\n\n# 3. Inspect vSAN health and resyncing object count\nesxcli vsan health cluster list\nesxcli vsan debug resync summary get`;
-    remediationSteps = [
-      'For VCSA /storage/seat 100% full: Increase the virtual disk size of VMDK 8 in vSphere Client, then run <code>vmdir-cleanup</code> and expand online: <code>vpxd_servicecfg storage auto-expand</code>.',
-      'Clean stale PostgreSQL log and dump files: <code>find /storage/log/vmware/vpxd -name "*.gz" -mtime +14 -delete</code>.',
-      'For locked .vmdk snapshot: Run <code>vmkfstools -D /vmfs/volumes/datastore/vm/vm-000001.vmdk</code> to identify the ESXi host holding the MAC address lock, then restart management agents: <code>/etc/init.d/hostd restart</code>.',
-      'Start stopped vCenter services: <code>service-control --start vmware-vpxd</code>.'
-    ];
-    verificationSteps = [
-      'Confirm <code>service-control --status vmware-vpxd</code> reports <code>Running</code>.',
-      'Access vSphere Client web portal (https://vcsa.domain:443) and verify all hosts and VMs display green checkmarks.'
-    ];
+
+  // ==========================================
+  // 7. DYNAMIC KNOWLEDGE BASE SEARCH FALLBACK
+  // ==========================================
   } else {
-    // General Enterprise Infrastructure Diagnostics
-    detectedCategory = `${platform} Enterprise Incident Recovery`;
-    rootCause = `The reported issue for <strong>${esc(query)}</strong> on <strong>${platform}</strong> indicates an operational service interruption or configuration constraint. Primary contributors include service crash/restart loop, authentication or credential expiration, network port-channel/MTU mismatch, or storage capacity exhaustion.`;
-    cliCommands = `# Diagnostic baseline inspection commands for ${platform}:\n` + (
-      platform === 'VMware' ? 'esxcli system version get\nesxcli network nic list\nesxcli storage core path list\ncat /var/log/vmkernel.log | tail -n 30' :
-      platform === 'Cisco UCS' ? 'show cluster state\nshow server inventory\nshow fault\nshow tech-support chassis' :
-      platform === 'Windows' ? 'Get-Service | Where-Object {$_.Status -ne "Running" -and $_.StartType -eq "Automatic"}\nGet-EventLog -LogName System -EntryType Error -Newest 15\nTest-NetConnection -ComputerName "gateway" -Port 443' :
-      platform === 'Linux' ? 'systemctl status\njournalctl -xe -p 3 -n 40\ndf -hT\ndmesg -T | grep -iE "error|fail|warn" | tail -n 25' :
-      'aws ec2 describe-instance-status\naws health describe-events --filter "eventStatusCodes=open"'
-    );
-    remediationSteps = [
-      'Audit recently committed configuration changes, network ACLs, and service account password rotations.',
-      'Verify physical/virtual network connectivity: confirm MTU consistency (1500 vs 9000 Jumbo Frames) across switches.',
-      'Check disk partition free space: ensure root/system volumes have at least 15% free headroom.',
-      'Perform controlled restart of dependent service daemon and observe log output for clean socket binding.'
-    ];
-    verificationSteps = [
-      'Confirm service health status is Active (Running) and listening on intended TCP/UDP ports.',
-      'Simulate client request or run end-to-end synthetic health check to validate recovery.'
-    ];
+    // Check if query matches an existing KB article in window.KB_ARTICLES
+    let matchedArticle = null;
+    if (typeof window !== 'undefined' && Array.isArray(window.KB_ARTICLES)) {
+      const qTerms = q.replace(/[^a-z0-9 ]/g, ' ').split(/\s+/).filter(w => w.length > 2 && !['and','the','with','for','check','error','after','lost'].includes(w));
+      let bestScore = 0;
+      for (const a of window.KB_ARTICLES) {
+        let score = 0;
+        const text = `${a.title || ''} ${a.category || ''} ${a.platform || ''} ${a.description || ''}`.toLowerCase();
+        for (const term of qTerms) {
+          if (text.includes(term)) score += 2;
+        }
+        if (a.commands) {
+          for (const term of qTerms) {
+            if (a.commands.toLowerCase().includes(term)) score += 1;
+          }
+        }
+        if (score > bestScore && score >= 3) {
+          bestScore = score;
+          matchedArticle = a;
+        }
+      }
+    }
+
+    if (matchedArticle) {
+      detectedCategory = `${matchedArticle.platform || targetPlatform} ${matchedArticle.category || 'Incident'} Resolution`;
+      targetPlatform = matchedArticle.platform || targetPlatform;
+      rootCause = matchedArticle.description || `Investigation into ${esc(matchedArticle.title)} on ${targetPlatform}. Root causes correlate with service interrupt, configuration drift, or resource exhaustion.`;
+      cliCommands = matchedArticle.commands || `# Baseline diagnostic inspection for ${targetPlatform}\nesxcli system version get`;
+      remediationSteps = [
+        'Review recent change tickets, configuration modifications, and administrative tasks.',
+        'Execute the validated command lines in order from lowest impact to service-restarting procedures.',
+        'Check service logs for corresponding correlation IDs or fatal socket binding errors.'
+      ];
+      verificationSteps = [
+        'Verify service daemon or host responds cleanly to synthetic health checks.',
+        'Validate error log streams report clean operational state with zero persistent fault codes.'
+      ];
+    } else {
+      // Platform-Accurate Baseline Commands (Strictly never outputting AWS commands for other platforms!)
+      detectedCategory = `${targetPlatform} Incident Diagnostic Recovery`;
+      rootCause = `The reported issue for <strong>${esc(query)}</strong> on <strong>${targetPlatform}</strong> indicates an operational service interruption or configuration constraint. Primary contributors include service crash/restart loop, authentication or credential expiration, network port-channel/MTU mismatch, or storage capacity exhaustion.`;
+      cliCommands = `# Diagnostic baseline inspection commands for ${targetPlatform}:\n` + (
+        isVMware ? 'esxcli system version get\nesxcli network nic list\nesxcli storage core path list\ncat /var/log/vmkernel.log | tail -n 30' :
+        isCisco ? 'show cluster state\nshow server inventory\nshow fault\nshow tech-support chassis' :
+        isWindows ? 'Get-Service | Where-Object {$_.Status -ne "Running" -and $_.StartType -eq "Automatic"}\nGet-EventLog -LogName System -EntryType Error -Newest 15\nTest-NetConnection -ComputerName "gateway" -Port 443' :
+        isLinux ? 'systemctl status\njournalctl -xe -p 3 -n 40\ndf -hT\ndmesg -T | grep -iE "error|fail|warn" | tail -n 25' :
+        isAzure ? 'az vm get-instance-view\naz network nic list-effective-nsg\naz network watcher test-connectivity' :
+        isAWS ? 'aws ec2 describe-instance-status\naws health describe-events --filter "eventStatusCodes=open"' :
+        'ping -c 4 127.0.0.1\nnetstat -tuln\nss -tulnp\ncurl -Iv http://localhost'
+      );
+      remediationSteps = [
+        'Audit recently committed configuration changes, network ACLs, and service account credentials.',
+        'Verify physical/virtual network connectivity: confirm MTU consistency (1500 vs 9000 Jumbo Frames) across switches.',
+        'Check disk partition free space: ensure root and data volumes have at least 15% free headroom.',
+        'Perform controlled restart of dependent service daemon and observe log output for clean socket binding.'
+      ];
+      verificationSteps = [
+        'Confirm service health status is Active (Running) and listening on intended TCP/UDP ports.',
+        'Simulate client request or run end-to-end synthetic health check to validate recovery.'
+      ];
+    }
   }
 
   return `
-<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; border-bottom:1px solid #1e293b; padding-bottom:10px;">
+<div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; border-bottom:1px solid var(--border); padding-bottom:10px;">
   <div>
     <span style="font-size:11px; font-weight:700; color:#38bdf8; text-transform:uppercase; letter-spacing:0.05em;">AI ENGINE: ${activeLabel}</span>
-    <h3 style="color:#fff; font-size:18px; margin:4px 0 0 0;">${detectedCategory}</h3>
+    <h3 style="color:var(--text-primary); font-size:18px; font-weight:800; margin:4px 0 0 0;">${detectedCategory}</h3>
   </div>
-  <span class="badge" style="background:rgba(56,189,248,0.15); color:#38bdf8; font-size:12px; padding:4px 10px; border-radius:12px;">Target: ${platform}</span>
+  <span class="badge" style="background:rgba(56,189,248,0.15); color:#38bdf8; font-size:12px; padding:4px 10px; border-radius:12px; font-weight:700;">Target: ${targetPlatform}</span>
 </div>
 
 <div class="callout callout-danger">
   <div class="callout-header">🔴 Root Cause Analysis</div>
-  <div>${rootCause}</div>
+  <div style="color:inherit; font-size:13px; line-height:1.6;">${rootCause}</div>
 </div>
 
-<h3 style="color:#fff; font-size:16px; margin:18px 0 8px 0;">1. Diagnostic Inspection & CLI Commands</h3>
-<p style="color:#94a3b8; font-size:13px; margin-bottom:8px;">Execute these validated diagnostic commands from the administrative shell:</p>
-<pre><code>${cliCommands}</code></pre>
+<h3 style="color:var(--text-primary); font-size:16px; font-weight:700; margin:18px 0 8px 0;">1. Diagnostic Inspection & CLI Commands</h3>
+<p style="color:var(--text-secondary); font-size:13px; margin-bottom:8px;">Execute these validated diagnostic commands from the administrative shell:</p>
+<pre><code style="background:#0f172a; color:#38bdf8; display:block; padding:14px; border-radius:6px; overflow-x:auto; font-family:'JetBrains Mono', monospace; font-size:12px; line-height:1.6;">${cliCommands}</code></pre>
 
 <div class="callout callout-warning">
   <div class="callout-header">🟡 Engineering Pre-Checks & Caution</div>
-  <div>Ensure change control verification is recorded and redundant paths are monitored before bouncing production interfaces or services.</div>
+  <div style="color:inherit; font-size:13px; line-height:1.6;">${cautionNote}</div>
 </div>
 
-<h3 style="color:#fff; font-size:16px; margin:18px 0 8px 0;">2. Step-by-Step Remediation Playbook</h3>
-<ol style="margin-left:22px; color:#cbd5e1; line-height:1.7;">
+<h3 style="color:var(--text-primary); font-size:16px; font-weight:700; margin:18px 0 8px 0;">2. Step-by-Step Remediation Playbook</h3>
+<ol style="margin-left:22px; color:var(--text-primary); line-height:1.7;">
   ${remediationSteps.map(step => `<li style="margin-bottom:8px;">${step}</li>`).join('')}
 </ol>
 
-<div class="callout callout-success">
+<div class="callout callout-success" style="margin-top:16px;">
   <div class="callout-header">🟢 Health Verification & Post-Remediation Checks</div>
   <div>
-    <ul style="margin:4px 0 4px 18px;">
-      ${verificationSteps.map(v => `<li>${v}</li>`).join('')}
+    <ul style="margin:4px 0 4px 18px; color:inherit; line-height:1.6;">
+      ${verificationSteps.map(v => `<li style="margin-bottom:4px;">${v}</li>`).join('')}
     </ul>
   </div>
 </div>
