@@ -1,6 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+// Immediate synchronous bootstrap for Corporate Modern Theme
+(function() {
+  try {
+    const saved = localStorage.getItem('sysadminiq_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', saved);
+    document.documentElement.classList.toggle('dark', saved === 'dark');
+  } catch (e) {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+})();
+</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SysAdminIQ Knowledge Base</title>
@@ -17,6 +29,145 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
+<script>
+// Immediate synchronous global definition for Accordion toggles & Admin Submenu
+const _lastToggleTimes = {};
+
+window.toggleSidebarSection = function(sectionId, event) {
+  if (event) {
+    if (typeof event.stopPropagation === 'function') event.stopPropagation();
+  }
+  const now = Date.now();
+  if (_lastToggleTimes[sectionId] && (now - _lastToggleTimes[sectionId] < 200)) {
+    return; // Guard against accidental double invocation within 200ms
+  }
+  _lastToggleTimes[sectionId] = now;
+
+  const content = document.getElementById('sidebar-content-' + sectionId);
+  const arrow = document.getElementById('arrow-' + sectionId);
+  const title = document.getElementById('title-' + sectionId);
+  if (!content) return;
+
+  const willExpand = content.classList.contains('collapsed') || content.style.display === 'none';
+
+  if (willExpand) {
+    // EXPAND: content becomes visible, arrow points down
+    content.classList.remove('collapsed');
+    content.classList.remove('hidden');
+    content.style.display = 'block';
+    if (arrow) arrow.textContent = '▾';
+    if (title) {
+      title.classList.remove('is-collapsed');
+      title.setAttribute('aria-expanded', 'true');
+    }
+  } else {
+    // COLLAPSE: content is hidden, arrow points right
+    content.classList.add('collapsed');
+    content.style.display = 'none';
+    if (arrow) arrow.textContent = '▸';
+    if (title) {
+      title.classList.add('is-collapsed');
+      title.setAttribute('aria-expanded', 'false');
+    }
+  }
+};
+
+let _lastAdminToggleTime = 0;
+window.toggleAdminSubmenu = function(event) {
+  if (event) {
+    if (typeof event.stopPropagation === 'function') event.stopPropagation();
+    if (typeof event.preventDefault === 'function') event.preventDefault();
+  }
+  const now = Date.now();
+  if (now - _lastAdminToggleTime < 200) {
+    return; // Guard against accidental double invocation within 200ms
+  }
+  _lastAdminToggleTime = now;
+
+  const subContent = document.getElementById('admin-sub-content');
+  const arrow = document.getElementById('admin-sub-arrow');
+  const trigger = document.getElementById('admin-expand-trigger');
+  if (!subContent) return;
+
+  const willExpand = subContent.classList.contains('collapsed') || subContent.style.display === 'none';
+
+  if (willExpand) {
+    // EXPAND: Administration expands to show Admin Console & Publisher Portal
+    subContent.classList.remove('collapsed');
+    subContent.classList.remove('hidden');
+    subContent.style.display = 'flex';
+    if (arrow) arrow.textContent = '▾';
+    if (trigger) {
+      trigger.classList.remove('is-collapsed');
+      trigger.classList.add('is-expanded');
+      trigger.setAttribute('aria-expanded', 'true');
+    }
+  } else {
+    // COLLAPSE: Administration collapses to hide Admin Console & Publisher Portal
+    subContent.classList.add('collapsed');
+    subContent.style.display = 'none';
+    if (arrow) arrow.textContent = '▸';
+    if (trigger) {
+      trigger.classList.add('is-collapsed');
+      trigger.classList.remove('is-expanded');
+      trigger.setAttribute('aria-expanded', 'false');
+    }
+  }
+};
+
+window.handlePublisherLink = function(event) {
+  if (event) {
+    if (typeof event.stopPropagation === 'function') event.stopPropagation();
+  }
+  // Allow Ctrl+Click or Cmd+Click for background tab
+  if (event && (event.ctrlKey || event.metaKey)) return true;
+  try {
+    const opened = window.open('publisher.html', '_blank');
+    if (!opened || opened.closed || typeof opened.closed === 'undefined') {
+      window.location.href = 'publisher.html';
+    }
+  } catch (err) {
+    window.location.href = 'publisher.html';
+  }
+  if (event && typeof event.preventDefault === 'function') {
+    event.preventDefault();
+  }
+  return false;
+};
+
+// Bind keyboard support (Enter / Space) ONLY — do NOT attach duplicate click listeners
+function setupSidebarKeyboardAccessibility() {
+  ['categories', 'tools', 'management', 'filters'].forEach(function(sec) {
+    const el = document.getElementById('title-' + sec);
+    if (el && !el._keyboardBound) {
+      el._keyboardBound = true;
+      el.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          window.toggleSidebarSection(sec, e);
+        }
+      });
+    }
+  });
+
+  const adminTrigger = document.getElementById('admin-expand-trigger');
+  if (adminTrigger && !adminTrigger._keyboardBound) {
+    adminTrigger._keyboardBound = true;
+    adminTrigger.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        window.toggleAdminSubmenu(e);
+      }
+    });
+  }
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', setupSidebarKeyboardAccessibility);
+} else {
+  setupSidebarKeyboardAccessibility();
+}
+</script>
 </head>
 
 <body>
@@ -46,8 +197,11 @@
       </button>
     </div>
 
-    <!-- Right Header Actions: Clean 1 Primary Action per Top Bar Contract -->
+    <!-- Right Header Actions: Theme Switcher & Primary Action -->
     <div class="header-actions">
+      <button class="theme-toggle-btn" id="themeToggleBtn" onclick="toggleTheme()" title="Switch between Corporate Light & Midnight Dark themes">
+        ☀️ Light
+      </button>
       <button class="btn-ai-quick" onclick="nav('ai-assistant')">
         ✨ AI Tools
       </button>
@@ -111,164 +265,207 @@
       </div>
     </div>
 
-    <!-- Section 2: MAIN CATEGORIES (With official SVG Logos & Click Action) -->
-    <div class="sidebar-section">
-      <div class="sidebar-section-title clickable-title" onclick="filterByPlatform('all')" title="Click to view all categories">
+    <!-- Section 2: MAIN CATEGORIES (Click to Expand / Collapse & Official SVG Logos) -->
+    <div class="sidebar-section" id="sidebar-section-categories">
+      <div class="sidebar-section-title clickable-title" id="title-categories" onclick="toggleSidebarSection('categories', event)" title="Click to expand or collapse Main Categories" role="button" tabindex="0" aria-expanded="false">
         <span>Main Categories</span>
-        <span class="title-action">All ›</span>
+        <span class="accordion-arrow" id="arrow-categories">▸</span>
       </div>
 
-      <div class="sidebar-item" data-platform="VMware" onclick="filterByPlatform('VMware')">
-        <div class="sidebar-item-left">
-          <span class="sidebar-item-icon" id="sidebarLogo-VMware"></span>
-          <span class="sidebar-item-text">VMware</span>
+      <div class="sidebar-section-content collapsed" id="sidebar-content-categories" style="display:none;">
+        <div class="sidebar-item" data-platform="VMware" onclick="filterByPlatform('VMware')">
+          <div class="sidebar-item-left">
+            <span class="sidebar-item-icon" id="sidebarLogo-VMware"></span>
+            <span class="sidebar-item-text">VMware</span>
+          </div>
         </div>
-      </div>
 
-      <div class="sidebar-item" data-platform="Windows" onclick="filterByPlatform('Windows')">
-        <div class="sidebar-item-left">
-          <span class="sidebar-item-icon" id="sidebarLogo-Windows"></span>
-          <span class="sidebar-item-text">Windows</span>
+        <div class="sidebar-item" data-platform="Windows" onclick="filterByPlatform('Windows')">
+          <div class="sidebar-item-left">
+            <span class="sidebar-item-icon" id="sidebarLogo-Windows"></span>
+            <span class="sidebar-item-text">Windows</span>
+          </div>
         </div>
-      </div>
 
-      <div class="sidebar-item" data-platform="Linux" onclick="filterByPlatform('Linux')">
-        <div class="sidebar-item-left">
-          <span class="sidebar-item-icon" id="sidebarLogo-Linux"></span>
-          <span class="sidebar-item-text">Linux</span>
+        <div class="sidebar-item" data-platform="Linux" onclick="filterByPlatform('Linux')">
+          <div class="sidebar-item-left">
+            <span class="sidebar-item-icon" id="sidebarLogo-Linux"></span>
+            <span class="sidebar-item-text">Linux</span>
+          </div>
         </div>
-      </div>
 
-      <div class="sidebar-item" data-platform="Cisco UCS" onclick="filterByPlatform('Cisco UCS')">
-        <div class="sidebar-item-left">
-          <span class="sidebar-item-icon" id="sidebarLogo-Cisco"></span>
-          <span class="sidebar-item-text">Cisco UCS</span>
+        <div class="sidebar-item" data-platform="Cisco UCS" onclick="filterByPlatform('Cisco UCS')">
+          <div class="sidebar-item-left">
+            <span class="sidebar-item-icon" id="sidebarLogo-Cisco"></span>
+            <span class="sidebar-item-text">Cisco UCS</span>
+          </div>
         </div>
-      </div>
 
-      <div class="sidebar-item" data-platform="AWS" onclick="filterByPlatform('AWS')">
-        <div class="sidebar-item-left">
-          <span class="sidebar-item-icon" id="sidebarLogo-AWS"></span>
-          <span class="sidebar-item-text">AWS</span>
+        <div class="sidebar-item" data-platform="AWS" onclick="filterByPlatform('AWS')">
+          <div class="sidebar-item-left">
+            <span class="sidebar-item-icon" id="sidebarLogo-AWS"></span>
+            <span class="sidebar-item-text">AWS</span>
+          </div>
         </div>
-      </div>
 
-      <div class="sidebar-item" data-platform="Azure" onclick="filterByPlatform('Azure')">
-        <div class="sidebar-item-left">
-          <span class="sidebar-item-icon" id="sidebarLogo-Azure"></span>
-          <span class="sidebar-item-text">Azure</span>
+        <div class="sidebar-item" data-platform="Azure" onclick="filterByPlatform('Azure')">
+          <div class="sidebar-item-left">
+            <span class="sidebar-item-icon" id="sidebarLogo-Azure"></span>
+            <span class="sidebar-item-text">Azure</span>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Section 3: TOOLS (Clickable Header & Tools Views) -->
-    <div class="sidebar-section">
-      <div class="sidebar-section-title clickable-title" onclick="nav('commands')" title="Click to open Tools">
+    <!-- Section 3: TOOLS (Click to Expand / Collapse) -->
+    <div class="sidebar-section" id="sidebar-section-tools">
+      <div class="sidebar-section-title clickable-title" id="title-tools" onclick="toggleSidebarSection('tools', event)" title="Click to expand or collapse Tools" role="button" tabindex="0" aria-expanded="false">
         <span>Tools</span>
-        <span class="title-action">⌘ ›</span>
+        <span class="accordion-arrow" id="arrow-tools">▸</span>
       </div>
 
-      <div class="sidebar-item" data-view="commands" onclick="nav('commands')">
-        <div class="sidebar-item-left">
-          <span class="sidebar-item-icon">⌘</span>
-          <span class="sidebar-item-text">Commands</span>
+      <div class="sidebar-section-content collapsed" id="sidebar-content-tools" style="display:none;">
+        <div class="sidebar-item" data-view="commands" onclick="nav('commands')">
+          <div class="sidebar-item-left">
+            <span class="sidebar-item-icon">⌘</span>
+            <span class="sidebar-item-text">Commands</span>
+          </div>
         </div>
-      </div>
 
-      <div class="sidebar-item" data-view="scripts" onclick="nav('scripts')">
-        <div class="sidebar-item-left">
-          <span class="sidebar-item-icon">⚡</span>
-          <span class="sidebar-item-text">Automation</span>
+        <div class="sidebar-item" data-view="scripts" onclick="nav('scripts')">
+          <div class="sidebar-item-left">
+            <span class="sidebar-item-icon">⚡</span>
+            <span class="sidebar-item-text">Automation</span>
+          </div>
         </div>
-      </div>
 
-      <div class="sidebar-item" data-view="resources" onclick="nav('resources')">
-        <div class="sidebar-item-left">
-          <span class="sidebar-item-icon">🔧</span>
-          <span class="sidebar-item-text">Resources</span>
+        <div class="sidebar-item" data-view="resources" onclick="nav('resources')">
+          <div class="sidebar-item-left">
+            <span class="sidebar-item-icon">🔧</span>
+            <span class="sidebar-item-text">Resources</span>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Section 4: MANAGEMENT (Clickable Header, Administration View & Publisher Portal Banner) -->
-    <div class="sidebar-section">
-      <div class="sidebar-section-title clickable-title" onclick="nav('admin')" title="Click to open Administration">
+    <!-- Section 4: MANAGEMENT (Click to Expand / Collapse; Administration Hidden Until Clicked) -->
+    <div class="sidebar-section" id="sidebar-section-management">
+      <div class="sidebar-section-title clickable-title" id="title-management" onclick="toggleSidebarSection('management', event)" title="Click to expand or collapse Management" role="button" tabindex="0" aria-expanded="false">
         <span>Management</span>
-        <span class="title-action">⚙️ ›</span>
+        <span class="accordion-arrow" id="arrow-management">▸</span>
       </div>
 
-      <div class="sidebar-item" data-view="admin" onclick="nav('admin')">
-        <div class="sidebar-item-left">
-          <span class="sidebar-item-icon">⚙️</span>
-          <span class="sidebar-item-text">Administration</span>
-        </div>
-        <span class="count-badge" style="background:rgba(0,112,243,0.15); color:#60a5fa;">Active</span>
-      </div>
+      <div class="sidebar-section-content collapsed" id="sidebar-content-management" style="display:none;">
+        
+        <!-- Administration is HIDDEN behind Management. It only expands and becomes visible after a click -->
+        <div class="admin-sub-accordion" id="admin-sub-accordion">
+          <!-- Administration Trigger: Click to expand / collapse on next click -->
+          <div class="admin-expand-trigger clickable-title" id="admin-expand-trigger" onclick="toggleAdminSubmenu(event)" title="Click to expand Administration & Publisher Portal" role="button" tabindex="0" aria-expanded="false">
+            <div class="admin-header-left" style="display:flex; align-items:center; gap:8px;">
+              <span class="sidebar-item-icon">⚙️</span>
+              <span class="sidebar-item-text" style="font-weight:600; font-size:13px; color:#e2e8f0;">Administration</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+              <span class="count-badge" style="background:rgba(0,112,243,0.15); color:#60a5fa; font-size:10px;">Admin</span>
+              <span class="sub-arrow" id="admin-sub-arrow">▸</span>
+            </div>
+          </div>
 
-      <!-- Publisher Portal Banner under Management-Administration per user request -->
-      <a href="publisher.html" target="_blank" class="publisher-sidebar-card" title="Open Publisher Portal with Zero Trust Authentication">
-        <div class="pub-card-top">
-          <span class="pub-card-badge">🔑 Publisher Portal</span>
-          <span class="pub-card-arrow">↗</span>
+          <!-- Administration Sub-Content: Hidden until Administration is clicked -->
+          <div class="admin-sub-content collapsed" id="admin-sub-content" style="display:none;">
+            <!-- 1. Admin Console -->
+            <div class="sidebar-item sub-nav-item" data-view="admin" id="adminSidebarItem" onclick="nav('admin')" title="Open Administration Console" style="padding:7px 10px;">
+              <div class="sidebar-item-left">
+                <span class="sidebar-item-icon">🛠️</span>
+                <span class="sidebar-item-text">Admin Console</span>
+              </div>
+              <span class="count-badge" style="background:rgba(16,185,129,0.15); color:#34d399; font-size:10px;">Active</span>
+            </div>
+
+            <!-- 2. Enabled Publisher Portal HTML Link (under Management-Administration) -->
+            <div class="publisher-link-wrap" style="margin-top:2px; padding:0;">
+              <a href="publisher.html" target="_blank" rel="noopener noreferrer" class="publisher-sidebar-card" id="publisherPortalLink" title="Launch Publisher Portal (publisher.html)" onclick="handlePublisherLink(event)">
+                <div class="pub-card-top">
+                  <span class="pub-card-badge">🔑 Publisher Portal</span>
+                  <span class="pub-card-arrow">↗</span>
+                </div>
+                <div class="pub-card-title">Publisher Portal</div>
+                <div class="pub-card-desc">Publish, edit, and manage IT playbooks</div>
+                <div style="margin-top:6px; display:flex; align-items:center; gap:6px;">
+                  <span style="font-size:10px; color:#38bdf8; font-weight:700; background:rgba(56,189,248,0.15); padding:2px 8px; border-radius:4px; border:1px solid rgba(56,189,248,0.3);">
+                    🔗 publisher.html
+                  </span>
+                  <span style="font-size:10px; color:#94a3b8;">Click to Open ↗</span>
+                </div>
+              </a>
+            </div>
+          </div>
         </div>
-        <div class="pub-card-title">Publisher Portal</div>
-        <div class="pub-card-desc">Publish, edit, and manage IT playbooks</div>
-      </a>
+
+      </div>
     </div>
 
-    <!-- Section 5: FILTERS (Clickable Header with Reset Action & Interactive Full-Row Click) -->
-    <div class="sidebar-section">
-      <div class="sidebar-section-title clickable-title" onclick="resetSidebarFilters()" title="Click to clear all filters">
+    <!-- Section 5: FILTERS (Click to Expand / Collapse & Interactive Filters) -->
+    <div class="sidebar-section" id="sidebar-section-filters">
+      <div class="sidebar-section-title clickable-title" id="title-filters" onclick="toggleSidebarSection('filters', event)" title="Click to expand or collapse Filters" role="button" tabindex="0" aria-expanded="false">
         <span>Filters</span>
-        <span class="title-action">↺ Reset</span>
+        <div style="display:flex; align-items:center; gap:8px;">
+          <span class="accordion-arrow" id="arrow-filters">▸</span>
+        </div>
       </div>
 
-      <div class="sidebar-filter-item" id="filter-row-VMware" onclick="toggleSidebarFilterRow('VMware', event)">
-        <label onclick="event.stopPropagation();">
-          <input type="checkbox" id="filter-VMware" onchange="toggleSidebarFilter('VMware')">
-          <span>VMware</span>
-        </label>
-        <span class="filter-count" id="count-VMware">0</span>
-      </div>
+      <div class="sidebar-section-content collapsed" id="sidebar-content-filters" style="display:none;">
+        <div style="display:flex; justify-content:flex-end; margin-bottom:8px;">
+          <button type="button" class="btn-chip" onclick="resetSidebarFilters()" style="padding:2px 8px; font-size:10px;">↺ Clear All</button>
+        </div>
 
-      <div class="sidebar-filter-item" id="filter-row-Windows" onclick="toggleSidebarFilterRow('Windows', event)">
-        <label onclick="event.stopPropagation();">
-          <input type="checkbox" id="filter-Windows" onchange="toggleSidebarFilter('Windows')">
-          <span>Windows</span>
-        </label>
-        <span class="filter-count" id="count-Windows">0</span>
-      </div>
+        <div class="sidebar-filter-item" id="filter-row-VMware" onclick="toggleSidebarFilterRow('VMware', event)">
+          <label onclick="event.stopPropagation();">
+            <input type="checkbox" id="filter-VMware" onchange="toggleSidebarFilter('VMware')">
+            <span>VMware</span>
+          </label>
+          <span class="filter-count" id="count-VMware">0</span>
+        </div>
 
-      <div class="sidebar-filter-item" id="filter-row-Linux" onclick="toggleSidebarFilterRow('Linux', event)">
-        <label onclick="event.stopPropagation();">
-          <input type="checkbox" id="filter-Linux" onchange="toggleSidebarFilter('Linux')">
-          <span>Linux</span>
-        </label>
-        <span class="filter-count" id="count-Linux">0</span>
-      </div>
+        <div class="sidebar-filter-item" id="filter-row-Windows" onclick="toggleSidebarFilterRow('Windows', event)">
+          <label onclick="event.stopPropagation();">
+            <input type="checkbox" id="filter-Windows" onchange="toggleSidebarFilter('Windows')">
+            <span>Windows</span>
+          </label>
+          <span class="filter-count" id="count-Windows">0</span>
+        </div>
 
-      <div class="sidebar-filter-item" id="filter-row-Cisco UCS" onclick="toggleSidebarFilterRow('Cisco UCS', event)">
-        <label onclick="event.stopPropagation();">
-          <input type="checkbox" id="filter-Cisco UCS" onchange="toggleSidebarFilter('Cisco UCS')">
-          <span>Cisco UCS</span>
-        </label>
-        <span class="filter-count" id="count-Cisco">0</span>
-      </div>
+        <div class="sidebar-filter-item" id="filter-row-Linux" onclick="toggleSidebarFilterRow('Linux', event)">
+          <label onclick="event.stopPropagation();">
+            <input type="checkbox" id="filter-Linux" onchange="toggleSidebarFilter('Linux')">
+            <span>Linux</span>
+          </label>
+          <span class="filter-count" id="count-Linux">0</span>
+        </div>
 
-      <div class="sidebar-filter-item" id="filter-row-AWS" onclick="toggleSidebarFilterRow('AWS', event)">
-        <label onclick="event.stopPropagation();">
-          <input type="checkbox" id="filter-AWS" onchange="toggleSidebarFilter('AWS')">
-          <span>AWS</span>
-        </label>
-        <span class="filter-count" id="count-AWS">0</span>
-      </div>
+        <div class="sidebar-filter-item" id="filter-row-Cisco UCS" onclick="toggleSidebarFilterRow('Cisco UCS', event)">
+          <label onclick="event.stopPropagation();">
+            <input type="checkbox" id="filter-Cisco UCS" onchange="toggleSidebarFilter('Cisco UCS')">
+            <span>Cisco UCS</span>
+          </label>
+          <span class="filter-count" id="count-Cisco">0</span>
+        </div>
 
-      <div class="sidebar-filter-item" id="filter-row-Azure" onclick="toggleSidebarFilterRow('Azure', event)">
-        <label onclick="event.stopPropagation();">
-          <input type="checkbox" id="filter-Azure" onchange="toggleSidebarFilter('Azure')">
-          <span>Azure</span>
-        </label>
-        <span class="filter-count" id="count-Azure">0</span>
+        <div class="sidebar-filter-item" id="filter-row-AWS" onclick="toggleSidebarFilterRow('AWS', event)">
+          <label onclick="event.stopPropagation();">
+            <input type="checkbox" id="filter-AWS" onchange="toggleSidebarFilter('AWS')">
+            <span>AWS</span>
+          </label>
+          <span class="filter-count" id="count-AWS">0</span>
+        </div>
+
+        <div class="sidebar-filter-item" id="filter-row-Azure" onclick="toggleSidebarFilterRow('Azure', event)">
+          <label onclick="event.stopPropagation();">
+            <input type="checkbox" id="filter-Azure" onchange="toggleSidebarFilter('Azure')">
+            <span>Azure</span>
+          </label>
+          <span class="filter-count" id="count-Azure">0</span>
+        </div>
       </div>
     </div>
 
@@ -285,7 +482,7 @@
             <span style="font-size:12px; font-weight:700; color:var(--cf-blue); text-transform:uppercase; letter-spacing:0.05em;">
               Enterprise Infrastructure Intelligence
             </span>
-            <h2 style="font-size:24px; font-weight:800; margin-top:4px; color:#fff;">
+            <h2 style="font-size:24px; font-weight:800; margin-top:4px; color:var(--text-primary);">
               Next-Gen IT Infrastructure Troubleshooting & Diagnostic Intelligence
             </h2>
             <p style="font-size:13px; color:var(--text-secondary); margin-top:6px; line-height:1.6;">
@@ -300,7 +497,7 @@
 
       <!-- Select Technology Platform with Genuine SVG Logos -->
       <div>
-        <h3 style="font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 12px; display:flex; align-items:center; gap:8px;">
+        <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; display:flex; align-items:center; gap:8px;">
           <span>Select Technology Platform</span>
         </h3>
         <div id="platformGrid" class="platform-grid"></div>
@@ -309,7 +506,7 @@
       <!-- Essential Diagnostic Playbooks -->
       <div style="margin-top: 32px;">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-          <h3 style="font-size: 16px; font-weight: 700; color: #fff;">
+          <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary);">
             Essential Diagnostic Playbooks
           </h3>
           <button class="primary" onclick="nav('knowledge')" style="padding:6px 14px; font-size:12px;">
@@ -325,7 +522,7 @@
       <div class="card">
         <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:12px; margin-bottom:16px;">
           <div>
-            <h3 style="font-size:18px; font-weight:800; color:#fff; display:flex; align-items:center; gap:8px;">
+            <h3 style="font-size:18px; font-weight:800; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
               <span>✨</span>
               <span>AI Infrastructure Assistant & Multi-Model Hub (In-Webpage)</span>
             </h3>
@@ -354,23 +551,105 @@
           </button>
         </div>
 
-        <!-- Quick Incident Prompt Chips -->
-        <div style="font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; margin-bottom: 8px;">
-          Suggested Troubleshooting Prompts:
+        <!-- Suggested Troubleshooting Prompts: VMware, Windows, Linux, Cisco UCS, AWS, Azure, and Custom Prompts -->
+        <div class="prompt-select-bar">
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <div style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing:0.04em;">
+              Suggested Troubleshooting Prompts & Scenarios (Dropdowns & Categories)
+            </div>
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="btn-chip" onclick="saveCurrentAsCustomPrompt()" title="Save whatever is typed in the incident description box as a reusable Custom Prompt">
+                💾 Save as Custom Prompt
+              </button>
+              <button type="button" class="btn-chip" onclick="clearCustomPrompts()" title="Reset saved custom prompts" style="color:#f87171;">
+                🗑️ Reset Custom
+              </button>
+            </div>
+          </div>
+
+          <!-- Multi-Platform Dropdown Selector -->
+          <div class="prompt-select-top">
+            <select id="troubleshootingPromptDropdown" class="prompt-select" onchange="onSelectTroubleshootingPrompt(this.value)">
+              <option value="">-- Choose a Suggested Troubleshooting Prompt (VMware, Windows, Linux, Cisco UCS, AWS, Azure, Custom) --</option>
+              
+              <optgroup label="🔴 VMware vSphere & vSAN">
+                <option value="VMware ESXi host PSOD with NOT_IMPLEMENTED in vmkernel. Analyze root cause, coredump extraction and recovery steps.">🔴 VMware: ESXi host PSOD NOT_IMPLEMENTED vmkernel crash</option>
+                <option value="VMware vSAN: Disk group degraded due to physical drive permanent error. Run health check and trigger non-disruptive disk rebuild.">🔴 VMware: vSAN disk group degraded & storage rebuild</option>
+                <option value="VMware vCenter: VCSA 8.0 services failed to start (vmware-vpxd crash) due to PostgreSQL /storage/seat 100% disk full.">🔴 VMware: vCenter VCSA vmware-vpxd crash (/storage/seat 100% full)</option>
+                <option value="VMware VM stun & snapshot consolidation failure: Locked file .vmdk by backup proxy. Force unlock and snapshot consolidation without downtime.">🔴 VMware: VM stun & locked .vmdk snapshot consolidation failure</option>
+                <option value="VMware vSphere DVS: Virtual machine lost network connectivity after vMotion. Check VLAN trunking and physical uplinks.">🔴 VMware: DVS virtual switch packet drop after vMotion</option>
+              </optgroup>
+
+              <optgroup label="🪟 Windows Server & Active Directory">
+                <option value="Windows Server: Kerberos Pre-Authentication Failure Event ID 4771 with Failure Code 0x18. Remediate account lockouts.">🪟 Windows: Kerberos Event ID 4771 Failure Code 0x18 (Account Lockout)</option>
+                <option value="Active Directory: Domain Controller replication error 8453 (Replication access was denied). Check RPC dynamic ports and ACL permissions.">🪟 Windows: AD DC replication error 8453 (Access Denied / RPC)</option>
+                <option value="Windows DFS-R: Replication backlog accumulating and staging folder quota exceeded. Clear dirty shutdown state and reseed.">🪟 Windows: DFS-R replication backlog & staging folder quota</option>
+                <option value="Hyper-V: VSS backup writer failure Event ID 8193 with 0x800423f3. Troubleshoot shadow copy storage and restart Volume Shadow Copy.">🪟 Windows: Hyper-V VSS writer failure 0x800423f3 shadow copy</option>
+                <option value="Windows DNS Server: DNS server fails to scavenge stale resource records. Remediate aging settings and tombstone replication.">🪟 Windows: DNS server failing to scavenge stale records</option>
+              </optgroup>
+
+              <optgroup label="🐧 Enterprise Linux & Kernel">
+                <option value="Linux: System high iowait with kswapd0 100% CPU. Diagnose memory pressure, vm.dirty_ratio, and NVMe disk bottleneck.">🐧 Linux: kswapd0 100% CPU, memory pressure & high iowait</option>
+                <option value="Linux systemd-oomd: Critical production process terminated by kernel OOM killer. Inspect cgroup memory limit and dmesg traces.">🐧 Linux: Kernel OOM-killer killed critical production daemon</option>
+                <option value="Linux Filesystem: XFS / EXT4 metadata corruption forced read-only remount. Perform emergency xfs_repair / fsck with journal rollback.">🐧 Linux: Filesystem forced read-only remount (XFS/EXT4 corruption)</option>
+                <option value="Linux Kernel Panic: NMI watchdog bug: soft lockup - CPU#4 stuck for 23s! Identify offending driver and tune kernel scheduler.">🐧 Linux: Kernel panic NMI watchdog soft lockup CPU stuck</option>
+                <option value="Linux LVM: Thin-pool metadata space exhausted (100% full) causing frozen writes. Extend metadata pool safely.">🐧 Linux: LVM thin-pool metadata 100% full (frozen I/O writes)</option>
+              </optgroup>
+
+              <optgroup label="🌉 Cisco UCS & Fabric Interconnect">
+                <option value="Cisco UCS Manager: Fabric Interconnect Subordinate cluster state degraded. Check VIP failover and Ethernet uplink.">🌉 Cisco UCS: FI Subordinate Degraded Cluster state & VIP failover</option>
+                <option value="Cisco UCS: Blade Server chassis thermal critical alarm & DIMM correctable ECC error limit reached. Diagnostic policy and replacement.">🌉 Cisco UCS: Blade DIMM ECC correctable error threshold & thermal alarm</option>
+                <option value="Cisco UCS: vNIC / vHBA fabric failover not occurring during primary FI reboot. Verify pinning and uplink trunking.">🌉 Cisco UCS: vNIC/vHBA failover dropped during FI reboot</option>
+                <option value="Cisco UCS: Service Profile association failed with 'out-of-compute-resources'. Check vNIC templates and pool availability.">🌉 Cisco UCS: Service Profile association failure (out of compute resources)</option>
+                <option value="Cisco UCS Chassis: Power supply redundancy lost in Chassis 1. Diagnose PSU input AC feed failure and power budgeting.">🌉 Cisco UCS: Chassis power supply redundancy lost (PSU AC fault)</option>
+              </optgroup>
+
+              <optgroup label="☁️ AWS Cloud Infrastructure">
+                <option value="AWS EC2: Instance reachability 1/2 Status Check failed after kernel update. Attach EBS root volume to rescue instance and restore GRUB.">☁️ AWS: EC2 1/2 Status Check failed (kernel panic / GRUB rescue)</option>
+                <option value="AWS EBS: io2 volume experiencing severe IOPS throttling with 100% volume queue length. Remediate burst balance and Provisioned IOPS.">☁️ AWS: EBS volume IOPS throttling & 100% queue length latency</option>
+                <option value="AWS Lambda: Lambda cold start timeouts with VPC ENI attachment delays. Diagnose subnets, security group limits, and NAT Gateway saturation.">☁️ AWS: Lambda VPC ENI cold start timeout & NAT Gateway saturation</option>
+                <option value="AWS ALB: Application Load Balancer throwing 502 Bad Gateway. Inspect target group health checks, keep-alive headers, and backend connection drops.">☁️ AWS: ALB 502 Bad Gateway (target group connection drop)</option>
+                <option value="AWS S3: AccessDenied (403) on cross-account IAM role assuming with KMS Customer Managed Key. Verify KMS Key Policy and Bucket Policy.">☁️ AWS: S3 403 AccessDenied with cross-account KMS Key Policy</option>
+              </optgroup>
+
+              <optgroup label="🔷 Microsoft Azure Cloud">
+                <option value="Azure VM: Windows/Linux VM completely unreachable via Bastion and RDP. Remediate Network Security Group rule conflict and Azure Serial Console rescue.">🔷 Azure: VM unreachable via Bastion/RDP (NSG lock & Serial Console)</option>
+                <option value="Azure Disk: Premium SSD OS disk hitting max IOPS burst limit causing SQL Server high write latency. Upgrade to Azure Elastic SAN / Ultra Disk.">🔷 Azure: Premium SSD OS disk IOPS burst exhausted (SQL latency)</option>
+                <option value="Azure AD Connect: Directory synchronization error 'InvalidSoftMatch' / duplicate UPN conflict. Remediate cloud anchor and SMTP matching.">🔷 Azure: Azure AD Connect sync error InvalidSoftMatch (UPN conflict)</option>
+                <option value="Azure Kubernetes Service (AKS): Cluster nodes stuck in NotReady status due to container runtime disk pressure. Drain node and cleanup rootfs.">🔷 Azure: AKS NodeNotReady due to container runtime disk pressure</option>
+                <option value="Azure ExpressRoute: Dedicated peering BGP session state dropped to Connect/Active. Troubleshoot primary/secondary circuit MSEE failover.">🔷 Azure: ExpressRoute BGP peering session dropped (MSEE failover)</option>
+              </optgroup>
+
+              <optgroup label="🛠️ Enterprise IT Scenarios">
+                <option value="Multi-tier disaster recovery failover test: SAN replication consistency group split, DNS redirection, and VM boot ordering validation.">🛠️ Scenario: Multi-tier DR failover test & SAN replication split</option>
+                <option value="Ransomware quarantine incident: Network segmentation isolate infected VLAN, revoke compromised Kerberos tickets, and trigger immutable snapshot restore.">🛠️ Scenario: Ransomware VLAN quarantine & immutable backup recovery</option>
+                <option value="SSL/TLS certificate chain expiration emergency renewal: Wildcard certificate expired on reverse proxy and load balancers.">🛠️ Scenario: Emergency wildcard SSL/TLS certificate renewal</option>
+                <option value="SAN Fibre Channel storage path flapping: Host HBAs dropping LUNs due to CRC bit errors on SFP+ transceiver.">🛠️ Scenario: FC SAN storage path flapping & SFP CRC bit errors</option>
+              </optgroup>
+
+              <optgroup label="⭐ My Saved Custom Prompts" id="customPromptsOptgroup">
+                <!-- Dynamically populated from localStorage -->
+              </optgroup>
+            </select>
+          </div>
+
+          <!-- Quick Platform Filter Pills -->
+          <div class="prompt-filter-pills" id="promptFilterPills">
+            <span style="font-size:11px; color:#64748b; font-weight:700;">FILTER BY:</span>
+            <button type="button" class="prompt-pill active" onclick="filterPromptCategory('all', this)">All Platforms</button>
+            <button type="button" class="prompt-pill" onclick="filterPromptCategory('VMware', this)">🔴 VMware</button>
+            <button type="button" class="prompt-pill" onclick="filterPromptCategory('Windows', this)">🪟 Windows</button>
+            <button type="button" class="prompt-pill" onclick="filterPromptCategory('Linux', this)">🐧 Linux</button>
+            <button type="button" class="prompt-pill" onclick="filterPromptCategory('Cisco UCS', this)">🌉 Cisco UCS</button>
+            <button type="button" class="prompt-pill" onclick="filterPromptCategory('AWS', this)">☁️ AWS</button>
+            <button type="button" class="prompt-pill" onclick="filterPromptCategory('Azure', this)">🔷 Azure</button>
+            <button type="button" class="prompt-pill" onclick="filterPromptCategory('Custom', this)">⭐ Custom</button>
+          </div>
         </div>
-        <div class="ai-prompts-grid">
-          <div class="ai-prompt-chip" onclick="applyAiPrompt('VMware ESXi host PSOD with NOT_IMPLEMENTED in vmkernel. Analyze root cause and recovery steps.')">
-            🔴 <b>VMware:</b> PSOD NOT_IMPLEMENTED vmkernel
-          </div>
-          <div class="ai-prompt-chip" onclick="applyAiPrompt('Cisco UCS Manager: Fabric Interconnect Subordinate cluster state degraded. Check VIP failover and Ethernet uplink.')">
-            🌉 <b>Cisco UCS:</b> FI Subordinate Degraded Cluster
-          </div>
-          <div class="ai-prompt-chip" onclick="applyAiPrompt('Linux: System high iowait with kswapd0 100% CPU. Diagnose memory pressure and disk bottleneck.')">
-            🐧 <b>Linux:</b> kswapd0 100% CPU & high iowait
-          </div>
-          <div class="ai-prompt-chip" onclick="applyAiPrompt('Windows Server: Kerberos Pre-Authentication Failure Event ID 4771 with Failure Code 0x18. Remediate account lockouts.')">
-            🪟 <b>Windows:</b> Kerberos Event ID 4771 Code 0x18
-          </div>
+
+        <!-- Dynamic Quick Incident Prompt Chips Grid -->
+        <div class="ai-prompts-grid" id="aiPromptsGrid">
+          <!-- Dynamically populated and filtered by filterPromptCategory() -->
         </div>
 
         <!-- Single Dedicated Full-Width Incident / Problem Column (No platform selection required) -->
@@ -449,7 +728,7 @@
     <!-- 3. KNOWLEDGE BASE VIEW -->
     <div id="knowledge" class="view">
       <div class="card">
-        <h3 style="font-size:17px; font-weight:700; color:#fff; margin-bottom:12px;">Search & Filter Playbooks</h3>
+        <h3 style="font-size:17px; font-weight:700; color:var(--text-primary); margin-bottom:12px;">Search & Filter Playbooks</h3>
         <div style="display:flex; gap:12px; flex-wrap:wrap;">
           <input id="kbSearch" type="text" placeholder="Search keywords, errors, PSOD, event ID, certificate..." style="flex:2; min-width:260px; margin-bottom:0;">
           <select id="kbPlatform" style="flex:1; min-width:160px; margin-bottom:0;"></select>
@@ -463,7 +742,7 @@
     <!-- 4. RESEARCH & MULTI-CONTENT SEARCH VIEW -->
     <div id="research" class="view">
       <div class="card">
-        <h3 style="font-size:18px; font-weight:800; color:#fff; margin-bottom:6px; display:flex; align-items:center; gap:8px;">
+        <h3 style="font-size:18px; font-weight:800; color:var(--text-primary); margin-bottom:6px; display:flex; align-items:center; gap:8px;">
           <span>🌐</span>
           <span>Unified Multi-Content Research & Internet Search</span>
         </h3>
@@ -534,7 +813,7 @@
     <!-- 5. LOG INSPECTOR VIEW -->
     <div id="logs" class="view">
       <div class="card">
-        <h3 style="font-size:17px; font-weight:700; color:#fff; margin-bottom:6px;">Real-Time Log Inspector</h3>
+        <h3 style="font-size:17px; font-weight:700; color:var(--text-primary); margin-bottom:6px;">Real-Time Log Inspector</h3>
         <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px;">
           Paste raw log excerpts to automatically identify originating components (vpxd, hostd, vmkernel, fdm, certificate, APD).
         </p>
@@ -551,7 +830,7 @@
     <!-- 6. COMMANDS & CLI VIEW -->
     <div id="commands" class="view">
       <div class="card">
-        <h3 style="font-size:17px; font-weight:700; color:#fff; margin-bottom:12px;">Diagnostic Commands & Cheat Sheets</h3>
+        <h3 style="font-size:17px; font-weight:700; color:var(--text-primary); margin-bottom:12px;">Diagnostic Commands & Cheat Sheets</h3>
         <input id="commandSearch" type="text" placeholder="Search commands by name, syntax, or platform..." style="margin-bottom:0;">
       </div>
 
@@ -561,7 +840,7 @@
     <!-- 7. AUTOMATION SCRIPTS VIEW -->
     <div id="scripts" class="view">
       <div class="card">
-        <h3 style="font-size:17px; font-weight:700; color:#fff; margin-bottom:4px;">Automation & Remediation Scripts</h3>
+        <h3 style="font-size:17px; font-weight:700; color:var(--text-primary); margin-bottom:4px;">Automation & Remediation Scripts</h3>
         <p style="font-size:13px; color:var(--text-secondary);">PowerCLI, Bash Watchdog, and PowerShell health scripts with 1-click copy.</p>
       </div>
 
@@ -571,7 +850,7 @@
     <!-- 8. RESOURCES VIEW -->
     <div id="resources" class="view">
       <div class="card">
-        <h3 style="font-size:17px; font-weight:700; color:#fff; margin-bottom:12px;">Architecture Guides & Documentation</h3>
+        <h3 style="font-size:17px; font-weight:700; color:var(--text-primary); margin-bottom:12px;">Architecture Guides & Documentation</h3>
         <div style="display:flex; gap:12px; flex-wrap:wrap;">
           <input id="resourceSearch" type="text" placeholder="Search documentation and portal links..." style="flex:2; min-width:240px; margin-bottom:0;">
           <select id="resourceCategory" style="flex:1; min-width:160px; margin-bottom:0;"></select>
@@ -589,7 +868,7 @@
             <span style="font-size:12px; font-weight:700; color:var(--cf-blue); text-transform:uppercase; letter-spacing:0.05em;">
               Management & Administration Console
             </span>
-            <h2 style="font-size:22px; font-weight:800; margin-top:4px; color:#fff;">
+            <h2 style="font-size:22px; font-weight:800; margin-top:4px; color:var(--text-primary);">
               SysAdminIQ Portal Administration & Storage Health
             </h2>
             <p style="font-size:13px; color:var(--text-secondary); margin-top:6px; line-height:1.6;">
@@ -628,7 +907,7 @@
 
       <!-- Administrative Operations -->
       <div class="card" style="margin-top:20px;">
-        <h3 style="font-size:16px; font-weight:700; color:#fff; margin-bottom:12px;">Administrative Operations</h3>
+        <h3 style="font-size:16px; font-weight:700; color:var(--text-primary); margin-bottom:12px;">Administrative Operations</h3>
         <div style="display:flex; gap:12px; flex-wrap:wrap;">
           <button type="button" class="primary" onclick="syncWithCloudflareD1()">
             🔄 Force Re-Sync with Cloudflare D1
@@ -664,7 +943,7 @@
       <div class="secure-viewer-title">
         <span id="secureViewerIcon" style="font-size:18px;">📎</span>
         <div>
-          <div id="secureViewerFilename" style="font-weight:700; color:#fff; font-size:14px;">Document Viewer</div>
+          <div id="secureViewerFilename" style="font-weight:700; color:var(--text-primary); font-size:14px;">Document Viewer</div>
           <span class="secure-badge">🔒 Secure View-Only • Download Restricted</span>
         </div>
       </div>
@@ -687,6 +966,6 @@
 </div>
 
 <!-- Load Scripts -->
-<script type="module" src="app.js"></script>
+<script src="app.js"></script>
 </body>
 </html>

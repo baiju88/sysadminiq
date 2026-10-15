@@ -1186,10 +1186,10 @@ function formatArticleContent(raw) {
     `;
   });
 
-  // 5. Markdown Headings
-  html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
-  html = html.replace(/^## (.*$)/gim, '<h2 style="color:#fff; font-size:18px; margin:16px 0 8px 0;">$1</h2>');
-  html = html.replace(/^# (.*$)/gim, '<h1 style="color:#fff; font-size:22px; margin:18px 0 10px 0;">$1</h1>');
+  // 5. Markdown Headings (High Contrast Crisp Corporate Sheet)
+  html = html.replace(/^### (.*$)/gim, '<h3 style="color:#0284c7; font-size:15px; font-weight:700; margin:14px 0 6px 0;">$1</h3>');
+  html = html.replace(/^## (.*$)/gim, '<h2 style="color:#0f172a; font-size:18px; font-weight:700; margin:16px 0 8px 0;">$1</h2>');
+  html = html.replace(/^# (.*$)/gim, '<h1 style="color:#0f172a; font-size:22px; font-weight:800; margin:18px 0 10px 0; border-bottom:2px solid #e2e8f0; padding-bottom:6px;">$1</h1>');
 
   // 6. Bold, Italic & Inline Code
   html = html.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
@@ -1416,9 +1416,9 @@ async function openSecureViewer(rawKey, fileName, fileType) {
   modal.classList.remove('hidden');
 
   body.innerHTML = `
-    <div style="text-align:center; padding:60px 20px; color:#94a3b8;">
+    <div style="text-align:center; padding:60px 20px; color:#64748b;">
       <div style="font-size:42px; margin-bottom:14px;">⏳</div>
-      <h3 style="color:#f8fafc; font-size:17px; margin-bottom:6px;">Connecting to secure storage...</h3>
+      <h3 style="color:#0f172a; font-size:17px; margin-bottom:6px;">Connecting to secure storage...</h3>
       <p style="font-size:12px; color:#64748b;">Retrieving ${esc(cleanName || 'document')} from Cloudflare R2 bucket</p>
     </div>
   `;
@@ -1455,9 +1455,9 @@ async function openSecureViewer(rawKey, fileName, fileType) {
   if (isDocx) {
     iconEl.textContent = '📘';
     body.innerHTML = `
-      <div style="text-align:center; padding:60px 20px; color:#94a3b8;">
+      <div style="text-align:center; padding:60px 20px; color:#64748b;">
         <div style="font-size:42px; margin-bottom:14px;">📘</div>
-        <h3 style="color:#f8fafc; font-size:17px; margin-bottom:6px;">Formatting Word Document...</h3>
+        <h3 style="color:#0f172a; font-size:17px; margin-bottom:6px;">Formatting Word Document...</h3>
         <p style="font-size:12px; color:#64748b;">Rendering tables, headings, and instructions inline</p>
       </div>
     `;
@@ -1527,7 +1527,7 @@ async function openSecureViewer(rawKey, fileName, fileType) {
           <div class="dropzone" id="viewerLocalDropzone" style="margin:14px 0; padding:18px; cursor:pointer;" onclick="document.getElementById('viewerLocalPicker').click()">
             <input type="file" id="viewerLocalPicker" style="display:none;" onchange="handleViewerLocalFile(event, '${esc(cleanName)}')">
             <div style="font-size:24px; margin-bottom:4px;">📂</div>
-            <div style="color:#fff; font-weight:700; font-size:13px; margin-bottom:2px;">Have "${esc(cleanName)}" locally on your computer?</div>
+            <div style="color:var(--text-primary); font-weight:700; font-size:13px; margin-bottom:2px;">Have "${esc(cleanName)}" locally on your computer?</div>
             <div style="color:var(--text-muted); font-size:11px;">Drop or browse file here to parse full native tables with Mammoth.js</div>
           </div>
         </div>
@@ -1537,11 +1537,11 @@ async function openSecureViewer(rawKey, fileName, fileType) {
 
     iconEl.textContent = '📄';
     body.innerHTML = `
-      <div style="text-align:center; padding:36px 20px; color:#cbd5e1; max-width:680px; margin:0 auto;">
+      <div style="text-align:center; padding:36px 20px; color:#475569; max-width:680px; margin:0 auto;">
         <div style="font-size:42px; margin-bottom:12px;">📄</div>
-        <h3 style="color:#fff; font-size:18px; margin-bottom:6px;">Document Available in Storage</h3>
+        <h3 style="color:#0f172a; font-size:18px; margin-bottom:6px;">Document Available in Storage</h3>
         <p style="color:var(--text-muted); font-size:13px; margin-bottom:18px;">
-          Document: <b style="color:#f8fafc;">${esc(cleanName || effectiveKey)}</b>
+          Document: <b style="color:#0f172a;">${esc(cleanName || effectiveKey)}</b>
         </p>
 
         <div style="margin:20px 0; display:flex; justify-content:center; gap:12px; flex-wrap:wrap;">
@@ -2917,6 +2917,29 @@ window.clearCustomPrompts = clearCustomPrompts;
 window.openArticleById = openArticleById;
 window.openArticle = openArticle;
 window.closeArticleModal = closeArticleModal;
+// Corporate Modern Theme Toggle (Light / Dark)
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  document.documentElement.classList.toggle('dark', next === 'dark');
+  try {
+    localStorage.setItem('sysadminiq_theme', next);
+  } catch (e) {}
+  updateThemeToggleButtons(next);
+}
+
+function updateThemeToggleButtons(theme) {
+  const isLight = theme === 'light';
+  const label = isLight ? '☀️ Light' : '🌙 Dark';
+  const mainBtn = document.getElementById('themeToggleBtn');
+  if (mainBtn) mainBtn.innerHTML = label;
+  const portalBtn = document.getElementById('portalThemeToggleBtn');
+  if (portalBtn) portalBtn.innerHTML = label;
+}
+
+window.toggleTheme = toggleTheme;
+window.updateThemeToggleButtons = updateThemeToggleButtons;
 window.toggleArticleModalFullscreen = toggleArticleModalFullscreen;
 window.openSecureViewer = openSecureViewer;
 window.closeSecureViewer = closeSecureViewer;
@@ -2946,7 +2969,11 @@ window.syncWithCloudflareD1 = syncWithCloudflareD1;
 window.exportDatabaseJson = exportDatabaseJson;
 
 if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', initSysAdminIQ);
+  document.addEventListener('DOMContentLoaded', () => {
+    initSysAdminIQ();
+    updateThemeToggleButtons(document.documentElement.getAttribute('data-theme') || 'light');
+  });
 } else {
   initSysAdminIQ();
+  updateThemeToggleButtons(document.documentElement.getAttribute('data-theme') || 'light');
 }

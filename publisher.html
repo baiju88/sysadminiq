@@ -1,6 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script>
+// Immediate synchronous bootstrap for Corporate Modern Theme
+(function() {
+  try {
+    const saved = localStorage.getItem('sysadminiq_theme') || 'light';
+    document.documentElement.setAttribute('data-theme', saved);
+    document.documentElement.classList.toggle('dark', saved === 'dark');
+  } catch (e) {
+    document.documentElement.setAttribute('data-theme', 'light');
+  }
+})();
+</script>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SysAdminIQ Publisher Portal</title>
@@ -14,8 +26,8 @@
 <link rel="stylesheet" href="style.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.8.0/mammoth.browser.min.js"></script>
 <style>
-:root {
-  --bg-dark: #0b0f19;
+:root, [data-theme="dark"] {
+  --bg-dark: #0b1120;
   --bg-card: #131b2e;
   --bg-card-hover: #17223b;
   --bg-input: #0a101f;
@@ -32,6 +44,30 @@
   --radius-lg: 12px;
   --radius-md: 8px;
   --radius-sm: 6px;
+  --card-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  --table-th-bg: #090e1a;
+}
+
+[data-theme="light"] {
+  --bg-dark: #f8fafc;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f1f5f9;
+  --bg-input: #ffffff;
+  --border: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #334155;
+  --text-muted: #64748b;
+  --cf-blue: #0070f3;
+  --cf-blue-hover: #005bc5;
+  --cf-orange: #ea580c;
+  --accent-green: #059669;
+  --accent-red: #dc2626;
+  --accent-purple: #7c3aed;
+  --radius-lg: 12px;
+  --radius-md: 8px;
+  --radius-sm: 6px;
+  --card-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05), 0 1px 2px -1px rgba(0, 0, 0, 0.03);
+  --table-th-bg: #f8fafc;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -47,6 +83,13 @@ body {
     radial-gradient(at 0% 0%, rgba(0, 112, 243, 0.08) 0px, transparent 40%),
     radial-gradient(at 100% 0%, rgba(243, 128, 32, 0.06) 0px, transparent 40%);
   background-attachment: fixed;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+[data-theme="light"] body {
+  background-image: 
+    radial-gradient(at 0% 0%, rgba(0, 112, 243, 0.03) 0px, transparent 45%),
+    radial-gradient(at 100% 0%, rgba(243, 128, 32, 0.02) 0px, transparent 45%);
 }
 
 .portal-container {
@@ -193,7 +236,7 @@ body.portal-fullscreen .portal-container {
 .brand-title h1 {
   font-size: 20px;
   font-weight: 800;
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .brand-title p {
@@ -228,7 +271,8 @@ body.portal-fullscreen .portal-container {
   border-radius: var(--radius-lg);
   padding: 24px;
   margin-bottom: 24px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+  box-shadow: var(--card-shadow);
+  transition: all 0.2s ease;
 }
 
 .card-header {
@@ -243,7 +287,7 @@ body.portal-fullscreen .portal-container {
 .card-title {
   font-size: 17px;
   font-weight: 700;
-  color: #fff;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 10px;
@@ -251,8 +295,8 @@ body.portal-fullscreen .portal-container {
 
 /* AI Assistant Bar for Publisher */
 .ai-generator-box {
-  background: #090e1a;
-  border: 1px solid rgba(139, 92, 246, 0.3);
+  background: var(--bg-card);
+  border: 1px solid var(--border);
   border-radius: var(--radius-md);
   padding: 16px;
   margin-bottom: 20px;
@@ -317,7 +361,7 @@ input:focus, select:focus, textarea:focus {
   display: flex;
   flex-direction: column;
   gap: 8px;
-  background: #090e1a;
+  background: var(--bg-card);
   border: 1px solid var(--border);
   border-bottom: none;
   border-radius: var(--radius-md) var(--radius-md) 0 0;
@@ -332,9 +376,9 @@ input:focus, select:focus, textarea:focus {
 }
 
 .editor-btn {
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--bg-input);
   border: 1px solid var(--border);
-  color: #cbd5e1;
+  color: var(--text-primary);
   font-size: 12px;
   font-weight: 600;
   padding: 5px 10px;
@@ -347,8 +391,8 @@ input:focus, select:focus, textarea:focus {
 }
 
 .editor-btn:hover {
-  background: #1e293b;
-  color: #fff;
+  background: var(--bg-card-hover);
+  color: var(--text-primary);
   border-color: #0070f3;
 }
 
@@ -416,63 +460,137 @@ textarea#content {
 /* Live Preview Box & OneNote Editor (Clean White Sheet for Optimal Visibility) */
 #previewBox, .onenote-canvas {
   background: #ffffff !important;
-  color: #0f172a !important;
+  color: #1e293b !important;
   border: 1px solid #cbd5e1 !important;
+  border-top: none !important;
+  padding: 24px 30px !important;
+  font-size: 14px !important;
+  line-height: 1.7 !important;
+  box-sizing: border-box !important;
 }
 
 #previewBox {
   display: none;
-  border-top: none;
   border-radius: 0 0 var(--radius-md) var(--radius-md);
-  padding: 24px 30px;
   min-height: 320px;
   max-height: 550px;
   overflow-y: auto;
-  font-size: 14px;
-  line-height: 1.7;
 }
 
-#previewBox h1, #previewBox h2, #previewBox h3, #previewBox h4,
-.onenote-canvas h1, .onenote-canvas h2, .onenote-canvas h3, .onenote-canvas h4 {
+#previewBox h1, .onenote-canvas h1 {
   color: #0f172a !important;
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  margin: 18px 0 10px 0 !important;
+  border-bottom: 2px solid #e2e8f0 !important;
+  padding-bottom: 6px !important;
+}
+
+#previewBox h2, .onenote-canvas h2 {
+  color: #0f172a !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  margin: 16px 0 8px 0 !important;
+}
+
+#previewBox h3, .onenote-canvas h3 {
+  color: #0284c7 !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  margin: 14px 0 6px 0 !important;
+}
+
+#previewBox h4, .onenote-canvas h4 {
+  color: #0f172a !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  margin: 12px 0 4px 0 !important;
 }
 
 #previewBox p, #previewBox li, #previewBox div,
 .onenote-canvas p, .onenote-canvas li, .onenote-canvas div {
   color: #1e293b !important;
+  line-height: 1.65 !important;
 }
 
+#previewBox b, #previewBox strong,
+.onenote-canvas b, .onenote-canvas strong {
+  color: #0f172a !important;
+  font-weight: 700 !important;
+}
+
+#previewBox ul, .onenote-canvas ul {
+  list-style-type: disc !important;
+  padding-left: 24px !important;
+  margin: 8px 0 !important;
+  color: #1e293b !important;
+}
+
+#previewBox ol, .onenote-canvas ol {
+  list-style-type: decimal !important;
+  padding-left: 24px !important;
+  margin: 8px 0 !important;
+  color: #1e293b !important;
+}
+
+/* High-Contrast Dark Terminal Code Blocks inside Crisp White Sheet */
 #previewBox pre, .onenote-canvas pre {
   background: #0f172a !important;
   color: #38bdf8 !important;
   border: 1px solid #1e293b !important;
-  padding: 12px 16px !important;
-  border-radius: 6px !important;
+  padding: 14px 18px !important;
+  border-radius: 8px !important;
+  font-family: 'JetBrains Mono', Consolas, monospace !important;
+  font-size: 12.5px !important;
+  line-height: 1.6 !important;
+  margin: 12px 0 !important;
+  overflow-x: auto !important;
 }
 
-#previewBox table, .onenote-canvas table {
-  width: 100%;
-  border-collapse: collapse;
-  margin: 14px 0;
+#previewBox code:not(pre code), .onenote-canvas code:not(pre code) {
+  background: #f1f5f9 !important;
+  color: #0284c7 !important;
+  padding: 2px 6px !important;
+  border-radius: 4px !important;
+  border: 1px solid #e2e8f0 !important;
+  font-size: 13px !important;
+  font-family: 'JetBrains Mono', Consolas, monospace !important;
 }
 
-#previewBox th, #previewBox td, .onenote-canvas th, .onenote-canvas td {
-  border: 1px solid #cbd5e1;
-  padding: 8px 12px;
-  color: #1e293b;
+/* Formatted Tables inside White Sheet */
+#previewBox table, .onenote-canvas table, table.onenote-table {
+  width: 100% !important;
+  border-collapse: collapse !important;
+  margin: 16px 0 !important;
+  border: 1px solid #cbd5e1 !important;
 }
 
-#previewBox th, .onenote-canvas th {
-  background: #f1f5f9;
-  font-weight: 700;
-  color: #0f172a;
+#previewBox th, #previewBox td,
+.onenote-canvas th, .onenote-canvas td,
+table.onenote-table th, table.onenote-table td {
+  border: 1px solid #cbd5e1 !important;
+  padding: 10px 14px !important;
+  text-align: left !important;
+  color: #1e293b !important;
 }
 
-/* Callouts Styling in Preview and Articles */
+#previewBox th, .onenote-canvas th, table.onenote-table th {
+  background: #f1f5f9 !important;
+  font-weight: 700 !important;
+  color: #0f172a !important;
+}
+
+#previewBox tr:nth-child(even) td,
+.onenote-canvas tr:nth-child(even) td,
+table.onenote-table tr:nth-child(even) td {
+  background: #f8fafc !important;
+}
+
+/* Callouts Styling in Preview and Articles (High-Contrast Corporate Quality) */
 .callout {
   border-radius: 8px;
-  padding: 12px 16px;
-  margin: 14px 0;
+  padding: 14px 18px;
+  margin: 16px 0;
   border-left-width: 4px;
   border-left-style: solid;
   font-size: 13px;
@@ -480,37 +598,91 @@ textarea#content {
 }
 .callout-header {
   font-weight: 700;
-  margin-bottom: 4px;
+  font-size: 13px;
+  margin-bottom: 6px;
 }
-.callout-danger {
-  background: rgba(239, 68, 68, 0.08);
-  border: 1px solid rgba(239, 68, 68, 0.25);
-  border-left: 4px solid #ef4444;
-  color: #fca5a5;
+.callout-danger, .callout-critical,
+#previewBox .callout-danger, .onenote-canvas .callout-danger {
+  background: #fef2f2 !important;
+  border: 1px solid #fecaca !important;
+  border-left: 4px solid #ef4444 !important;
+  color: #b91c1c !important;
 }
-.callout-warning {
-  background: rgba(245, 158, 11, 0.08);
-  border: 1px solid rgba(245, 158, 11, 0.25);
-  border-left: 4px solid #f59e0b;
-  color: #fde68a;
+.callout-danger .callout-header, .callout-critical .callout-header,
+#previewBox .callout-danger .callout-header, .onenote-canvas .callout-danger .callout-header {
+  color: #991b1b !important;
 }
-.callout-info {
-  background: rgba(0, 112, 243, 0.08);
-  border: 1px solid rgba(0, 112, 243, 0.25);
-  border-left: 4px solid #0070f3;
-  color: #93c5fd;
+
+.callout-warning,
+#previewBox .callout-warning, .onenote-canvas .callout-warning {
+  background: #fffbeb !important;
+  border: 1px solid #fde68a !important;
+  border-left: 4px solid #f59e0b !important;
+  color: #b45309 !important;
 }
-.callout-success {
-  background: rgba(16, 185, 129, 0.08);
-  border: 1px solid rgba(16, 185, 129, 0.25);
-  border-left: 4px solid #10b981;
-  color: #6ee7b7;
+.callout-warning .callout-header,
+#previewBox .callout-warning .callout-header, .onenote-canvas .callout-warning .callout-header {
+  color: #92400e !important;
 }
-.callout-tip {
-  background: rgba(139, 92, 246, 0.08);
-  border: 1px solid rgba(139, 92, 246, 0.25);
-  border-left: 4px solid #8b5cf6;
-  color: #d8b4fe;
+
+.callout-info,
+#previewBox .callout-info, .onenote-canvas .callout-info {
+  background: #f0f9ff !important;
+  border: 1px solid #bae6fd !important;
+  border-left: 4px solid #0284c7 !important;
+  color: #0369a1 !important;
+}
+.callout-info .callout-header,
+#previewBox .callout-info .callout-header, .onenote-canvas .callout-info .callout-header {
+  color: #075985 !important;
+}
+
+.callout-success,
+#previewBox .callout-success, .onenote-canvas .callout-success {
+  background: #f0fdf4 !important;
+  border: 1px solid #bbf7d0 !important;
+  border-left: 4px solid #10b981 !important;
+  color: #15803d !important;
+}
+.callout-success .callout-header,
+#previewBox .callout-success .callout-header, .onenote-canvas .callout-success .callout-header {
+  color: #166534 !important;
+}
+
+.callout-tip,
+#previewBox .callout-tip, .onenote-canvas .callout-tip {
+  background: #faf5ff !important;
+  border: 1px solid #e9d5ff !important;
+  border-left: 4px solid #8b5cf6 !important;
+  color: #7e22ce !important;
+}
+.callout-tip .callout-header,
+#previewBox .callout-tip .callout-header, .onenote-canvas .callout-tip .callout-header {
+  color: #6b21a8 !important;
+}
+
+/* Eliminate invisible, light gray, or dark-on-dark text from pasted OneNote/Word */
+.onenote-canvas [style*="color:#fff" i], #previewBox [style*="color:#fff" i],
+.onenote-canvas [style*="color: #fff" i], #previewBox [style*="color: #fff" i],
+.onenote-canvas [style*="color:white" i], #previewBox [style*="color:white" i],
+.onenote-canvas [style*="color: white" i], #previewBox [style*="color: white" i],
+.onenote-canvas [style*="color:#f8" i], #previewBox [style*="color:#f8" i],
+.onenote-canvas [style*="color:#f1" i], #previewBox [style*="color:#f1" i],
+.onenote-canvas [style*="color:#e2" i], #previewBox [style*="color:#e2" i],
+.onenote-canvas [style*="color:#cbd" i], #previewBox [style*="color:#cbd" i],
+.onenote-canvas [style*="color:#94a" i], #previewBox [style*="color:#94a" i],
+.onenote-canvas [style*="color:#647" i], #previewBox [style*="color:#647" i],
+.onenote-canvas [style*="color:#595" i], #previewBox [style*="color:#595" i],
+.onenote-canvas [style*="color:#7f7" i], #previewBox [style*="color:#7f7" i],
+.onenote-canvas [style*="color:#808" i], #previewBox [style*="color:#808" i],
+.onenote-canvas [style*="color:#d4d" i], #previewBox [style*="color:#d4d" i],
+.onenote-canvas [style*="color:windowtext" i], #previewBox [style*="color:windowtext" i] {
+  color: #1e293b !important;
+}
+
+.onenote-canvas p[style*="background" i], .onenote-canvas span[style*="background" i], .onenote-canvas div[style*="background" i],
+#previewBox p[style*="background" i], #previewBox span[style*="background" i], #previewBox div[style*="background" i] {
+  background-color: transparent !important;
 }
 
 /* Dropzone */
@@ -520,13 +692,13 @@ textarea#content {
   padding: 24px;
   text-align: center;
   cursor: pointer;
-  background: #090e1a;
+  background: var(--bg-card);
   transition: all 0.2s;
   position: relative;
 }
 .dropzone:hover {
   border-color: var(--cf-blue);
-  background: #0e1526;
+  background: var(--bg-card-hover);
 }
 .dropzone input[type="file"] {
   position: absolute;
@@ -537,7 +709,7 @@ textarea#content {
   height: 100%;
 }
 .dropzone-icon { font-size: 28px; display: block; margin-bottom: 8px; }
-.dropzone-text { font-size: 13px; font-weight: 600; color: #fff; }
+.dropzone-text { font-size: 13px; font-weight: 600; color: var(--text-primary); }
 .dropzone-hint { font-size: 11px; color: var(--text-muted); margin-top: 4px; }
 
 /* File list */
@@ -551,11 +723,12 @@ textarea#content {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #0e1526;
+  background: var(--bg-card-hover);
   border: 1px solid var(--border);
   padding: 10px 14px;
   border-radius: 6px;
   font-size: 12px;
+  color: var(--text-primary);
 }
 .file-chip-name {
   display: flex;
@@ -592,13 +765,14 @@ textarea#content {
   background: linear-gradient(135deg, #005bc5 0%, #003fa8 100%);
 }
 .btn-secondary {
-  background: #17223b;
+  background: var(--bg-card);
   border: 1px solid var(--border);
-  color: #cbd5e1;
+  color: var(--text-primary);
 }
 .btn-secondary:hover {
-  background: #1e2d4d;
-  color: #fff;
+  background: var(--bg-card-hover);
+  border-color: var(--cf-blue);
+  color: var(--text-primary);
 }
 .btn-danger {
   background: rgba(239, 68, 68, 0.15);
@@ -626,7 +800,7 @@ textarea#content {
   font-size: 13px;
 }
 .articles-table th {
-  background: #090e1a;
+  background: var(--table-th-bg, #090e1a);
   padding: 12px 16px;
   text-align: left;
   font-size: 11px;
@@ -639,9 +813,10 @@ textarea#content {
   padding: 14px 16px;
   border-bottom: 1px solid var(--border);
   vertical-align: middle;
+  color: var(--text-primary);
 }
 .articles-table tr:hover td {
-  background: rgba(255,255,255,0.02);
+  background: var(--bg-card-hover);
 }
 
 .tag-platform {
@@ -661,13 +836,13 @@ textarea#content {
   position: fixed;
   bottom: 24px;
   right: 24px;
-  background: #131b2e;
+  background: var(--bg-card);
   border: 1px solid var(--border);
   padding: 14px 20px;
   border-radius: 8px;
-  color: #fff;
+  color: var(--text-primary);
   font-size: 13px;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  box-shadow: var(--card-shadow);
   transform: translateY(100px);
   opacity: 0;
   transition: all 0.25s ease;
@@ -678,6 +853,7 @@ textarea#content {
 }
 .toast.show {
   transform: translateY(0);
+}
   opacity: 1;
 }
 .toast.success { border-color: #10b981; }
@@ -698,6 +874,9 @@ textarea#content {
       </div>
     </div>
     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+      <button type="button" class="btn btn-secondary btn-sm" id="portalThemeToggleBtn" onclick="toggleTheme()" title="Switch between Corporate Light & Midnight Dark themes">
+        ☀️ Light
+      </button>
       <a href="index.html#ai-assistant" class="btn btn-secondary btn-sm" style="text-decoration:none; display:inline-flex; align-items:center; gap:6px;">
         ✨ AI Tools
       </a>
@@ -791,7 +970,7 @@ textarea#content {
       <div class="editor-toolbar-wrap">
         <!-- Row 1: OneNote Ribbon Style Formatting & Controls -->
         <div class="editor-toolbar-row">
-          <select id="headingSelect" onchange="applyHeading(this.value)" style="width:auto; padding:5px 8px; font-size:12px; margin-bottom:0; background:#131b2e; border-color:var(--border);" title="Text Style">
+          <select id="headingSelect" onchange="applyHeading(this.value)" style="width:auto; padding:5px 8px; font-size:12px; margin-bottom:0; background:var(--bg-input); color:var(--text-primary); border-color:var(--border);" title="Text Style">
             <option value="p">Normal Text</option>
             <option value="h1">Heading 1 (22px)</option>
             <option value="h2">Heading 2 (18px)</option>
@@ -808,8 +987,8 @@ textarea#content {
           <!-- Text Color Picker -->
           <div style="display:inline-flex; align-items:center; gap:2px; background:rgba(255,255,255,0.04); padding:2px 6px; border-radius:4px; border:1px solid var(--border);" title="Font Color">
             <span style="font-size:11px; font-weight:700; color:#94a3b8; margin-right:4px;">A</span>
-            <button type="button" style="width:14px; height:14px; background:#f8fafc; border:none; border-radius:2px; cursor:pointer;" onclick="applyTextColor('#f8fafc')" title="White"></button>
-            <button type="button" style="width:14px; height:14px; background:#38bdf8; border:none; border-radius:2px; cursor:pointer;" onclick="applyTextColor('#38bdf8')" title="Cyan Blue"></button>
+            <button type="button" style="width:14px; height:14px; background:#0f172a; border:1px solid #94a3b8; border-radius:2px; cursor:pointer;" onclick="applyTextColor('#0f172a')" title="Deep Slate (Default)"></button>
+            <button type="button" style="width:14px; height:14px; background:#0284c7; border:none; border-radius:2px; cursor:pointer;" onclick="applyTextColor('#0284c7')" title="Corporate Blue"></button>
             <button type="button" style="width:14px; height:14px; background:#f87171; border:none; border-radius:2px; cursor:pointer;" onclick="applyTextColor('#f87171')" title="Red Alert"></button>
             <button type="button" style="width:14px; height:14px; background:#fbbf24; border:none; border-radius:2px; cursor:pointer;" onclick="applyTextColor('#fbbf24')" title="Warning Amber"></button>
             <button type="button" style="width:14px; height:14px; background:#34d399; border:none; border-radius:2px; cursor:pointer;" onclick="applyTextColor('#34d399')" title="Fix Green"></button>
@@ -1611,15 +1790,15 @@ function renderFormattedContent(raw) {
     `;
   });
 
-  // Headings
-  html = html.replace(/^### (.*$)/gim, '<h3 style="color:#60a5fa; margin:14px 0 6px 0; font-size:15px;">$1</h3>');
-  html = html.replace(/^## (.*$)/gim, '<h2 style="color:#fff; margin:16px 0 8px 0; font-size:17px;">$1</h2>');
-  html = html.replace(/^# (.*$)/gim, '<h1 style="color:#fff; margin:18px 0 10px 0; font-size:20px;">$1</h1>');
+  // Headings (High-Contrast Crisp White Sheet)
+  html = html.replace(/^### (.*$)/gim, '<h3 style="color:#0284c7; margin:14px 0 6px 0; font-size:15px; font-weight:700;">$1</h3>');
+  html = html.replace(/^## (.*$)/gim, '<h2 style="color:#0f172a; margin:16px 0 8px 0; font-size:18px; font-weight:700;">$1</h2>');
+  html = html.replace(/^# (.*$)/gim, '<h1 style="color:#0f172a; margin:18px 0 10px 0; font-size:22px; font-weight:800; border-bottom:2px solid #e2e8f0; padding-bottom:6px;">$1</h1>');
 
   // Bold & Italic
   html = html.replace(/\*\*(.*?)\*\*/g, '<b>$1</b>');
   html = html.replace(/\*(.*?)\*/g, '<i>$1</i>');
-  html = html.replace(/`([^`]+)`/g, '<code style="background:#090e1a; padding:2px 6px; border-radius:4px; color:#38bdf8;">$1</code>');
+  html = html.replace(/`([^`]+)`/g, '<code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; color:#0284c7; border:1px solid #e2e8f0;">$1</code>');
 
   if (!/<p>|<div|<table|<h\d/i.test(html)) {
     html = html.replace(/\n\n/g, '<br><br>').replace(/\n/g, '<br>');
@@ -1740,9 +1919,9 @@ async function openSecureViewer(rawKey, fileName, fileType) {
   }
 
   body.innerHTML = `
-    <div style="text-align:center; padding:60px 20px; color:#94a3b8;">
+    <div style="text-align:center; padding:60px 20px; color:#64748b;">
       <div style="font-size:42px; margin-bottom:14px;">⏳</div>
-      <h3 style="color:#f8fafc; font-size:17px; margin-bottom:6px;">Connecting to secure storage...</h3>
+      <h3 style="color:#0f172a; font-size:17px; margin-bottom:6px;">Connecting to secure storage...</h3>
       <p style="font-size:12px; color:#64748b;">Retrieving ${escapeHtml(cleanName || 'document')} from Cloudflare R2 bucket</p>
     </div>
   `;
@@ -1791,9 +1970,9 @@ async function openSecureViewer(rawKey, fileName, fileType) {
   // Fast-track Word .docx documents via server-side /api/docs/render-docx or direct fetch + Mammoth
   if (isDocx) {
     body.innerHTML = `
-      <div style="text-align:center; padding:60px 20px; color:#94a3b8;">
+      <div style="text-align:center; padding:60px 20px; color:#64748b;">
         <div style="font-size:42px; margin-bottom:14px;">📘</div>
-        <h3 style="color:#f8fafc; font-size:17px; margin-bottom:6px;">Formatting Word Document...</h3>
+        <h3 style="color:#0f172a; font-size:17px; margin-bottom:6px;">Formatting Word Document...</h3>
         <p style="font-size:12px; color:#64748b;">Rendering tables, headings, and instructions inline</p>
       </div>
     `;
@@ -1883,7 +2062,7 @@ async function openSecureViewer(rawKey, fileName, fileType) {
         <div class="dropzone" style="margin:14px 0; padding:18px; cursor:pointer;" onclick="document.getElementById('publisherLocalPicker').click()">
           <input type="file" id="publisherLocalPicker" style="display:none;" onchange="handleViewerLocalFile(event, '${escapeHtml(cleanName)}')">
           <div style="font-size:24px; margin-bottom:4px;">📂</div>
-          <div style="color:#fff; font-weight:700; font-size:13px; margin-bottom:2px;">Have "${escapeHtml(cleanName)}" locally on your computer?</div>
+          <div style="color:var(--text-primary); font-weight:700; font-size:13px; margin-bottom:2px;">Have "${escapeHtml(cleanName)}" locally on your computer?</div>
           <div style="color:var(--text-muted); font-size:11px;">Drop or browse file here to parse full native tables with Mammoth.js</div>
         </div>
       </div>
@@ -1916,7 +2095,7 @@ async function openSecureViewer(rawKey, fileName, fileType) {
 
     body.innerHTML = `
       <div style="text-align:center; padding:40px 20px;">
-        <h3 style="color:#fff; margin-bottom:8px;">${escapeHtml(cleanName)}</h3>
+        <h3 style="color:#0f172a; margin-bottom:8px;">${escapeHtml(cleanName)}</h3>
         <p style="color:var(--text-muted); font-size:13px; margin-bottom:16px;">Storage Key: <code>${escapeHtml(resolvedStorageKey)}</code></p>
         <a href="${directR2Url}" target="_blank" download="${escapeHtml(cleanName)}" class="btn btn-primary">⬇ Download File</a>
       </div>
@@ -2544,13 +2723,13 @@ function renderExistingTable() {
         <td>
           <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
             ${platform ? `<span class="tag-platform" style="font-size: 11px; padding: 2px 7px;">${escapeHtml(platform)}</span>` : ''}
-            <span style="font-weight: 600; color: #fff; font-size: 14px;">${escapeHtml(a.title || 'Untitled Playbook')}</span>
+            <span style="font-weight: 600; color: var(--text-primary); font-size: 14px;">${escapeHtml(a.title || 'Untitled Playbook')}</span>
           </div>
           <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px; max-width: 650px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
             ${escapeHtml(snippet)}
           </div>
         </td>
-        <td><span style="color: #cbd5e1; font-weight: 500;">${escapeHtml(a.category || 'General')}</span></td>
+        <td><span style="color: var(--text-secondary); font-weight: 500;">${escapeHtml(a.category || 'General')}</span></td>
         <td>${fileCount > 0 ? `<span style="color:var(--cf-blue); font-weight:600;">📎 ${fileCount}</span>` : '<span style="color:var(--text-muted);">—</span>'}</td>
         <td style="text-align: right; white-space: nowrap;">
           <button class="btn btn-secondary btn-sm" onclick="editArticle('${escapeHtml(a.id)}')" style="margin-right: 6px;">✏️ Edit</button>
@@ -2567,21 +2746,44 @@ function escapeHtml(str) {
   }[m]));
 }
 
+// Corporate Modern Theme Toggle (Light / Dark)
+function toggleTheme() {
+  const current = document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  document.documentElement.classList.toggle('dark', next === 'dark');
+  try {
+    localStorage.setItem('sysadminiq_theme', next);
+  } catch (e) {}
+  updateThemeToggleButtons(next);
+}
+
+function updateThemeToggleButtons(theme) {
+  const isLight = theme === 'light';
+  const label = isLight ? '☀️ Light' : '🌙 Dark';
+  const btn = document.getElementById('portalThemeToggleBtn');
+  if (btn) btn.innerHTML = label;
+}
+
+window.toggleTheme = toggleTheme;
+window.updateThemeToggleButtons = updateThemeToggleButtons;
+
 // Initialize on DOM load
 window.addEventListener("DOMContentLoaded", () => {
   loadExistingArticles();
   initOneNoteEditor();
+  updateThemeToggleButtons(document.documentElement.getAttribute('data-theme') || 'light');
 });
 </script>
 
 <!-- In-Website Secure Document & Attachment Viewer Modal (Download Restricted) -->
 <div id="secureViewerModal" class="modal-overlay hidden" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center; padding:16px;">
-  <div class="modal-box secure-viewer-modal" style="background:#0c1322; border:1px solid var(--border); border-radius:12px; width:calc(100vw - 32px); max-width:calc(100vw - 32px); height:92vh; display:flex; flex-direction:column; overflow:hidden;">
-    <div class="secure-viewer-header" style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-bottom:1px solid var(--border); background:#080e1a;">
+  <div class="modal-box secure-viewer-modal" style="background:var(--bg-card); border:1px solid var(--border); border-radius:12px; width:calc(100vw - 32px); max-width:calc(100vw - 32px); height:92vh; display:flex; flex-direction:column; overflow:hidden;">
+    <div class="secure-viewer-header" style="display:flex; justify-content:space-between; align-items:center; padding:14px 20px; border-bottom:1px solid var(--border); background:var(--table-th-bg, var(--bg-card-hover));">
       <div class="secure-viewer-title" style="display:flex; align-items:center; gap:10px;">
         <span id="secureViewerIcon" style="font-size:20px;">📎</span>
         <div>
-          <div id="secureViewerFilename" style="font-weight:700; color:#fff; font-size:14px;">Document Viewer</div>
+          <div id="secureViewerFilename" style="font-weight:700; color:var(--text-primary); font-size:14px;">Document Viewer</div>
           <span class="secure-badge" style="font-size:11px; color:#38bdf8;">🔒 Secure In-Website Viewer • View Only</span>
         </div>
       </div>
