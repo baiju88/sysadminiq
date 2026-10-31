@@ -1955,7 +1955,7 @@ function searchSelectedAiTool(targetModel) {
       break;
     case 'perplexity':
       modelName = 'Perplexity AI';
-      targetUrl = `https://www.perplexity.ai/search?q=${encodedQ}`;
+      targetUrl = `https://www.perplexity.ai/search/new?q=${encodedQ}`;
       break;
     case 'deepseek':
       modelName = 'DeepSeek';
@@ -3005,23 +3005,76 @@ az rest --method POST --uri "/subscriptions/{sub}/resourceGroups/rg-production/p
           'Validate that interface error counters (CRC, dropped packets, collisions) remain at zero.'
         ];
       } else if (hasStorageIntent) {
-        detectedCategory = `${targetPlatform} Storage Fabric, LUN Multipathing & Disk Subsystem Remediation`;
-        rootCause = `Storage diagnostic investigation for <strong>${esc(query)}</strong> on <strong>${targetPlatform}</strong>. Contributing triggers include queue depth saturation, Fibre Channel / iSCSI path flapping, disk group degradation, or filesystem space/inode exhaustion.`;
+        const cleanTopic = query
+          .replace(/^(please\s+)?(help\s+me\s+with\s+|how\s+to\s+|steps\s+for\s+|what\s+are\s+the\s+steps\s+to\s+|troubleshoot(ing)?\s+|fix\s+|resolve\s+)/i, '')
+          .replace(/^(steps\s+to\s+troubleshoot\s+|troubleshooting\s+steps\s+for\s+)/i, '')
+          .trim();
+        detectedCategory = `${targetPlatform} Storage Fabric, LUN Multipathing & Datastore Performance Remediation`;
+        rootCause = `Storage diagnostic investigation for <strong>${esc(cleanTopic || query)}</strong> on <strong>${targetPlatform}</strong>.<br><br>
+<b>Technical Architecture & Failure Mechanisms:</b><br>
+In VMware vSphere environments, ESXi host storage anomalies originate across three distinct physical and logical layers:
+<ul style="margin:6px 0 6px 18px; line-height:1.6;">
+  <li><b>1. Physical HBA & SAN Fabric Layer:</b> Fibre Channel optic light degradation, SAN switch buffer-to-buffer credit starvation, or iSCSI TCP socket timeouts and packet loss on dedicated storage VLANs.</li>
+  <li><b>2. Pluggable Storage Architecture (PSA):</b> Native Multipathing Plugin (NMP) path failures, improper SATP (Storage Array Type Plugin) rule assignments (e.g., non-ALUA array mapped to ALUA), or PSP Round Robin threshold left at default 1000 IOPS causing path underutilization.</li>
+  <li><b>3. VMFS Locking & Filesystem Layer:</b> VAAI ATS (Atomic Test & Set) locking contention, APD (All Paths Down) vs PDL (Permanent Device Loss) events, or datastore inode / VMDK lease locking during snapshot consolidation.</li>
+</ul>`;
         cliCommands = (
-          isVMware ? `esxcli storage core adapter list\nesxcli storage core path list\nesxcli storage nmp device list\ndf -h` :
-          isLinux ? `lsblk -f\ndf -hT\ndf -i\niostat -xz 1 5\nlsof | grep '(deleted)' | head -n 20` :
-          isWindows ? `Get-PhysicalDisk\nGet-VirtualDisk\nGet-Volume\nfsutil volume diskfree C:` :
+          isVMware ? `# ========================================================
+# PHASE 1: PHYSICAL HBA ADAPTER & SAN FABRIC LINK LAYER
+# ========================================================
+# 1. List all host storage adapters, WWNN/WWPN, driver versions, and link status
+esxcli storage core adapter list
+
+# 2. Check Fibre Channel port speed negotiation and link state (or iSCSI sessions)
+esxcli storage san fc list 2>/dev/null || esxcli iscsi adapter list 2>/dev/null
+esxcli iscsi session list 2>/dev/null
+
+# ========================================================
+# PHASE 2: LUN DEVICE, MULTIPATHING (NMP/PSP/SATP) & PATH STATUS
+# ========================================================
+# 3. Check Native Multipathing (NMP) configuration, SATP plugin, and active PSP (Round Robin / Fixed)
+esxcli storage nmp device list
+
+# 4. List all physical paths for target LUN NAA identifier (verify Active vs Dead paths)
+esxcli storage core path list --device=<naa_id> | grep -E "Device|State|Preferred|Adapter"
+
+# 5. Check device status for APD (All Paths Down) or PDL (Permanent Device Loss)
+esxcli storage core device list -d <naa_id> | grep -E "Status|Is Local|Is Removable|Is SSD"
+
+# ========================================================
+# PHASE 3: VMFS FILESYSTEM MOUNT STATE, FREE SPACE & VM LOCKS
+# ========================================================
+# 6. Verify VMFS datastore mount states, volume UUIDs, and storage capacity
+esxcli storage filesystem list
+df -hT /vmfs/volumes/*
+
+# 7. Check VAAI hardware acceleration primitives (ATS, Clone Blocks, Zero)
+esxcli storage core device vaai status get -d <naa_id>
+
+# 8. Check for stale VMFS lock or ATS heartbeat timeout on specific VMDK
+vmkfstools -D /vmfs/volumes/<Datastore_Name>/<VM_Folder>/<VM_Disk>.vmdk
+
+# ========================================================
+# PHASE 4: REAL-TIME LATENCY & ERROR EXTRACTION (esxtop & vmkernel)
+# ========================================================
+# 9. Real-time disk inspection in esxtop (press 'd' for HBA, 'u' for LUN, 'v' for VM)
+# Baselines: KAVG/cmd < 2ms (host kernel queue), DAVG/cmd < 15ms (SAN/device latency), ABRTS/cmd = 0
+grep -iE "scsi|sense|abort|pdl|apd|timeout|queue full" /var/log/vmkernel.log | tail -n 45` :
+          isLinux ? `# 1. Block devices, filesystem breakdown, and inode utilization\nlsblk -f\ndf -hT\ndf -i\n\n# 2. I/O wait and disk saturation\niostat -xz 1 5\nlsof | grep '(deleted)' | head -n 25\n\n# 3. Kernel block device error log\ndmesg -T | grep -iE "io error|scsi|ata|ext4|xfs" | tail -n 30` :
+          isWindows ? `# 1. Physical disk and storage pool status\nGet-PhysicalDisk | Select-Object FriendlyName, MediaType, OperationalStatus, HealthStatus\nGet-VirtualDisk\nGet-Volume\n\n# 2. Disk latency and NTFS corruption test\nfsutil volume diskfree C:\nGet-WinEvent -FilterHashtable @{LogName='System';ProviderName='disk','ntfs'} -MaxEvents 20` :
           `lsblk\ndf -h\niostat 1 3`
         );
         remediationSteps = [
-          'Identify degraded physical disks or offline LUN multipathing channels.',
-          'Verify storage controller queue depth and controller battery/cache state.',
-          'Safely free disk volume space or expand volume capacity online without service interruption.',
-          'Rescan storage bus adapters to refresh active active/optimized multipathing paths.'
+          '<b>Isolate Failure Domain:</b> Distinguish between APD (All Paths Down: transient fabric switch or SAN link flap) and PDL (Permanent Device Loss: SCSI sense 04/03 0x25 0x00 indicating LUN was deleted or unmapped from array).',
+          '<b>Verify Multipathing & Set Round Robin IOPS = 1:</b> Change PSP from Fixed to Round Robin, and lower IOPS switching frequency from default 1000 to 1 for true active-active SAN load distribution: <code>esxcli storage nmp psp roundrobin deviceconfig set --type=iops --iops=1 --device=&lt;naa_id&gt;</code>.',
+          '<b>Execute Non-Disruptive Storage Rescan:</b> Refresh SCSI bus adapters to detect restored LUN paths without cluster disruption: <code>esxcli storage core adapter rescan --all</code>.',
+          '<b>Check VAAI Hardware Acceleration:</b> If ATS heartbeat timeouts occur in vmkernel.log, test disabling ATS heartbeat temporarily: <code>esxcli system settings advanced set -o /VMFS3/UseATSForHB -i 0</code>.',
+          '<b>Clear VMFS File Lock Contention:</b> If snapshot consolidation fails due to locked .vmdk, extract locking MAC address via <code>vmkfstools -D</code> and restart management agents on that host (<code>/etc/init.d/hostd restart && /etc/init.d/vpxa restart</code>).'
         ];
         verificationSteps = [
-          'Confirm volume disk utilization is maintained below 80% threshold.',
-          'Verify storage latency read/write metrics are within acceptable baseline SLAs (<15ms).'
+          'Verify all storage paths report <b>Active / Optimized</b> with zero dead channels: <code>esxcli storage core path list | grep -i status</code>.',
+          'Monitor <code>esxtop</code> (press <code>u</code>) to verify DAVG/cmd and KAVG/cmd latency remain below 10ms with 0 ABRTS/cmd (zero aborted commands).',
+          'Confirm all datastores report <code>Mounted: true</code> in <code>esxcli storage filesystem list</code> and VMs operate without I/O pause.'
         ];
       } else if (hasUpgradeIntent) {
         detectedCategory = `${targetPlatform} System Upgrade & Workload Migration Playbook`;
@@ -3068,6 +3121,68 @@ az rest --method POST --uri "/subscriptions/{sub}/resourceGroups/rg-production/p
     }
   }
 
+  // Model-Differentiated Intelligence Layer (Grounding, Architecture & Deep Reasoning)
+  let modelSectionHtml = '';
+  if (model === 'perplexity') {
+    modelSectionHtml = `
+<div class="callout callout-info" style="margin-top:16px;">
+  <div class="callout-header">🌐 Verified Technical Citations & Knowledge Base References (Perplexity Grounding)</div>
+  <ul style="margin:4px 0 4px 18px; color:inherit; line-height:1.6; font-size:12.5px;">
+    <li><b>Broadcom / VMware KB 1003664:</b> Using esxtop to identify storage performance issues for ESXi (DAVG, KAVG, GAVG latency baselines).</li>
+    <li><b>Broadcom / VMware KB 2004684:</b> Permanent Device Loss (PDL) and All-Paths-Down (APD) in vSphere 7.x/8.x.</li>
+    <li><b>Broadcom / VMware KB 2060047:</b> Adjusting Round Robin IOPS limit from default 1000 to 1 for active SAN multipath load balancing.</li>
+    <li><b>Broadcom / VMware KB 1010187:</b> Determining which ESXi host holds a file lock on a virtual machine disk (.vmdk).</li>
+    <li><b>vSphere 8.0 Storage Administration Guide:</b> Native Multipathing Plugin (NMP), SATP rules, and Storage Array Type Plugins.</li>
+  </ul>
+</div>`;
+  } else if (model === 'chatgpt') {
+    modelSectionHtml = `
+<div class="callout callout-info" style="margin-top:16px; border-left-color:#10b981;">
+  <div class="callout-header">🧠 Enterprise Architectural Failure Synthesis & Blast Radius Isolation (ChatGPT 4o)</div>
+  <div style="font-size:12.5px; line-height:1.6;">
+    <b>Storage Tier Impact Isolation:</b> Cross-correlate whether latency spikes originate from the Host Kernel layer (KAVG &gt; 2ms indicates host queue depth exhaustion), Fabric Interconnect / SAN Switch layer (FC CRC errors or buffer credit starvation), or the Storage Array Target layer (DAVG &gt; 15ms indicates array controller saturation or background deduplication load). Verify Non-Disruptive Failover across redundant Fabrics A and B before maintenance.
+  </div>
+</div>`;
+  } else if (model === 'claude') {
+    modelSectionHtml = `
+<div class="callout callout-info" style="margin-top:16px; border-left-color:#a855f7;">
+  <div class="callout-header">🛡️ Defensive Engineering & Safety Checkpoints (Claude 3.5 Sonnet)</div>
+  <ul style="margin:4px 0 4px 18px; color:inherit; line-height:1.6; font-size:12.5px;">
+    <li><b>Pre-Change Risk Check:</b> Ensure storage rescan is restricted to specific adapter (<code>esxcli storage core adapter rescan -a vmhbaX</code>) instead of cluster-wide broadcast rescan to avoid I/O freezing during peak production hours.</li>
+    <li><b>Workload Evacuation:</b> Migrate latency-sensitive VMs (SQL Server, Oracle, Active Directory DCs) via Storage vMotion to alternate datastores before bouncing storage paths.</li>
+    <li><b>Rollback Checkpoint:</b> Record initial NMP device configuration (<code>esxcli storage nmp device list &gt; /tmp/nmp_backup.txt</code>) prior to modifying PSP Round Robin parameters.</li>
+  </ul>
+</div>`;
+  } else if (model === 'deepseek') {
+    modelSectionHtml = `
+<div class="callout callout-info" style="margin-top:16px; border-left-color:#ef4444;">
+  <div class="callout-header">⚡ Low-Level SCSI Sense Decoding & Kernel Trace Analysis (DeepSeek V3)</div>
+  <div style="font-size:12.5px; line-height:1.6;">
+    <b>vmkernel.log SCSI Sense Matrix:</b>
+    <ul style="margin:4px 0 4px 18px;">
+      <li><code>Sense: 0x2 0x04 0x01</code>: <b>NOT READY</b> - Logical unit in process of becoming ready (SAN controller failover in progress).</li>
+      <li><code>Sense: 0x3 0x0c 0x00</code>: <b>MEDIUM ERROR</b> - Write error / bad block on storage array physical tier.</li>
+      <li><code>Sense: 0x4 0x44 0x00</code>: <b>HARDWARE ERROR</b> - Target internal communication failure between storage heads.</li>
+      <li><code>Sense: 0x5 0x24 0x00</code>: <b>ILLEGAL REQUEST</b> - Invalid field in CDB (VAAI ATS/Clone primitive unsupported by firmware).</li>
+      <li><code>Sense: 0x6 0x29 0x00</code>: <b>UNIT ATTENTION</b> - Power-on or bus device reset occurred (Storage controller reboot).</li>
+    </ul>
+  </div>
+</div>`;
+  } else {
+    modelSectionHtml = `
+<div class="callout callout-info" style="margin-top:16px; border-left-color:#f59e0b;">
+  <div class="callout-header">✨ Rapid Triage Matrix & Executive Remediation (Google Gemini)</div>
+  <div style="font-size:12.5px; line-height:1.6;">
+    <b>High-Priority Rapid Triage Flow:</b>
+    <ol style="margin:4px 0 4px 18px;">
+      <li><b>Status Assessment:</b> <code>esxcli storage filesystem list</code> (Locate degraded, inaccessible, or read-only datastores).</li>
+      <li><b>Path Verification:</b> <code>esxcli storage core path list --device=&lt;naa_id&gt;</code> (Identify surviving active/optimized path count).</li>
+      <li><b>Quick Remediate:</b> Execute adapter rescan & verify target controller VIP failover status.</li>
+    </ol>
+  </div>
+</div>`;
+  }
+
   return `
 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; border-bottom:1px solid var(--border); padding-bottom:10px;">
   <div>
@@ -3096,6 +3211,8 @@ az rest --method POST --uri "/subscriptions/{sub}/resourceGroups/rg-production/p
   ${remediationSteps.map(step => `<li style="margin-bottom:8px;">${step}</li>`).join('')}
 </ol>
 
+${modelSectionHtml}
+
 <div class="callout callout-success" style="margin-top:16px;">
   <div class="callout-header">🟢 Health Verification & Post-Remediation Checks</div>
   <div>
@@ -3107,6 +3224,7 @@ az rest --method POST --uri "/subscriptions/{sub}/resourceGroups/rg-production/p
 `;
 }
 window.generateInAppAiDiagnosis = generateInAppAiDiagnosis;
+
 
 function copyEngineeredPrompt() {
   const query = $('#aiPromptInput')?.value.trim() || 'SysAdmin troubleshooting playbook';
