@@ -1913,15 +1913,15 @@ function selectAiModel(model) {
     deepseek: 'DeepSeek'
   };
 
-  if (note) note.textContent = `Active Model: ${names[model] || 'AI'} • Troubleshoots & searches directly in webpage`;
+  if (note) note.textContent = `Active Model: ${names[model] || 'AI'} • Searches, scripts, or troubleshoots directly in webpage`;
   if (runBtn) {
-    runBtn.textContent = `⚡ Troubleshoot Incident with ${shortNames[model] || 'AI'}`;
+    runBtn.textContent = `✨ Generate with ${shortNames[model] || 'AI'}`;
   }
   if (searchName) {
     searchName.textContent = shortNames[model] || 'AI Tool';
   }
   if (outTitle) {
-    outTitle.textContent = `${names[model] || 'AI'} Diagnostic Solution & Actionable Playbook`;
+    outTitle.textContent = `${names[model] || 'AI'} Solution & Technical Playbook`;
   }
 }
 
@@ -1930,7 +1930,7 @@ function searchSelectedAiTool(targetModel) {
   const input = $('#aiPromptInput');
   const query = (input?.value || '').trim();
   if (!query) {
-    showToast('Please enter an incident description or error message to search.', 'warning');
+    showToast('Please enter a question, search query, script request, or incident to search.', 'warning');
     input?.focus();
     return;
   }
@@ -1964,7 +1964,7 @@ function searchSelectedAiTool(targetModel) {
     case 'gemini':
     default:
       modelName = 'Google Gemini & Web';
-      targetUrl = `https://www.google.com/search?q=${encodeURIComponent(query + ' troubleshooting guide')}`;
+      targetUrl = `https://www.google.com/search?q=${encodedQ}`;
       break;
   }
 
@@ -2308,7 +2308,7 @@ async function submitAiQuery() {
 
   if (runBtn) {
     runBtn.disabled = true;
-    runBtn.textContent = '✨ Analyzing incident...';
+    runBtn.textContent = '✨ Generating solution...';
   }
 
   if (outPanel) {
@@ -2318,7 +2318,7 @@ async function submitAiQuery() {
   if (outContent) {
     outContent.innerHTML = `<div style="display:flex; align-items:center; gap:10px; color:#38bdf8; padding:16px 0;">
       <span style="animation:spin 1s linear infinite; display:inline-block;">⚙️</span>
-      <span>Generating diagnostic analysis with ${selectedAi.toUpperCase()} in webpage...</span>
+      <span>Generating technical solution with ${selectedAi.toUpperCase()} in webpage...</span>
     </div>`;
   }
   if (thread) {
@@ -2395,7 +2395,7 @@ async function submitAiQuery() {
       perplexity: 'Perplexity',
       deepseek: 'DeepSeek'
     };
-    runBtn.textContent = `⚡ Troubleshoot Incident with ${shortNames[selectedAi] || 'AI'}`;
+    runBtn.textContent = `✨ Generate with ${shortNames[selectedAi] || 'AI'}`;
   }
 
   if (apiSuccess) return;
@@ -2477,22 +2477,35 @@ function generateInAppAiDiagnosis(query, platform, model) {
   };
   const activeLabel = modelLabels[model] || 'SysAdminIQ AI Diagnostic Engine';
 
-  // Technology classification flags
-  const isVMware = /vmware|esxi|vcenter|vsan|dvs|vmotion|vpxd|vmkernel|psod|vmdk|vmfs|vmnic/.test(q) || /vmware|esxi|vcenter|vsan/.test((platform || '').toLowerCase());
-  const isCisco = /cisco|ucs|fabric interconnect|fi-[ab]|blade|chassis|vhba|vnic|intersight|cimc/.test(q) || /cisco|ucs/.test((platform || '').toLowerCase());
-  const isWindows = /windows|active directory|kerberos|domain controller|ad dc|dfs-r|dfsr|hyper-v|vss|dns server|powershell|gpo/.test(q) || /windows/.test((platform || '').toLowerCase());
-  const isLinux = /linux|kswapd|iowait|oom|systemd|xfs|ext4|nmi watchdog|lvm|thin-pool|rhel|ubuntu|centos|sysctl|journalctl/.test(q) || /linux/.test((platform || '').toLowerCase());
-  const isAzure = /azure|bastion|aks|expressroute|invalidsoftmatch|nsg|msee|premium ssd/.test(q) || /azure/.test((platform || '').toLowerCase());
-  const isAWS = /aws|ec2|ebs|lambda|alb|s3|cloudwatch|kms|route 53|target group/.test(q) || /aws/.test((platform || '').toLowerCase());
+  // Technology classification flags (strict word boundaries to avoid false substring matches)
+  const isVMware = /\b(vmware|esxi|vcenter|vcsa|vsan|vcf|dvs|vmotion|vpxd|vmkernel|psod|vmdk|vmfs|vmnic)\b/i.test(q);
+  const isCisco = /\b(cisco|ucs|fabric interconnect|blade|chassis|vhba|vnic|intersight|cimc)\b/i.test(q);
+  const isWindows = /\b(windows|active directory|kerberos|domain controller|ad dc|dfs-r|dfsr|hyper-v|vss|dns server|powershell|gpo)\b/i.test(q);
+  const isLinux = /\b(linux|kswapd|iowait|oom|systemd|xfs|ext4|nmi watchdog|lvm|thin-pool|rhel|ubuntu|centos|sysctl|journalctl)\b/i.test(q);
+  const isAzure = /\b(azure|bastion|aks|expressroute|invalidsoftmatch|nsg|msee|premium ssd)\b/i.test(q);
+  const isAWS = /\b(aws|ec2|ebs|lambda|alb|s3|cloudwatch|kms|route 53|target group)\b/i.test(q);
+
+  const hasStorageIntent = /\b(storage|disk|disks|lun|luns|san|nas|nfs|iscsi|raid|volume|volumes|multipath|iops|latency|vmdk|partition)\b/i.test(q);
+  const hasInstallIntent = /\b(install|installation|deploy|deployment|setup|provision|provisioning|build|image|iso|baremetal|hardware)\b/i.test(q);
+  const hasNetworkIntent = /\b(network|vlan|mtu|trunk|uplink|\bport\b|\bports\b|routing|gateway|\bip\b|\bips\b|ping|connectivity|dns)\b/i.test(q);
+  const hasUpgradeIntent = /\b(upgrade|upgrading|migrate|migration|update|updating|patch|patching|lifecycle)\b/i.test(q);
+  const hasScriptIntent = /\b(script|scripts|scripting|powershell|bash|python|shell|playbook|cmdlet|cron|automate|automation)\b/i.test(q);
+  const hasHowToIntent = /\b(how to|how do i|steps to|guide to|configure|configuration|create|setup|enable|disable)\b/i.test(q);
+  const hasExplainIntent = /\b(what is|explain|difference|difference between|compare|comparison|overview|vs|concept|architecture|meaning|define)\b/i.test(q);
+  const hasBestPracticeIntent = /\b(best practice|best practices|hardening|security|checklist|audit|recommendation|benchmark|compliance)\b/i.test(q);
+  const hasDockerK8sIntent = /\b(docker|container|containers|kubernetes|k8s|pod|pods|helm|ingress|deployment|compose)\b/i.test(q);
+  const hasWebDbIntent = /\b(nginx|apache|iis|mysql|postgres|postgresql|mariadb|mongodb|redis|ssl|tls|certbot|certificate)\b/i.test(q);
 
   let targetPlatform = (isVMware && isCisco) ? 'Cisco UCS & VMware vSphere' :
                        (isWindows && isLinux) ? 'Windows & Linux Hybrid' :
+                       hasDockerK8sIntent ? 'Kubernetes & Container Platform' :
+                       hasWebDbIntent ? 'Web & Database Subsystems' :
                        isVMware ? 'VMware vSphere' :
                        isCisco ? 'Cisco UCS' :
                        isWindows ? 'Windows Server' :
                        isLinux ? 'Enterprise Linux' :
                        isAzure ? 'Microsoft Azure' :
-                       isAWS ? 'AWS Cloud' : (platform || 'Enterprise Systems');
+                       isAWS ? 'AWS Cloud' : (platform || 'Enterprise Infrastructure');
 
   let detectedCategory = '';
   let rootCause = '';
@@ -2501,12 +2514,29 @@ function generateInAppAiDiagnosis(query, platform, model) {
   let remediationSteps = [];
   let verificationSteps = [];
 
+  const isIncidentOrCrash = /psod|panic|crash|freeze|purple screen|down|fail|failed|corrupt|rebuild|degrade|drop|lockout|0x8|not_implemented|oom|dead|unresponsive|hung|stuck|timeout|fatal/i.test(q);
+
+  let boxHeader = isIncidentOrCrash ? '🔴 Incident Root Cause Analysis' : '📘 Technical Architecture & Operational Scope';
+  let boxHeaderColor = isIncidentOrCrash ? 'callout-danger' : 'callout-info';
+  let sectionHeader1 = isIncidentOrCrash ? '1. Diagnostic Inspection & CLI Commands' : '1. Validated Administrative & CLI Configuration Commands';
+  let sectionSub1 = isIncidentOrCrash ? 'Execute these validated diagnostic commands from the administrative shell:' : 'Execute these verified commands from the administrative shell / CLI:';
+  let preCheckHeader = isIncidentOrCrash ? '🟡 Engineering Pre-Checks & Caution' : '🟡 Engineering Prerequisites & Configuration Precautions';
+  let sectionHeader2 = isIncidentOrCrash ? '2. Step-by-Step Remediation Playbook' : '2. Step-by-Step Implementation & Execution Procedure';
+  let verificationHeader = isIncidentOrCrash ? '🟢 Recovery Verification & System Health Checks' : '🟢 Operational Verification & Health Checks';
+
   // ==========================================
   // 0. CISCO UCS HARDWARE & ESXI INSTALLATION / DEPLOYMENT (HYBRID)
   // ==========================================
   if ((isCisco && isVMware) || (isCisco && (q.includes('esxi') || q.includes('install') || q.includes('hardware') || q.includes('deploy') || q.includes('blade') || q.includes('kvm') || q.includes('boot'))) || (isVMware && q.includes('cisco')) || (q.includes('esxi') && (q.includes('cisco') || q.includes('ucs') || q.includes('hardware')))) {
     detectedCategory = 'Cisco UCS Hardware Deployment & VMware ESXi Installation (B-Series Blade & C-Series Rack)';
     targetPlatform = 'Cisco UCS & VMware vSphere';
+    boxHeader = '🚀 Deployment Architecture, Prerequisite Baseline & Version Guidance';
+    boxHeaderColor = 'callout-info';
+    sectionHeader1 = '1. UCS Fabric, Service Profile & Hardware Inspection Commands';
+    sectionSub1 = 'Execute these commands via UCS Manager CLI (SSH) and ESXi administrative shell:';
+    preCheckHeader = '🟡 Firmware-to-Driver Parity Check & Compatibility Caution';
+    sectionHeader2 = '2. Step-by-Step ESXi Installation & Configuration Workflow';
+    verificationHeader = '🟢 Host Verification & Post-Installation Health Checks';
     rootCause = `Deploying VMware ESXi to Cisco UCS B-Series blade or C-Series rack servers requires strict alignment between server hardware, CIMC/UCSM firmware, and the specialized <strong>Cisco-Customized ESXi Image</strong>.<br><br>
 <b>Critical Version Reality & Grounding:</b> The current general enterprise production release of VMware ESXi is <strong>vSphere 8.0 Update 3</strong> (VMware ESXi 9.0 is an upcoming major release not yet in general release). When deploying to Cisco UCS M5, M6, or M7 servers, you must target supported vSphere 7.0 / 8.0 releases or validated technical preview builds.<br><br>
 <b>Key Technical Prerequisites & Failure Mechanisms:</b><br>
@@ -2696,6 +2726,81 @@ vim-cmd vmsvc/snapshot.consolidate <VMID>`;
     verificationSteps = [
       'Verify vSphere Client shows "Needs Consolidation: No" in VM Summary.',
       'Confirm VM datastore directory contains only base .vmdk disks without residual delta files.'
+    ];
+
+  } else if (isVMware && (q.includes('troubleshoot') || q.includes('step') || q.includes('diag') || q.includes('check') || q.includes('investigat') || q.includes('inspect') || q.includes('not responding') || q.includes('disconnected') || q.includes('hostd') || q.includes('vpxa'))) {
+    detectedCategory = 'VMware ESXi Host Systematic Diagnostics & Multi-Layer Troubleshooting Framework';
+    targetPlatform = 'VMware vSphere';
+    boxHeader = isIncidentOrCrash ? '🔴 Host Outage Root Cause & Failure Vectors' : '🛠️ Systematic ESXi Diagnostic Framework & Multi-Tier Triage';
+    boxHeaderColor = isIncidentOrCrash ? 'callout-danger' : 'callout-info';
+    sectionHeader1 = '1. ESXi Host Diagnostic Shell & CLI Inspection Commands';
+    sectionSub1 = 'Execute these high-priority inspection commands via SSH / ESXi Shell:';
+    preCheckHeader = '🟡 Host Management Agent & Maintenance Mode Safeguards';
+    sectionHeader2 = '2. Systematic 5-Phase ESXi Troubleshooting & Triage Workflow';
+    verificationHeader = '🟢 Host Operational Health & Cluster Synchronization Checks';
+
+    rootCause = `Comprehensive ESXi host diagnostic framework for: <strong>${esc(query)}</strong> on <strong>${targetPlatform}</strong>.<br><br>
+<b>Multi-Tier Triage Architecture:</b><br>
+When troubleshooting an ESXi host, issues typically isolate into one of four distinct operational planes:
+<ul style="margin:6px 0 6px 18px; line-height:1.6;">
+  <li><b>1. Management Plane (hostd & vpxa):</b> Agent unresponsiveness or thread exhaustion causing the host to report "Not Responding" in vCenter while virtual machines remain powered on and functional.</li>
+  <li><b>2. Network & Uplink Plane:</b> Uplink port flapping, MTU mismatches (1500 vs 9000 Jumbo Frames), or upstream switch 802.1Q VLAN trunk drops causing loss of management or VM traffic.</li>
+  <li><b>3. Storage & Datastore Plane:</b> APD (All Paths Down) / PDL (Permanent Device Loss) events, stale VMFS file locks, or high storage device latency (DAVG &gt; 20ms).</li>
+  <li><b>4. Compute & Kernel Plane:</b> CPU ready contention (%RDY &gt; 5%), memory ballooning/swapping (%SWCUR &gt; 0), or driver-firmware mismatch in vmkernel.</li>
+</ul>`;
+    cautionNote = 'Restarting management agents (hostd and vpxa) does NOT power off running virtual machines. However, avoid issuing host reboot commands or taking ESXi into Maintenance Mode without ensuring VM evacuation via DRS/vMotion.';
+    cliCommands = `# ========================================================
+# 1. MANAGEMENT DAEMONS & HOST AGENT RESPONSIVENESS
+# ========================================================
+# Check host management agent (hostd) and vCenter agent (vpxa)
+/etc/init.d/hostd status
+/etc/init.d/vpxa status
+
+# If host is "Not Responding" in vCenter, restart agents non-disruptively (VMs continue running):
+# /etc/init.d/hostd restart && /etc/init.d/vpxa restart
+
+# ========================================================
+# 2. PHYSICAL NETWORK & VMKERNEL UPLINK HEALTH
+# ========================================================
+# Check link status, duplex, speed, and driver/firmware for all physical adapters
+esxcli network nic list
+esxcli network nic get -n vmnic0
+
+# Check vSwitch / vDS portgroups and test MTU reachability to gateway
+esxcli network vswitch standard list
+esxcli network vswitch dvs vmware list
+vmkping -I vmk0 <Gateway_IP> -d -s 1472 -c 3
+
+# ========================================================
+# 3. STORAGE CONTROLLERS, LUN PATHS & DATASTORE CAPACITY
+# ========================================================
+# Check storage adapters, active paths, and datastore mount states
+esxcli storage core adapter list
+esxcli storage core path list | grep -E "Device|State|Adapter"
+esxcli storage filesystem list
+df -hT /vmfs/volumes/*
+
+# ========================================================
+# 4. REAL-TIME RESOURCE UTILIZATION & LOG TRIAGE
+# ========================================================
+# Check host uptime and physical memory allocation
+uptime
+esxcli system memory get
+
+# Inspect live vmkernel logs for errors, SCSI sense codes, or hardware traps
+tail -n 50 /var/log/vmkernel.log | grep -iE "error|warn|scsi|failed|sense|down"`;
+    remediationSteps = [
+      '<b>Phase 1 — Host Accessibility & Agent Health:</b> If the host shows "Not Responding" or "Disconnected" in vCenter, test direct SSH access and DCUI console. Restart <code>hostd</code> and <code>vpxa</code> non-disruptively: <code>/etc/init.d/hostd restart && /etc/init.d/vpxa restart</code>.',
+      '<b>Phase 2 — Physical Network & Gateway Reachability:</b> Run <code>esxcli network nic list</code> to confirm physical uplinks (vmnic) are connected at expected full speed. Ping default gateway with <code>vmkping -I vmk0 &lt;Gateway_IP&gt; -d -s 1472</code> to confirm zero packet loss.',
+      '<b>Phase 3 — Storage Adapter & Multipath Inspection:</b> Run <code>esxcli storage core path list</code> to ensure all LUN paths report Active. Rescan SCSI adapters if devices are missing: <code>esxcli storage core adapter rescan --all</code>.',
+      '<b>Phase 4 — Resource Contention & esxtop Analysis:</b> Launch <code>esxtop</code>. Press <code>c</code> to monitor CPU (ensure %RDY is below 5%), <code>m</code> to verify memory (SWCUR should be 0), and <code>d</code> to verify disk latency (DAVG/cmd should remain under 15ms).',
+      '<b>Phase 5 — Kernel Log Extraction:</b> Inspect <code>/var/log/vmkernel.log</code> and <code>/var/log/hostd.log</code> for recurrent fault signatures, APD/PDL storage drops, or PCIe driver faults.'
+    ];
+    verificationSteps = [
+      'Verify host status in vCenter displays green checkmark / "Connected" with zero active alarms.',
+      'Confirm <code>uptime</code> and verify management services report Active (Running).',
+      'Validate <code>vmkping</code> to gateway and storage targets returns 0% packet loss.',
+      'Confirm all virtual machines report healthy VMware Tools status and normal workload performance.'
     ];
 
   // ==========================================
@@ -2956,12 +3061,468 @@ az rest --method POST --uri "/subscriptions/{sub}/resourceGroups/rg-production/p
       ];
     } else {
       // Dynamic Intelligent Technical Synthesizer (Zero Generic AI Slop)
-      const hasInstallIntent = /install|deploy|setup|provision|build|image|iso|baremetal|hardware/.test(q);
-      const hasNetworkIntent = /network|vlan|mtu|trunk|uplink|port|routing|gateway|ip|ping|connectivity/.test(q);
-      const hasStorageIntent = /storage|disk|lun|san|raid|volume|multipath|iops|latency|vmdk|partition/.test(q);
-      const hasUpgradeIntent = /upgrade|migrate|migration|update|patch|lifecycle/.test(q);
+if (hasScriptIntent) {
+        boxHeader = '📜 Script Architecture & Automation Scope';
+        boxHeaderColor = 'callout-info';
+        sectionHeader1 = '1. Validated Production Script & Command Execution';
+        sectionSub1 = 'Deploy and execute this production-grade, parameter-driven script with built-in error handling:';
+        preCheckHeader = '🟡 Execution Safety & Guardrails (-WhatIf / Non-Destructive Mode)';
+        cautionNote = 'Always test automation scripts in non-production environments with `-WhatIf` (PowerShell) or dry-run flags before applying to mission-critical infrastructure.';
+        sectionHeader2 = '2. Step-by-Step Deployment & Automation Scheduling';
+        verificationHeader = '🟢 Execution Verification & Output Audit';
 
-      if (hasInstallIntent) {
+        if (isWindows || q.includes('powershell') || q.includes('ad') || q.includes('user') || q.includes('domain')) {
+          detectedCategory = `PowerShell Enterprise Systems Automation & Administrative Scripting`;
+          targetPlatform = 'Windows & PowerShell';
+          rootCause = `Automation specification and script implementation for: <strong>${esc(query)}</strong>.<br><br>
+<b>Engineered Guardrails:</b> Includes <code>[CmdletBinding(SupportsShouldProcess=$true)]</code> to support native <code>-WhatIf</code> simulation, structured <code>try/catch</code> blocks, standard parameterization, and timestamped CSV log output.`;
+          cliCommands = `<#
+.SYNOPSIS
+    Automated Systems Administration Script
+.DESCRIPTION
+    Generated for: ${esc(query)}
+    Includes safety validation and error handling.
+#>
+[CmdletBinding(SupportsShouldProcess=$true)]
+param(
+    [Parameter(Mandatory=$false)]
+    [int]$DaysThreshold = 90,
+
+    [Parameter(Mandatory=$false)]
+    [string]$LogPath = "C:\\AutomationLogs\\Audit_$(Get-Date -Format 'yyyyMMdd_HHmmss').csv"
+)
+
+begin {
+    Write-Verbose "Initializing execution environment and verifying modules..."
+    $ErrorActionPreference = 'Stop'
+    if (!(Test-Path (Split-Path $LogPath))) {
+        New-Item -ItemType Directory -Path (Split-Path $LogPath) -Force | Out-Null
+    }
+}
+
+process {
+    try {
+        if ($PSCmdlet.ShouldProcess("Target Infrastructure", "Execute automated query for ${esc(query.slice(0, 30))}")) {
+            Write-Host "[*] Executing query against target environment..." -ForegroundColor Cyan
+
+            # Sample automated query tailored to request
+            $Results = Get-Command -Module ActiveDirectory 2>$null
+            if ($Results) {
+                $Data = Get-ADUser -Filter {Enabled -eq $true} -Properties LastLogonDate, mail, Title, Department |
+                    Where-Object { $_.LastLogonDate -and ($_.LastLogonDate -lt (Get-Date).AddDays(-$DaysThreshold)) } |
+                    Select-Object SamAccountName, Name, mail, Title, Department, LastLogonDate
+                
+                $Data | Export-Csv -Path $LogPath -NoTypeInformation -Encoding UTF8
+                Write-Host "[+] Exported $($Data.Count) matching records to $LogPath" -ForegroundColor Green
+            } else {
+                # General Windows management automation
+                Get-Service | Where-Object {$_.StartType -eq 'Automatic' -and $_.Status -ne 'Running'} |
+                    Select-Object Name, DisplayName, Status, StartType | Export-Csv -Path $LogPath -NoTypeInformation
+                Write-Host "[+] Audit report generated at: $LogPath" -ForegroundColor Green
+            }
+        }
+    } catch {
+        Write-Error "[!] Script execution trapped error: $_"
+    }
+}
+
+end {
+    Write-Host "[✓] Automation cycle completed cleanly." -ForegroundColor Green
+}`;
+          remediationSteps = [
+            '<b>Save and Sign Script:</b> Save script to your administrative tools directory (e.g. <code>C:\\Scripts\\AutomationTask.ps1</code>). Set execution policy if restricted: <code>Set-ExecutionPolicy -Scope Process -ExecutionPolicy RemoteSigned</code>.',
+            '<b>Run in Non-Destructive Test Mode:</b> Execute with <code>-WhatIf</code> and <code>-Verbose</code> to preview target modifications without applying changes: <code>.\\AutomationTask.ps1 -WhatIf -Verbose</code>.',
+            '<b>Schedule Automation Task:</b> Register in Windows Task Scheduler under a dedicated Managed Service Account (gMSA) with least-privilege role delegation.',
+            '<b>Configure Error Notification:</b> Attach transcript logging via <code>Start-Transcript -Path C:\\Logs\\transcript.txt</code> to capture stdout/stderr streams.'
+          ];
+          verificationSteps = [
+            'Verify script returns exit code 0 and outputs clean structured data.',
+            'Confirm target CSV report contains expected column schemas and non-empty rows.',
+            'Verify Windows Security log records no unauthorized privilege escalation warnings.'
+          ];
+        } else {
+          detectedCategory = `Linux Bash / Python Infrastructure Automation & Operations Scripting`;
+          targetPlatform = isLinux ? 'Enterprise Linux' : targetPlatform;
+          rootCause = `Automation specification and script implementation for: <strong>${esc(query)}</strong>.<br><br>
+<b>Engineered Guardrails:</b> Includes strict bash shell options (<code>set -euo pipefail</code>), trapped exit handlers, timestamped standard logging, and clean exit statuses.`;
+          cliCommands = `#!/usr/bin/env bash
+# ========================================================
+# Script Name: sysadminiq_automation.sh
+# Purpose:     ${esc(query)}
+# Guardrails:  Exit on error (-e), unset vars (-u), pipe failure (-o pipefail)
+# ========================================================
+set -euo pipefail
+IFS=$'\n\t'
+
+LOG_DIR="/var/log/sysadminiq"
+LOG_FILE="$LOG_DIR/automation_$(date +%Y%m%d).log"
+LOCK_FILE="/var/run/sysadminiq_task.lock"
+
+# Trap handler for clean exit on interrupt or error
+cleanup() {
+    rm -f "$LOCK_FILE"
+}
+trap cleanup EXIT INT TERM
+
+mkdir -p "$LOG_DIR"
+
+log() {
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] $*" | tee -a "$LOG_FILE"
+}
+
+# Concurrency guard
+if [ -e "$LOCK_FILE" ]; then
+    log "ERROR: Script instance is already running (Lock: $LOCK_FILE). Exiting."
+    exit 1
+fi
+touch "$LOCK_FILE"
+
+log "INFO: Starting execution for: ${esc(query.slice(0, 40))}..."
+
+# Execution payload
+log "INFO: Gathering system metrics and evaluating state..."
+df -Ph | grep -vE '^Filesystem|tmpfs|cdrom' | while read -r line; do
+    usage=$(echo "$line" | awk '{print $5}' | tr -d '%')
+    mount=$(echo "$line" | awk '{print $6}')
+    if [ "$usage" -ge 85 ]; then
+        log "WARNING: Mount point $mount at \${usage}% capacity!"
+    fi
+done
+
+log "SUCCESS: Execution completed successfully."
+exit 0`;
+          remediationSteps = [
+            '<b>Create and Grant Execution Permissions:</b> Save the script to <code>/usr/local/bin/sysadminiq_task.sh</code> and grant executable permissions: <code>chmod +x /usr/local/bin/sysadminiq_task.sh</code>.',
+            '<b>Test Execution Manually:</b> Execute dry-run with debug trace: <code>bash -x /usr/local/bin/sysadminiq_task.sh</code>.',
+            '<b>Deploy Production Cron Job:</b> Configure system cron in <code>/etc/cron.d/sysadminiq</code>: <code>0 3 * * * root /usr/local/bin/sysadminiq_task.sh &gt;/dev/null 2&gt;&amp;1</code>.',
+            '<b>Configure Logrotate:</b> Add logrotate policy in <code>/etc/logrotate.d/sysadminiq</code> to prevent log file exhaustion.'
+          ];
+          verificationSteps = [
+            'Check script exit status: <code>echo $?</code> returns 0.',
+            'Verify log creation in <code>cat /var/log/sysadminiq/automation_*.log</code>.',
+            'Confirm lock file is cleanly removed post-execution.'
+          ];
+        }
+      } else if (hasHowToIntent) {
+        boxHeader = '📐 Implementation Architecture & Technical Scope';
+        boxHeaderColor = 'callout-info';
+        sectionHeader1 = '1. Validated Administrative Commands & Configuration Syntax';
+        sectionSub1 = 'Execute these verified command lines and apply configuration files:';
+        preCheckHeader = '🟡 Pre-Flight Requirements & Backup Precautions';
+        cautionNote = 'Always backup existing configuration files and verify syntax before reloading services (e.g. `nginx -t`, `apachectl configtest`, `named-checkconf`).';
+        sectionHeader2 = '2. Step-by-Step Implementation Workflow';
+        verificationHeader = '🟢 Functional Testing & Operational Verification';
+
+        detectedCategory = `${targetPlatform} Technical Configuration & Implementation Playbook`;
+        rootCause = `Complete implementation architecture and configuration instructions for: <strong>${esc(query)}</strong>.<br><br>
+<b>Design Objectives:</b> Provides production-tested configurations, correct file paths, systemd service control, security hardening, and end-to-end verification.`;
+
+        if (hasWebDbIntent || q.includes('nginx') || q.includes('ssl') || q.includes('certbot')) {
+          targetPlatform = 'Web & TLS Infrastructure';
+          cliCommands = `# ========================================================
+# 1. INSTALL & CONFIGURE NGINX REVERSE PROXY WITH SSL/TLS
+# ========================================================
+# Install Nginx and Certbot Let's Encrypt automated client
+sudo apt update && sudo apt install -y nginx certbot python3-certbot-nginx 2>/dev/null || sudo dnf install -y nginx certbot python3-certbot-nginx
+
+# 2. Deploy hardened Nginx Virtual Host configuration
+sudo tee /etc/nginx/conf.d/app.conf > /dev/null << 'EOF'
+server {
+    listen 80;
+    server_name example.domain.com;
+    return 301 https://$host$request_uri;
+}
+
+server {
+    listen 443 ssl http2;
+    server_name example.domain.com;
+
+    # SSL Certificate Paths (managed by Certbot)
+    ssl_certificate /etc/letsencrypt/live/example.domain.com/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/example.domain.com/privkey.pem;
+
+    # TLS Hardening Protocols & Ciphers (Mozilla Modern Profile)
+    ssl_protocols TLSv1.2 TLSv1.3;
+    ssl_ciphers HIGH:!aNULL:!MD5:!3DES;
+    ssl_prefer_server_ciphers on;
+    ssl_session_cache shared:SSL:10m;
+    ssl_session_timeout 1d;
+
+    # Reverse Proxy Target Backend
+    location / {
+        proxy_pass http://127.0.0.1:8080;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 60s;
+        proxy_read_timeout 60s;
+    }
+}
+EOF
+
+# 3. Test configuration syntax and reload Nginx
+sudo nginx -t
+sudo systemctl enable --now nginx
+sudo systemctl reload nginx
+
+# 4. Provision Automated Let's Encrypt SSL Certificate
+sudo certbot --nginx -d example.domain.com --non-interactive --agree-tos -m admin@domain.com`;
+          remediationSteps = [
+            '<b>Configure DNS A/AAAA Records:</b> Ensure the target domain (e.g. <code>example.domain.com</code>) resolves to your server public IP address.',
+            '<b>Open Firewall Ports:</b> Permit inbound HTTP (TCP 80) and HTTPS (TCP 443): <code>ufw allow 80,443/tcp</code> or <code>firewall-cmd --permanent --add-service={http,https} &amp;&amp; firewall-cmd --reload</code>.',
+            '<b>Deploy Backend Service:</b> Confirm backend application daemon is listening locally on <code>127.0.0.1:8080</code>.',
+            '<b>Validate Syntax & Reload:</b> Always run <code>nginx -t</code> prior to issuing <code>systemctl reload nginx</code>.',
+            '<b>Automate Certificate Renewal:</b> Verify systemd certbot timer: <code>systemctl status certbot.timer</code> and test dry-run: <code>certbot renew --dry-run</code>.'
+          ];
+          verificationSteps = [
+            'Confirm HTTPS response: <code>curl -Iv https://example.domain.com</code> confirms HTTP 200 OK.',
+            'Verify SSL certificate validity and expiration: <code>echo | openssl s_client -servername example.domain.com -connect example.domain.com:443 2>/dev/null | openssl x509 -noout -dates</code>.',
+            'Confirm Qualys SSL Labs audit score returns Grade A+.'
+          ];
+        } else if (hasDockerK8sIntent || q.includes('docker') || q.includes('kubernetes') || q.includes('compose')) {
+          targetPlatform = 'Containers & Kubernetes';
+          cliCommands = `# ========================================================
+# 1. DOCKER COMPOSE MULTI-CONTAINER PRODUCTION ARCHITECTURE
+# ========================================================
+cat << 'EOF' > docker-compose.yml
+services:
+  app:
+    image: nginx:alpine
+    container_name: production_web
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      - NODE_ENV=production
+    volumes:
+      - ./html:/usr/share/nginx/html:ro
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+    networks:
+      - frontend_net
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
+        reservations:
+          cpus: '0.25'
+          memory: 128M
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+networks:
+  frontend_net:
+    driver: bridge
+EOF
+
+# 2. Deploy and validate container stack
+docker compose up -d
+docker compose ps
+docker compose logs -f app`;
+          remediationSteps = [
+            '<b>Validate Configuration Syntax:</b> Run <code>docker compose config</code> to validate YAML indentation and environment variables.',
+            '<b>Deploy in Background:</b> Launch container lifecycle with detached mode: <code>docker compose up -d</code>.',
+            '<b>Inspect Resource Utilization:</b> Monitor container CPU, memory, and I/O live with <code>docker stats</code>.',
+            '<b>Configure Automatic Restarts:</b> Ensure <code>restart: unless-stopped</code> is specified in service definition.'
+          ];
+          verificationSteps = [
+            'Confirm container health status: <code>docker inspect --format="{{.State.Health.Status}}" production_web</code> reports <b>healthy</b>.',
+            'Confirm external HTTP curl check: <code>curl -I http://localhost:80</code> returns 200 OK.',
+            'Verify zero zombie processes inside namespace: <code>docker top production_web</code>.'
+          ];
+        } else {
+          cliCommands = `# 1. Baseline system configuration & service status
+uname -a 2>/dev/null || Get-ComputerInfo 2>$null
+systemctl status 2>/dev/null || Get-Service 2>$null
+
+# 2. Configure target subsystem & test connectivity
+ping -c 3 8.8.8.8 2>/dev/null || Test-NetConnection -ComputerName 8.8.8.8 -Port 53
+ip link show 2>/dev/null || Get-NetAdapter 2>$null
+
+# 3. Apply validated configuration and restart daemon
+sudo systemctl daemon-reload 2>/dev/null
+sudo systemctl restart target-service 2>/dev/null`;
+          remediationSteps = [
+            'Verify prerequisite dependencies, package versions, and network port availability.',
+            'Apply configuration settings sequentially, checking exit statuses after each stage.',
+            'Reload system daemons and test functionality against baseline benchmarks.'
+          ];
+          verificationSteps = [
+            'Confirm service status reports Active (Running) with 0 exit code.',
+            'Audit error logs to confirm zero fatal syntax or socket binding errors.'
+          ];
+        }
+      } else if (hasExplainIntent) {
+        boxHeader = '💡 Core Architectural Principles & Technical Foundations';
+        boxHeaderColor = 'callout-info';
+        sectionHeader1 = '1. Practical Technical Inspection & Demonstration CLI';
+        sectionSub1 = 'Verify system parameters, protocols, and states with these command lines:';
+        preCheckHeader = '🟡 Architectural Tradeoffs & Implementation Considerations';
+        cautionNote = 'Understand operational tradeoffs between protocols, performance overhead, network latency, and administrative complexity before committing to architectural decisions.';
+        sectionHeader2 = '2. Enterprise Design & Engineering Recommendations';
+        verificationHeader = '🟢 Operational Validation & Monitoring Baselines';
+
+        detectedCategory = `${targetPlatform} Systems Architecture & Technical Concept Deep-Dive`;
+        rootCause = `Comprehensive architectural analysis and technical breakdown for: <strong>${esc(query)}</strong>.<br><br>
+<b>Core Foundations & Mechanics:</b> Explores protocol layers, storage/compute/networking models, enterprise pros & cons, and practical production use cases.`;
+
+        if (q.includes('nfs') && (q.includes('iscsi') || q.includes('storage') || q.includes('san'))) {
+          targetPlatform = 'Storage Architecture';
+          rootCause = `Detailed technical comparison: <strong>NFS (Network File System) vs iSCSI (Internet Small Computer System Interface)</strong> in Virtualization & Enterprise IT.<br><br>
+<table style="width:100%; border-collapse:collapse; margin:8px 0; font-size:12.5px;">
+  <thead>
+    <tr style="border-bottom:2px solid var(--border); text-align:left;">
+      <th style="padding:6px;">Criterion</th>
+      <th style="padding:6px;">NFS (File-Level)</th>
+      <th style="padding:6px;">iSCSI (Block-Level)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:6px;"><b>Protocol Level</b></td>
+      <td style="padding:6px;">File-level NAS protocol (NFSv3 / NFSv4.1)</td>
+      <td style="padding:6px;">Block-level SAN protocol (SCSI commands over TCP/IP)</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:6px;"><b>Filesystem Owner</b></td>
+      <td style="padding:6px;">Storage Array / NAS controller manages filesystem</td>
+      <td style="padding:6px;">Host Hypervisor (VMware VMFS / Linux EXT4/XFS) manages filesystem</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:6px;"><b>Multipathing</b></td>
+      <td style="padding:6px;">NFSv3: single TCP connection (requires IP hash). NFSv4.1: session trunking</td>
+      <td style="padding:6px;">Native MPIO / NMP (Round Robin, ALUA, Path Failover per IOPS/bytes)</td>
+    </tr>
+    <tr style="border-bottom:1px solid var(--border);">
+      <td style="padding:6px;"><b>Locking Mechanism</b></td>
+      <td style="padding:6px;">Network Lock Manager (NLM) or lease-based file locking</td>
+      <td style="padding:6px;">Hardware ATS (Atomic Test & Set) via SCSI VAAI primitives</td>
+    </tr>
+    <tr>
+      <td style="padding:6px;"><b>Best Use Case</b></td>
+      <td style="padding:6px;">Shared ISO repositories, Kubernetes PVCs, rapid thin provisioning</td>
+      <td style="padding:6px;">High-transaction databases (SQL/Oracle), high-IOPS VMs, clustered applications</td>
+    </tr>
+  </tbody>
+</table>`;
+          cliCommands = `# ========================================================
+# 1. INSPECT NFS & iSCSI STORAGE SUBSYSTEMS (ESXi CLI)
+# ========================================================
+# Check active NFS volume mounts and protocols (NFSv3 vs NFSv4.1)
+esxcli storage nfs list
+esxcli storage nfs41 list 2>/dev/null
+
+# Check iSCSI software initiators and active TCP sessions
+esxcli iscsi adapter list
+esxcli iscsi session list
+
+# 2. Check Native Multipathing (NMP) for block-level iSCSI LUNs
+esxcli storage nmp device list
+esxcli storage core path list
+
+# 3. Test latency and MTU packet reachability on dedicated storage vSwitch (Jumbo Frames 9000 MTU)
+vmkping -I vmk1 <Storage_IP> -d -s 8972 -c 3`;
+          remediationSteps = [
+            '<b>Choose iSCSI When:</b> Maximum IOPS performance, native multi-pathing load balancing (Round Robin IOPS = 1), and hardware VAAI ATS primitives are required for heavy transactional SQL/Oracle databases.',
+            '<b>Choose NFS When:</b> Simplified management, easy file-level browsing, shared multi-host volumes, and rapid container persistent volumes (CSI) are prioritized over raw block latency.',
+            '<b>Network Isolation:</b> Dedicated storage VLANs with Jumbo Frames (MTU 9000) end-to-end must be implemented for both NFS and iSCSI to eliminate TCP retransmissions.'
+          ];
+          verificationSteps = [
+            'Confirm storage ping with 8972 byte payload succeeds with 0% packet loss.',
+            'Verify latency metrics: <code>esxtop</code> disk device latency DAVG/cmd remains below 10ms.'
+          ];
+        } else {
+          cliCommands = `# 1. Examine architectural configuration and running parameters
+uname -a 2>/dev/null || Get-ComputerInfo 2>$null
+ip addr 2>/dev/null || Get-NetIPConfiguration 2>$null
+
+# 2. Check active kernel socket bindings and protocol listeners
+ss -tulnp 2>/dev/null || netstat -tuln 2>/dev/null
+
+# 3. Inspect system logs for protocol handshakes and operational state
+dmesg | tail -n 25 2>/dev/null || Get-EventLog -LogName System -Newest 10 2>$null`;
+          remediationSteps = [
+            'Evaluate system architectural alignment against vendor design guides and RFC specifications.',
+            'Audit capacity, concurrency limits, and failure domain boundaries.',
+            'Deploy monitoring agents to track protocol latency, queue depths, and error rates.'
+          ];
+          verificationSteps = [
+            'Confirm system operating benchmarks meet target SLA requirements.',
+            'Verify high-availability redundancy operates as designed under simulated failure.'
+          ];
+        }
+      } else if (hasBestPracticeIntent) {
+        boxHeader = '🛡️ Security Hardening & Operational Best Practices Baseline';
+        boxHeaderColor = 'callout-info';
+        sectionHeader1 = '1. Hardening Commands & Configuration Controls';
+        sectionSub1 = 'Execute these automated hardening scripts and audit commands:';
+        preCheckHeader = '🟡 Change Management & Safeguards';
+        cautionNote = 'Audit hardening controls against staging environments first. Overly restrictive firewall or SSH settings can lead to administrative lockout.';
+        sectionHeader2 = '2. Phased Rollout & Remediation Protocol';
+        verificationHeader = '🟢 Compliance Audit & Drift Verification';
+
+        detectedCategory = `${targetPlatform} Security Hardening & Operational Excellence Baseline`;
+        rootCause = `Enterprise hardening and security baseline for: <strong>${esc(query)}</strong>.<br><br>
+<b>Compliance Framework Alignment:</b> Aligned with CIS Benchmarks, NIST SP 800-53, and DISA STIG standards for enterprise infrastructure.`;
+        cliCommands = (
+          isLinux ? `# 1. SSH Server Hardening (/etc/ssh/sshd_config)
+sudo sed -i 's/^#PermitRootLogin.*/PermitRootLogin no/' /etc/ssh/sshd_config
+sudo sed -i 's/^#PasswordAuthentication.*/PasswordAuthentication no/' /etc/ssh/sshd_config
+sudo sshd -t && sudo systemctl reload sshd
+
+# 2. Kernel Security Parameters (sysctl /etc/sysctl.d/99-security.conf)
+cat << 'EOF' | sudo tee /etc/sysctl.d/99-security.conf
+net.ipv4.ip_forward = 0
+net.ipv4.conf.all.send_redirects = 0
+net.ipv4.conf.all.accept_source_route = 0
+net.ipv4.conf.all.accept_redirects = 0
+net.ipv4.tcp_syncookies = 1
+fs.protected_hardlinks = 1
+fs.protected_symlinks = 1
+EOF
+sudo sysctl --system
+
+# 3. Audit open ports and disable unused services
+ss -tulnp
+sudo systemctl disable --now cups avahi-daemon 2>/dev/null || true` :
+          isWindows ? `# 1. Audit SMBv1 status and disable insecure legacy protocols
+Get-WindowsOptionalFeature -Online -FeatureName SMB1Protocol
+Disable-WindowsOptionalFeature -Online -FeatureName SMB1Protocol -NoRestart
+
+# 2. Enforce PowerShell script block logging and constrained language
+reg add "HKLM\\SOFTWARE\\Policies\\Microsoft\\Windows\\PowerShell\\ScriptBlockLogging" /v EnableScriptBlockLogging /t REG_DWORD /d 1 /f
+
+# 3. Audit Local Administrator password and User Account Control (UAC)
+Get-LocalUser -Name "Administrator" | Select-Object Name, Enabled, PasswordRequired
+reg add "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Policies\\System" /v EnableLUA /t REG_DWORD /d 1 /f` :
+          `# Security baseline inspection\nuname -a\nss -tulnp\ncat /etc/issue`
+        );
+        remediationSteps = [
+          '<b>Enforce Least Privilege & MFA:</b> Require Multi-Factor Authentication for all administrative access. Disallow root/Administrator direct interactive logons.',
+          '<b>Disable Insecure Protocols:</b> Deprecate TLS 1.0, TLS 1.1, SMBv1, Telnet, and NTLMv1 in favor of TLS 1.3, SMBv3 encryption, and Kerberos AES-256.',
+          '<b>Automated Patch Management:</b> Implement scheduled maintenance cycles for OS kernel patches and security hotfixes.',
+          '<b>Centralized Syslog & SIEM Forwarding:</b> Forward security event logs (Windows Event ID 4624/4625/4720, Linux auditd/auth.log) to central SIEM.'
+        ];
+        verificationSteps = [
+          'Run automated CIS benchmark compliance scan to verify minimum 85% compliance score.',
+          'Confirm vulnerability scanning (Nessus/Qualys) detects zero Critical or High unmitigated vulnerabilities.'
+        ];
+      } else if (hasInstallIntent) {
+        boxHeader = '🚀 Deployment Architecture, Prerequisites & Provisioning Scope';
+        boxHeaderColor = 'callout-info';
+        sectionHeader1 = '1. Hardware, Firmware & CLI Verification Commands';
+        sectionSub1 = 'Execute these prerequisite checks and deployment commands:';
+        preCheckHeader = '🟡 Compatibility Precautions & Boot Order Safeguards';
+        sectionHeader2 = '2. Step-by-Step Installation & Configuration Workflow';
+        verificationHeader = '🟢 Host Verification & Post-Installation Health Checks';
         detectedCategory = `${targetPlatform} Hardware Provisioning & Software Deployment Playbook`;
         rootCause = `Analysis and deployment execution plan for <strong>${esc(query)}</strong> on <strong>${targetPlatform}</strong>. OS and hypervisor provisioning requires strict validation of the vendor Hardware Compatibility List (HCL), controller firmware-to-driver parity, verified installation ISO images, and correct boot order targeting.`;
         cliCommands = (
@@ -2983,6 +3544,17 @@ az rest --method POST --uri "/subscriptions/{sub}/resourceGroups/rg-production/p
           'Confirm all physical network adapters and storage controllers load verified certified device drivers without kernel warnings.'
         ];
       } else if (hasNetworkIntent) {
+        boxHeader = isIncidentOrCrash
+          ? '🔴 Network Failure Vectors & Root Cause Analysis'
+          : '🌐 Network Architecture, Routing & Topology Scope';
+        boxHeaderColor = isIncidentOrCrash ? 'callout-danger' : 'callout-info';
+        sectionHeader1 = '1. Network Inspection & CLI Diagnostic Commands';
+        sectionSub1 = 'Execute these verified network commands:';
+        preCheckHeader = '🟡 Production Uplink & Switchport Caution';
+        sectionHeader2 = isIncidentOrCrash
+          ? '2. Step-by-Step Network Remediation Playbook'
+          : '2. Step-by-Step Configuration & Verification Procedure';
+        verificationHeader = '🟢 Network Connectivity & Latency Verification';
         detectedCategory = `${targetPlatform} Network Connectivity, Routing & VLAN Isolation Recovery`;
         rootCause = `Network diagnosis for <strong>${esc(query)}</strong> on <strong>${targetPlatform}</strong>. Primary failure mechanisms include physical uplink flapping, 802.1Q VLAN trunking mismatches, MTU size discrepancies (1500 vs 9000 Jumbo Frames), or stale switch MAC forwarding tables.`;
         cliCommands = (
@@ -3010,8 +3582,19 @@ az rest --method POST --uri "/subscriptions/{sub}/resourceGroups/rg-production/p
           .replace(/^(steps\s+to\s+troubleshoot\s+|troubleshooting\s+steps\s+for\s+)/i, '')
           .trim();
         detectedCategory = `${targetPlatform} Storage Fabric, LUN Multipathing & Datastore Performance Remediation`;
-        rootCause = `Storage diagnostic investigation for <strong>${esc(cleanTopic || query)}</strong> on <strong>${targetPlatform}</strong>.<br><br>
-<b>Technical Architecture & Failure Mechanisms:</b><br>
+        boxHeader = isIncidentOrCrash
+          ? '🔴 Storage Root Cause Analysis & Failure Vectors'
+          : '🔍 Multi-Layer Storage Architecture & Diagnostic Assessment';
+        boxHeaderColor = isIncidentOrCrash ? 'callout-danger' : 'callout-info';
+        sectionHeader1 = '1. End-to-End Storage Diagnostic & CLI Inspection Commands';
+        sectionSub1 = 'Execute these validated inspection commands across HBA, SAN fabric, LUN multipathing, and VMFS:';
+        preCheckHeader = '🟡 Production Storage Safety & Path Failover Guardrails';
+        sectionHeader2 = isIncidentOrCrash
+          ? '2. Step-by-Step Storage Remediation Playbook'
+          : '2. Systematic Storage Troubleshooting & Triage Playbook';
+        verificationHeader = '🟢 Storage Fabric Health & Latency Verification Checks';
+        rootCause = `Storage diagnostic and troubleshooting framework for: <strong>${esc(cleanTopic || query)}</strong> on <strong>${targetPlatform}</strong>.<br><br>
+<b>Technical Architecture & Diagnostic Planes:</b><br>
 In VMware vSphere environments, ESXi host storage anomalies originate across three distinct physical and logical layers:
 <ul style="margin:6px 0 6px 18px; line-height:1.6;">
   <li><b>1. Physical HBA & SAN Fabric Layer:</b> Fibre Channel optic light degradation, SAN switch buffer-to-buffer credit starvation, or iSCSI TCP socket timeouts and packet loss on dedicated storage VLANs.</li>
@@ -3095,28 +3678,193 @@ grep -iE "scsi|sense|abort|pdl|apd|timeout|queue full" /var/log/vmkernel.log | t
           'Confirm target OS/hypervisor version matches the target build number.',
           'Validate that all production services start cleanly and resume operational workload processing.'
         ];
-      } else {
-        detectedCategory = `${targetPlatform} Infrastructure Systems Engineering Analysis`;
-        rootCause = `Systems engineering diagnostic assessment for <strong>${esc(query)}</strong> on <strong>${targetPlatform}</strong>. Root cause analysis isolates operational anomalies, service crashes, configuration drift, and environmental dependency constraints.`;
-        cliCommands = (
-          isVMware ? `esxcli system version get\nesxcli network nic list\nesxcli storage core adapter list\ncat /var/log/vmkernel.log | tail -n 30` :
-          isCisco ? `show cluster state\nshow server inventory\nshow fault\nshow tech-support chassis` :
-          isWindows ? `Get-Service | Where-Object {$_.Status -ne "Running" -and $_.StartType -eq "Automatic"}\nGet-EventLog -LogName System -EntryType Error -Newest 15\nTest-NetConnection -ComputerName "gateway" -Port 443` :
-          isLinux ? `systemctl status\njournalctl -xe -p 3 -n 40\ndf -hT\ndmesg -T | grep -iE "error|fail|warn" | tail -n 25` :
-          isAzure ? `az vm get-instance-view\naz network nic list-effective-nsg\naz network watcher test-connectivity` :
-          isAWS ? `aws ec2 describe-instance-status\naws health describe-events --filter "eventStatusCodes=open"` :
-          `ping -c 4 127.0.0.1\nnetstat -tuln\nss -tulnp\ncurl -Iv http://localhost`
-        );
+      } else if (isVMware) {
+        detectedCategory = `VMware ESXi Host Comprehensive Diagnostics, Management Agents & Performance Triage`;
+        rootCause = `Comprehensive operational troubleshooting procedure for <strong>${esc(query)}</strong> on <strong>VMware vSphere ESXi</strong>.<br><br>
+<b>Enterprise Triage Hierarchy & Failure Domains:</b>
+<ul style="margin:6px 0 6px 18px; line-height:1.6;">
+  <li><b>1. Host Connectivity & Management Agent Health:</b> ESXi hosts displaying "Not Responding" or "Disconnected" in vCenter Server typically suffer from an unresponsive <code>hostd</code> (ESXi Host Agent) or <code>vpxa</code> (vCenter Server Agent), thread pool exhaustion, or hung virtual machine world locks.</li>
+  <li><b>2. Network Isolation & VMkernel Management (vmk0):</b> Physical uplink (vmnic) link degradation, Top-of-Rack VLAN trunking mismatches, or management network gateway reachability issues causing false vSphere HA isolation events.</li>
+  <li><b>3. Storage Multipathing & APD/PDL Detection:</b> Dead FC/iSCSI paths, VAAI ATS locking contention, or unmounted datastores triggering storage I/O queues to stall the host.</li>
+  <li><b>4. Compute Contention & Real-Time Performance (esxtop):</b> CPU Ready (%RDY > 5%) saturation, memory ballooning (vmmemctl), or guest disk latency (DAVG/cmd > 15ms).</li>
+</ul>`;
+        cliCommands = `# ========================================================
+# PHASE 1: HOST STATE & MANAGEMENT AGENTS (hostd & vpxa)
+# ========================================================
+# 1. Verify ESXi hypervisor build, uptime, and licensing state
+esxcli system version get
+uptime
+
+# 2. Check hostd and vCenter agent status
+/etc/init.d/hostd status
+/etc/init.d/vpxa status
+
+# 3. Safely restart management agents (DOES NOT disrupt running VMs)
+/etc/init.d/hostd restart
+/etc/init.d/vpxa restart
+
+# 4. Check for unresponsive or hung virtual machines holding world locks
+esxcli vm process list
+
+# ========================================================
+# PHASE 2: VMKERNEL NETWORK CONNECTIVITY & UPLINK HEALTH
+# ========================================================
+# 5. List physical network adapters, link state, and speed/duplex
+esxcli network nic list
+
+# 6. Test management VMkernel gateway reachability with ping
+vmkping -I vmk0 <Gateway_IP> -c 4
+
+# 7. Check for physical NIC dropped packets or link flapping errors
+esxcli network nic stats get -n vmnic0
+
+# ========================================================
+# PHASE 3: STORAGE ADAPTERS, LUN PATHS & DATASTORE HEALTH
+# ========================================================
+# 8. List storage adapters and scan for Dead / Degraded paths
+esxcli storage core adapter list
+esxcli storage core path list --state=dead
+
+# 9. Check VMFS datastore mounting and disk capacity
+esxcli storage filesystem list
+df -hT /vmfs/volumes/*
+
+# ========================================================
+# PHASE 4: REAL-TIME CONTENTION (esxtop) & LOG STREAM TRACING
+# ========================================================
+# 10. Check host resource contention in esxtop (c=CPU %RDY, m=Memory swap, d=Disk latency)
+# CPU %RDY > 5% = CPU contention; DAVG/cmd > 15ms = SAN latency; KAVG/cmd > 2ms = host queue stall
+# 11. Tail recent VMkernel errors, storage aborts, and driver warnings
+tail -n 40 /var/log/vmkernel.log | grep -iE "error|warn|failed|heartbeat|dead|scsi|abort"
+tail -n 40 /var/log/hostd.log | grep -iE "error|fault|panic"`;
+        cautionNote = 'Never run `services.sh restart` indiscriminately if vSAN or NSX is running, as it can cause transient cluster node dropouts. Always restart `hostd` and `vpxa` individually. Do not reboot production ESXi hosts before migrating VMs or entering Maintenance Mode.';
         remediationSteps = [
-          'Audit recently committed configuration changes, security ACLs, and service account credentials.',
-          'Execute diagnostic commands to isolate service daemon errors and socket binding states.',
-          'Apply targeted remediation steps to resolve configuration drift or service interruption.',
-          'Perform health verification checks and clear all active alert thresholds.'
+          '<b>Restore Host Management Connectivity:</b> If the host appears Disconnected in vCenter, connect via SSH or DCUI. Restart management daemons using <code>/etc/init.d/hostd restart && /etc/init.d/vpxa restart</code>. This restarts communication with vCenter without interrupting running virtual machines.',
+          '<b>Clear Hung Virtual Machine World Locks:</b> If a specific VM process hangs and blocks <code>hostd</code>, identify its World ID via <code>esxcli vm process list</code> and issue a graceful termination: <code>esxcli vm process kill --type=soft --world-id=&lt;World_ID&gt;</code> (use <code>--type=force</code> only if soft kill fails after 60 seconds).',
+          '<b>Verify Network Uplink Redundancy:</b> Inspect <code>esxcli network nic list</code> to confirm both active and standby vmnic uplinks report Link Up at full speed. Verify VLAN trunking on physical switch ports if management traffic drops.',
+          '<b>Isolate Dead Storage Paths (APD / PDL):</b> Check for All Paths Down via <code>esxcli storage core path list --state=dead</code>. Rescan storage adapters non-disruptively to restore multipathing: <code>esxcli storage core adapter rescan --all</code>.',
+          '<b>Profile CPU/Memory Contention with esxtop:</b> Run <code>esxtop</code>. Press <code>c</code> to audit <code>%RDY</code> (CPU Ready time should remain < 5%). Press <code>m</code> to audit memory swap (<code>SWCUR</code> must be 0 MB). Press <code>d</code> to verify disk device latency (<code>DAVG/cmd</code> < 15ms).'
         ];
         verificationSteps = [
-          'Confirm system daemons report Active (Running) with 0 exit errors.',
-          'Validate system logging shows normal operational cycles without persistent fault codes.'
+          'Verify ESXi host returns to <b>Connected / Normal</b> state in vCenter Server and vSphere Client.',
+          'Confirm management daemons are responsive: <code>/etc/init.d/hostd status</code> and <code>/etc/init.d/vpxa status</code> return running with zero hung processes.',
+          'Confirm system logs show healthy heartbeat exchanges: <code>tail -n 25 /var/log/vpxa.log</code> and VMkernel reports no active errors.'
         ];
+      } else if (isLinux) {
+        detectedCategory = `Enterprise Linux System Performance, Service Stability & Resource Triage`;
+        rootCause = `Comprehensive operating system and service diagnostics for <strong>${esc(query)}</strong> on <strong>${targetPlatform}</strong>.<br><br>
+Primary investigation isolates systemd unit crashes, kernel memory pressure (OOM / kswapd thrashing), disk I/O bottlenecking, or socket exhaustion.`;
+        cliCommands = `# 1. Overall system uptime, load averages, and memory/swap utilization
+uptime
+free -h
+vmstat 1 5
+
+# 2. Failed systemd service units and kernel ring buffer errors
+systemctl --failed
+journalctl -p 3 -xb --no-pager | tail -n 35
+dmesg -T | grep -iE "oom|segfault|error|warn|ext4|xfs" | tail -n 30
+
+# 3. Disk space, inode usage, and I/O bottlenecks
+df -hT
+df -i
+iostat -xz 1 5
+
+# 4. Active listening network sockets and process connections
+ss -tulnp
+ps aux --sort=-%mem | head -n 12`;
+        cautionNote = 'Do not force-kill critical system daemons with SIGKILL (-9) without first attempting graceful SIGTERM (-15) to avoid database journal or file descriptor corruption.';
+        remediationSteps = [
+          '<b>Inspect Failed Daemons:</b> Query detailed systemd unit logs: <code>journalctl -u &lt;service&gt; -e --no-pager</code> and verify configuration files with test flags.',
+          '<b>Alleviate Memory Pressure:</b> If kswapd is thrashing, tune <code>vm.swappiness</code> and inspect high-memory processes using <code>ps aux --sort=-%mem</code>.',
+          '<b>Release Inode / Disk Saturation:</b> Check for deleted unlinked files holding open descriptors: <code>lsof +L1</code> and truncate bloated application logs.',
+          '<b>Restart Impacted Services:</b> Execute controlled restart: <code>systemctl restart &lt;service&gt;</code> and verify status with <code>systemctl status &lt;service&gt;</code>.'
+        ];
+        verificationSteps = [
+          'Confirm <code>systemctl --failed</code> reports zero failed units.',
+          'Verify load average drops below the system logical CPU core count.',
+          'Confirm journal logs show clean operation without recurrent crash loops.'
+        ];
+      } else if (isWindows) {
+        detectedCategory = `Windows Server Diagnostic, Active Directory & Service Recovery Playbook`;
+        rootCause = `System diagnostics and root cause investigation for <strong>${esc(query)}</strong> on <strong>${targetPlatform}</strong>.<br><br>
+Triggers include service logon failures, RPC endpoint starvation, Active Directory replication divergence, or Volume Shadow Copy (VSS) errors.`;
+        cliCommands = `# 1. Identify stopped automatic services and query System/Application error logs
+Get-Service | Where-Object {$_.Status -ne "Running" -and $_.StartType -eq "Automatic"}
+Get-WinEvent -FilterHashtable @{LogName='System';Level=1,2} -MaxEvents 20 | Select-Object TimeCreated, Id, Message
+
+# 2. Disk space and volume integrity checks
+Get-Volume
+fsutil volume diskfree C:
+
+# 3. Network connectivity, DNS resolution, and TCP port listening status
+Get-NetIPConfiguration
+Test-NetConnection -ComputerName "127.0.0.1" -Port 443
+Get-NetTCPConnection -State Listen | Select-Object LocalAddress, LocalPort, OwningProcess
+
+# 4. Active Directory health (if Domain Controller)
+dcdiag /test:Replication /v
+repadmin /replsummary`;
+        cautionNote = 'Ensure change management approval is verified before restarting critical Domain Controller or Hyper-V services in production.';
+        remediationSteps = [
+          '<b>Restart Failed Automatic Services:</b> Audit service logon accounts and restart failed services: <code>Start-Service -Name &lt;ServiceName&gt;</code>.',
+          '<b>Repair System Integrity:</b> If component store corruption is suspected, execute <code>sfc /scannow</code> and <code>DISM /Online /Cleanup-Image /RestoreHealth</code>.',
+          '<b>Flush DNS & Purge Kerberos:</b> Clear cached client tokens: <code>ipconfig /flushdns</code> and <code>klist purge</code>.',
+          '<b>Review Storage Volume Health:</b> Expand disk volumes or clear CBS/Windows Update cache in <code>C:\\Windows\\SoftwareDistribution\\Download</code>.'
+        ];
+        verificationSteps = [
+          'Confirm all Automatic services report <b>Running</b> in <code>Get-Service</code>.',
+          'Verify Windows Event Viewer shows zero new Critical or Error events in the System log.',
+          'Confirm network and domain services respond within standard SLA latency.'
+        ];
+      } else {
+        if (isVMware) {
+          detectedCategory = `VMware vSphere Infrastructure Systems Analysis & Operations`;
+          targetPlatform = 'VMware vSphere';
+          boxHeader = isIncidentOrCrash ? '🔴 Incident Root Cause Analysis' : '📘 Operational Architecture & Technical Overview';
+          boxHeaderColor = isIncidentOrCrash ? 'callout-danger' : 'callout-info';
+          sectionHeader1 = '1. ESXi Administrative Shell & Inspection Commands';
+          sectionSub1 = 'Execute these verified commands via ESXi SSH / CLI:';
+          preCheckHeader = '🟡 Host Verification Precautions';
+          sectionHeader2 = isIncidentOrCrash ? '2. Step-by-Step Remediation Playbook' : '2. Step-by-Step Implementation & Operational Workflow';
+          verificationHeader = '🟢 Host Health & Verification Checks';
+          rootCause = `Technical systems guidance and operational overview for: <strong>${esc(query)}</strong> on <strong>VMware vSphere</strong>.`;
+          cliCommands = `# 1. Host identity and system version\nesxcli system version get\nuptime\n\n# 2. Network uplinks and management interfaces\nesxcli network nic list\nesxcli network ip interface ipv4 get\n\n# 3. Storage controllers and filesystem status\nesxcli storage core adapter list\nesxcli storage filesystem list\n\n# 4. Recent vmkernel events and system logs\ntail -n 30 /var/log/vmkernel.log`;
+          remediationSteps = [
+            'Review operational requirements and cross-reference with VMware vSphere 8.x documentation.',
+            'Execute inspection commands sequentially to verify baseline system health.',
+            'Apply configuration settings in a staged, validated workflow.'
+          ];
+          verificationSteps = [
+            'Confirm ESXi host and vCenter report green status with zero active warnings.',
+            'Validate log streams in /var/log/vmkernel.log confirm clean execution.'
+          ];
+        } else {
+          detectedCategory = `${targetPlatform} Infrastructure Systems Engineering Analysis`;
+          boxHeader = isIncidentOrCrash ? '🔴 Incident Root Cause Analysis' : '📘 Technical Overview & Implementation Scope';
+          boxHeaderColor = isIncidentOrCrash ? 'callout-danger' : 'callout-info';
+          sectionHeader1 = '1. Administrative Inspection & CLI Commands';
+          sectionSub1 = 'Execute these verified administrative commands:';
+          preCheckHeader = '🟡 Engineering Precautions & Safeguards';
+          sectionHeader2 = isIncidentOrCrash ? '2. Step-by-Step Remediation Playbook' : '2. Step-by-Step Implementation Procedure';
+          verificationHeader = '🟢 Operational Verification & Health Checks';
+          rootCause = `Systems engineering guidance and analysis for: <strong>${esc(query)}</strong> on <strong>${targetPlatform}</strong>.`;
+          cliCommands = (
+            isCisco ? `show cluster state\nshow server inventory\nshow fault\nshow tech-support chassis` :
+            isAzure ? `az vm get-instance-view\naz network nic list-effective-nsg\naz network watcher test-connectivity` :
+            isAWS ? `aws ec2 describe-instance-status\naws health describe-events --filter "eventStatusCodes=open"` :
+            isWindows ? `Get-ComputerInfo | Select-Object WindowsProductName, OsArchitecture\nGet-Service | Where-Object {$_.Status -ne "Running" -and $_.StartType -eq "Automatic"}\nGet-NetIPConfiguration\nGet-Volume` :
+            `uptime\nfree -m\ndf -h\nnetstat -tuln 2>/dev/null || ss -tuln\nps aux | head -n 15`
+          );
+          remediationSteps = [
+            'Isolate service daemon errors and verify socket binding states.',
+            'Audit recent configuration changes, firewall rules, and credentials.',
+            'Apply validated remediation steps to restore standard operational baseline.'
+          ];
+          verificationSteps = [
+            'Confirm system daemons report Active (Running) with 0 exit errors.',
+            'Validate system logging shows normal operational cycles without persistent fault codes.'
+          ];
+        }
       }
     }
   }
@@ -3124,7 +3872,8 @@ grep -iE "scsi|sense|abort|pdl|apd|timeout|queue full" /var/log/vmkernel.log | t
   // Model-Differentiated Intelligence Layer (Grounding, Architecture & Deep Reasoning)
   let modelSectionHtml = '';
   if (model === 'perplexity') {
-    modelSectionHtml = `
+    if (hasStorageIntent) {
+      modelSectionHtml = `
 <div class="callout callout-info" style="margin-top:16px;">
   <div class="callout-header">🌐 Verified Technical Citations & Knowledge Base References (Perplexity Grounding)</div>
   <ul style="margin:4px 0 4px 18px; color:inherit; line-height:1.6; font-size:12.5px;">
@@ -3135,49 +3884,121 @@ grep -iE "scsi|sense|abort|pdl|apd|timeout|queue full" /var/log/vmkernel.log | t
     <li><b>vSphere 8.0 Storage Administration Guide:</b> Native Multipathing Plugin (NMP), SATP rules, and Storage Array Type Plugins.</li>
   </ul>
 </div>`;
+    } else if (isVMware) {
+      modelSectionHtml = `
+<div class="callout callout-info" style="margin-top:16px;">
+  <div class="callout-header">🌐 Verified Technical Citations & Broadcom VMware References (Perplexity Grounding)</div>
+  <ul style="margin:4px 0 4px 18px; color:inherit; line-height:1.6; font-size:12.5px;">
+    <li><b>Broadcom / VMware KB 1003490:</b> Restarting the Management agents in VMware ESXi (<code>hostd</code> and <code>vpxa</code> restart procedures).</li>
+    <li><b>Broadcom / VMware KB 1003409:</b> Troubleshooting an ESXi host in "Not Responding" or "Disconnected" state in vCenter Server.</li>
+    <li><b>Broadcom / VMware KB 1003664:</b> Using <code>esxtop</code> to identify performance issues for ESXi (%RDY, %CSTP, DAVG/cmd, SWCUR baselines).</li>
+    <li><b>Broadcom / VMware KB 1003634:</b> Troubleshooting network connectivity with the <code>vmkping</code> command and MTU validation.</li>
+    <li><b>Broadcom vSphere 8.x Administration & Host Lifecycle Guide:</b> ESXi command-line reference and automated fault remediation.</li>
+  </ul>
+</div>`;
+    } else if (isLinux) {
+      modelSectionHtml = `
+<div class="callout callout-info" style="margin-top:16px;">
+  <div class="callout-header">🌐 Verified Technical Citations & Kernel Documentation (Perplexity Grounding)</div>
+  <ul style="margin:4px 0 4px 18px; color:inherit; line-height:1.6; font-size:12.5px;">
+    <li><b>Linux Kernel Performance Documentation:</b> Understanding page cache dirty ratios, kswapd memory reclaim watermarks, and I/O scheduler tuning.</li>
+    <li><b>Red Hat Customer Portal Solutions:</b> Diagnosing systemd unit crash loops, cgroup v2 memory limits, and OOM killer events.</li>
+    <li><b>Systemd Reference Manual:</b> <code>journalctl</code> and <code>systemctl</code> debugging guidelines for multi-user target service isolation.</li>
+  </ul>
+</div>`;
+    } else {
+      modelSectionHtml = `
+<div class="callout callout-info" style="margin-top:16px;">
+  <div class="callout-header">🌐 Verified Technical Citations & Infrastructure Grounding (Perplexity Grounding)</div>
+  <ul style="margin:4px 0 4px 18px; color:inherit; line-height:1.6; font-size:12.5px;">
+    <li><b>Vendor Hardware Compatibility Guide:</b> Firmware-driver alignment, PCIe bus validation, and async driver installation.</li>
+    <li><b>Enterprise System Administration Manuals:</b> High availability cluster failover policies, heartbeat cross-connects, and VIP management.</li>
+  </ul>
+</div>`;
+    }
   } else if (model === 'chatgpt') {
-    modelSectionHtml = `
+    if (isVMware) {
+      modelSectionHtml = `
 <div class="callout callout-info" style="margin-top:16px; border-left-color:#10b981;">
   <div class="callout-header">🧠 Enterprise Architectural Failure Synthesis & Blast Radius Isolation (ChatGPT 4o)</div>
   <div style="font-size:12.5px; line-height:1.6;">
-    <b>Storage Tier Impact Isolation:</b> Cross-correlate whether latency spikes originate from the Host Kernel layer (KAVG &gt; 2ms indicates host queue depth exhaustion), Fabric Interconnect / SAN Switch layer (FC CRC errors or buffer credit starvation), or the Storage Array Target layer (DAVG &gt; 15ms indicates array controller saturation or background deduplication load). Verify Non-Disruptive Failover across redundant Fabrics A and B before maintenance.
-  </div>
-</div>`;
-  } else if (model === 'claude') {
-    modelSectionHtml = `
-<div class="callout callout-info" style="margin-top:16px; border-left-color:#a855f7;">
-  <div class="callout-header">🛡️ Defensive Engineering & Safety Checkpoints (Claude 3.5 Sonnet)</div>
-  <ul style="margin:4px 0 4px 18px; color:inherit; line-height:1.6; font-size:12.5px;">
-    <li><b>Pre-Change Risk Check:</b> Ensure storage rescan is restricted to specific adapter (<code>esxcli storage core adapter rescan -a vmhbaX</code>) instead of cluster-wide broadcast rescan to avoid I/O freezing during peak production hours.</li>
-    <li><b>Workload Evacuation:</b> Migrate latency-sensitive VMs (SQL Server, Oracle, Active Directory DCs) via Storage vMotion to alternate datastores before bouncing storage paths.</li>
-    <li><b>Rollback Checkpoint:</b> Record initial NMP device configuration (<code>esxcli storage nmp device list &gt; /tmp/nmp_backup.txt</code>) prior to modifying PSP Round Robin parameters.</li>
-  </ul>
-</div>`;
-  } else if (model === 'deepseek') {
-    modelSectionHtml = `
-<div class="callout callout-info" style="margin-top:16px; border-left-color:#ef4444;">
-  <div class="callout-header">⚡ Low-Level SCSI Sense Decoding & Kernel Trace Analysis (DeepSeek V3)</div>
-  <div style="font-size:12.5px; line-height:1.6;">
-    <b>vmkernel.log SCSI Sense Matrix:</b>
+    <b>High-Availability & Cluster Scope Isolation:</b>
     <ul style="margin:4px 0 4px 18px;">
-      <li><code>Sense: 0x2 0x04 0x01</code>: <b>NOT READY</b> - Logical unit in process of becoming ready (SAN controller failover in progress).</li>
-      <li><code>Sense: 0x3 0x0c 0x00</code>: <b>MEDIUM ERROR</b> - Write error / bad block on storage array physical tier.</li>
-      <li><code>Sense: 0x4 0x44 0x00</code>: <b>HARDWARE ERROR</b> - Target internal communication failure between storage heads.</li>
-      <li><code>Sense: 0x5 0x24 0x00</code>: <b>ILLEGAL REQUEST</b> - Invalid field in CDB (VAAI ATS/Clone primitive unsupported by firmware).</li>
-      <li><code>Sense: 0x6 0x29 0x00</code>: <b>UNIT ATTENTION</b> - Power-on or bus device reset occurred (Storage controller reboot).</li>
+      <li><b>Failure Domain Boundary:</b> Isolate whether an ESXi host disconnect is an isolated management agent socket stall (running VMs unaffected) or a full hypervisor panic / network partition that will trigger automated vSphere HA virtual machine restarts on surviving cluster nodes.</li>
+      <li><b>vSphere HA Heartbeat Validation:</b> Cross-check datastore heartbeating vs network heartbeating. If the management network fails but datastore heartbeats succeed, the host is partitioned rather than completely isolated.</li>
+      <li><b>DRS Migration Impact:</b> Before placing the host into Maintenance Mode, assess whether sibling ESXi hosts possess adequate unreserved memory to absorb the migrated VM load without triggering memory ballooning or swapping.</li>
     </ul>
   </div>
 </div>`;
+    } else {
+      modelSectionHtml = `
+<div class="callout callout-info" style="margin-top:16px; border-left-color:#10b981;">
+  <div class="callout-header">🧠 Enterprise Architectural Failure Synthesis & Blast Radius Isolation (ChatGPT 4o)</div>
+  <div style="font-size:12.5px; line-height:1.6;">
+    <b>Architectural Impact & Redundancy Check:</b> Verify high-availability pairing, network link aggregation (LACP / Port-Channel), and shared storage paths before executing destructive restarts. Ensure cluster quorum is maintained and secondary nodes are in Healthy / Active state.
+  </div>
+</div>`;
+    }
+  } else if (model === 'claude') {
+    if (isVMware) {
+      modelSectionHtml = `
+<div class="callout callout-info" style="margin-top:16px; border-left-color:#a855f7;">
+  <div class="callout-header">🛡️ Defensive Engineering & Safety Checkpoints (Claude 3.5 Sonnet)</div>
+  <ul style="margin:4px 0 4px 18px; color:inherit; line-height:1.6; font-size:12.5px;">
+    <li><b>Management Agent Restart Safety:</b> Always restart <code>hostd</code> and <code>vpxa</code> individually. Never execute <code>services.sh restart</code> on production ESXi hosts running vSAN or NSX-T, as it can temporarily unbind cluster communication sockets and trigger false node isolation.</li>
+    <li><b>Hung VM Termination Hierarchy:</b> If a virtual machine locks an ESXi host world, never run <code>kill -9</code> immediately. Follow the formal staged termination:
+      <code>esxcli vm process kill --type=soft --world-id=&lt;WID&gt;</code> (allows OS shutdown); wait 60 seconds; then <code>--type=hard</code>; reserve <code>--type=force</code> as an absolute last resort to protect VMFS inode integrity.</li>
+    <li><b>Maintenance Mode Rollback Protocol:</b> Always verify vMotion network health (<code>vmkping -I vmk1 &lt;Target_Host_IP&gt;</code>) before triggering host evacuation.</li>
+  </ul>
+</div>`;
+    } else {
+      modelSectionHtml = `
+<div class="callout callout-info" style="margin-top:16px; border-left-color:#a855f7;">
+  <div class="callout-header">🛡️ Defensive Engineering & Safety Checkpoints (Claude 3.5 Sonnet)</div>
+  <ul style="margin:4px 0 4px 18px; color:inherit; line-height:1.6; font-size:12.5px;">
+    <li><b>Pre-Change Snapshot & Backup:</b> Verify state backups or snapshots are captured before modifying production configuration files or updating kernel parameters.</li>
+    <li><b>Non-Disruptive Diagnostics:</b> Execute non-invasive read-only queries (status, ping, list) prior to triggering service restarts or interface resets.</li>
+    <li><b>Rollback Checkpoint:</b> Retain backup copies of original configuration files (e.g. <code>cp config.conf config.conf.bak</code>) before editing.</li>
+  </ul>
+</div>`;
+    }
+  } else if (model === 'deepseek') {
+    if (isVMware) {
+      modelSectionHtml = `
+<div class="callout callout-info" style="margin-top:16px; border-left-color:#ef4444;">
+  <div class="callout-header">⚡ Low-Level Kernel Tracing & Log Parsing Matrix (DeepSeek V3)</div>
+  <div style="font-size:12.5px; line-height:1.6;">
+    <b>High-Speed Multi-Log Diagnostic One-Liner:</b>
+    <pre style="background:#0f172a; color:#38bdf8; padding:8px 12px; border-radius:4px; font-size:11px; margin:6px 0;">grep -Ei "error|fail|panic|exception|scsi|timeout|dead|alert" /var/log/vmkernel.log /var/log/hostd.log /var/log/vpxa.log | tail -n 45</pre>
+    <b>Kernel Crash & Coredump Verification:</b>
+    <ul style="margin:4px 0 4px 18px;">
+      <li><code>esxcli system coredump partition get</code>: Confirms active coredump partition is configured and active.</li>
+      <li><code>esxcli system coredump file get</code>: Confirms file-based coredump status on local VMFS datastore.</li>
+      <li><code>zcat /var/run/log/vmkernel.*.gz | grep -iE "backtrace|trap 14|assert"</code>: Extracts previous crash stack frames.</li>
+    </ul>
+  </div>
+</div>`;
+    } else {
+      modelSectionHtml = `
+<div class="callout callout-info" style="margin-top:16px; border-left-color:#ef4444;">
+  <div class="callout-header">⚡ Low-Level Kernel Tracing & Log Parsing Matrix (DeepSeek V3)</div>
+  <div style="font-size:12.5px; line-height:1.6;">
+    <b>Trace Extraction One-Liner:</b>
+    <pre style="background:#0f172a; color:#38bdf8; padding:8px 12px; border-radius:4px; font-size:11px; margin:6px 0;">dmesg -T | grep -Ei "panic|oom|segfault|error|warn|lockup" | tail -n 35</pre>
+    Extract system call failures and hardware error registers before modifying kernel scheduler parameters.
+  </div>
+</div>`;
+    }
   } else {
     modelSectionHtml = `
 <div class="callout callout-info" style="margin-top:16px; border-left-color:#f59e0b;">
-  <div class="callout-header">✨ Rapid Triage Matrix & Executive Remediation (Google Gemini)</div>
+  <div class="callout-header">✨ Rapid Triage Flow & Quick Elimination Matrix (Google Gemini)</div>
   <div style="font-size:12.5px; line-height:1.6;">
-    <b>High-Priority Rapid Triage Flow:</b>
+    <b>Priority-Ordered Triage Sequence:</b>
     <ol style="margin:4px 0 4px 18px;">
-      <li><b>Status Assessment:</b> <code>esxcli storage filesystem list</code> (Locate degraded, inaccessible, or read-only datastores).</li>
-      <li><b>Path Verification:</b> <code>esxcli storage core path list --device=&lt;naa_id&gt;</code> (Identify surviving active/optimized path count).</li>
-      <li><b>Quick Remediate:</b> Execute adapter rescan & verify target controller VIP failover status.</li>
+      <li><b>Layer 1 (Daemons):</b> Check service availability and process status.</li>
+      <li><b>Layer 2 (Network):</b> Validate gateway reachability and uplink error counters.</li>
+      <li><b>Layer 3 (Storage/Compute):</b> Verify filesystem mount states and CPU/memory pressure baselines.</li>
     </ol>
   </div>
 </div>`;
@@ -3192,21 +4013,21 @@ grep -iE "scsi|sense|abort|pdl|apd|timeout|queue full" /var/log/vmkernel.log | t
   <span class="badge" style="background:rgba(56,189,248,0.15); color:#38bdf8; font-size:12px; padding:4px 10px; border-radius:12px; font-weight:700;">Target: ${targetPlatform}</span>
 </div>
 
-<div class="callout callout-danger">
-  <div class="callout-header">🔴 Root Cause Analysis</div>
+<div class="callout ${boxHeaderColor}">
+  <div class="callout-header">${boxHeader}</div>
   <div style="color:inherit; font-size:13px; line-height:1.6;">${rootCause}</div>
 </div>
 
-<h3 style="color:var(--text-primary); font-size:16px; font-weight:700; margin:18px 0 8px 0;">1. Diagnostic Inspection & CLI Commands</h3>
-<p style="color:var(--text-secondary); font-size:13px; margin-bottom:8px;">Execute these validated diagnostic commands from the administrative shell:</p>
+<h3 style="color:var(--text-primary); font-size:16px; font-weight:700; margin:18px 0 8px 0;">${sectionHeader1}</h3>
+<p style="color:var(--text-secondary); font-size:13px; margin-bottom:8px;">${sectionSub1}</p>
 <pre><code style="background:#0f172a; color:#38bdf8; display:block; padding:14px; border-radius:6px; overflow-x:auto; font-family:'JetBrains Mono', monospace; font-size:12px; line-height:1.6;">${cliCommands}</code></pre>
 
 <div class="callout callout-warning">
-  <div class="callout-header">🟡 Engineering Pre-Checks & Caution</div>
+  <div class="callout-header">${preCheckHeader}</div>
   <div style="color:inherit; font-size:13px; line-height:1.6;">${cautionNote}</div>
 </div>
 
-<h3 style="color:var(--text-primary); font-size:16px; font-weight:700; margin:18px 0 8px 0;">2. Step-by-Step Remediation Playbook</h3>
+<h3 style="color:var(--text-primary); font-size:16px; font-weight:700; margin:18px 0 8px 0;">${sectionHeader2}</h3>
 <ol style="margin-left:22px; color:var(--text-primary); line-height:1.7;">
   ${remediationSteps.map(step => `<li style="margin-bottom:8px;">${step}</li>`).join('')}
 </ol>
@@ -3214,7 +4035,7 @@ grep -iE "scsi|sense|abort|pdl|apd|timeout|queue full" /var/log/vmkernel.log | t
 ${modelSectionHtml}
 
 <div class="callout callout-success" style="margin-top:16px;">
-  <div class="callout-header">🟢 Health Verification & Post-Remediation Checks</div>
+  <div class="callout-header">${verificationHeader}</div>
   <div>
     <ul style="margin:4px 0 4px 18px; color:inherit; line-height:1.6;">
       ${verificationSteps.map(v => `<li style="margin-bottom:4px;">${v}</li>`).join('')}

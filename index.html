@@ -524,10 +524,10 @@ if (document.readyState === 'loading') {
           <div>
             <h3 style="font-size:18px; font-weight:800; color:var(--text-primary); display:flex; align-items:center; gap:8px;">
               <span>✨</span>
-              <span>AI Infrastructure Assistant & Multi-Model Hub (In-Webpage)</span>
+              <span>AI Systems Assistant & Multi-Model Technical Hub (In-Webpage)</span>
             </h3>
             <p style="font-size:13px; color:var(--text-secondary); margin-top:4px;">
-              Direct in-webpage troubleshooting across Google Gemini, ChatGPT 4o, Claude 3.5, Perplexity, and DeepSeek without opening external tabs.
+              Search anything, ask questions, generate scripts, or troubleshoot incidents across Google Gemini, ChatGPT 4o, Claude 3.5, Perplexity, and DeepSeek.
             </p>
           </div>
         </div>
@@ -655,12 +655,12 @@ if (document.readyState === 'loading') {
         <!-- Single Dedicated Full-Width Incident / Problem Column (No platform selection required) -->
         <div class="ai-incident-column" style="margin-bottom:12px;">
           <label for="aiPromptInput" style="display:block; font-size:12px; font-weight:700; color:#94a3b8; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.04em;">
-            Incident Description, Error Message or System Crash Trace
+            Search Query, Question, Script Request, or Incident Description
           </label>
           <textarea
             id="aiPromptInput"
             rows="6"
-            placeholder="Enter any incident description, error message, crash stack trace, or system problem (e.g., 'ESXi host PSOD with NOT_IMPLEMENTED in vmkernel', 'Cisco UCS subordinate cluster degraded', 'High iowait with kswapd0 100% CPU', 'Kerberos 4771 code 0x18'). Autodetects technologies without platform selection requirements..."
+            placeholder="Search or ask anything across AI tools (e.g. 'How to configure Nginx reverse proxy with SSL', 'PowerShell script to find inactive AD users', 'Steps for troubleshooting ESXi host storage issues', 'Difference between NFS and iSCSI', 'Best practices for Linux server hardening', or paste any error logs / crash traces)..."
             style="width:100%; box-sizing:border-box; font-family:'JetBrains Mono', monospace; font-size:13px; line-height:1.6;"
           ></textarea>
         </div>
@@ -668,7 +668,7 @@ if (document.readyState === 'loading') {
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
           <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
             <button id="runAiBtn" class="primary" onclick="submitAiQuery()">
-              ✨ Troubleshoot Incident In-Webpage
+              ✨ Generate Solution In-Webpage
             </button>
             <button id="searchAiToolBtn" class="primary" onclick="searchSelectedAiTool()" style="background:linear-gradient(135deg, #1e40af, #7c3aed); border-color:#818cf8; color:#ffffff; font-weight:700;" title="Search query directly on the selected AI tool (Claude, ChatGPT, Perplexity, DeepSeek, Google)">
               🚀 Search in <span id="searchSelectedAiName">Google Gemini & Web</span> ↗
@@ -678,7 +678,7 @@ if (document.readyState === 'loading') {
             </button>
           </div>
           <span id="aiStatusNote" style="font-size: 12px; color: var(--text-muted);">
-            Active Model: Google Gemini Flash • Generates structured solution directly in webpage
+            Active Model: Google Gemini Flash • Searches, scripts, or troubleshoots directly in webpage
           </span>
         </div>
       </div>
@@ -688,7 +688,7 @@ if (document.readyState === 'loading') {
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; flex-wrap:wrap; gap:8px;">
           <h2 style="margin-bottom:0; display:flex; align-items:center; gap:8px;">
             <span id="aiOutputIcon">🤖</span>
-            <span id="aiOutputTitle">AI Diagnostic Solution & Actionable Playbook</span>
+            <span id="aiOutputTitle">AI Solution & Technical Engineering Playbook</span>
           </h2>
           <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button class="secondary" onclick="copyAiOutput()" style="padding:4px 10px; font-size:11px;">
@@ -704,7 +704,7 @@ if (document.readyState === 'loading') {
         <div class="ai-cross-search-bar" style="margin-bottom:14px; padding:10px 14px; background:rgba(30,41,59,0.7); border:1px solid rgba(255,255,255,0.08); border-radius:8px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
           <div style="font-size:12px; color:#cbd5e1; display:flex; align-items:center; gap:6px;">
             <span>🌐</span>
-            <b>Search this incident directly in external AI tools:</b>
+            <b>Search this query directly in external AI tools:</b>
           </div>
           <div style="display:flex; gap:6px; flex-wrap:wrap;">
             <button type="button" class="btn-chip" onclick="searchSelectedAiTool('claude')" style="border-color:#a855f7; color:#c084fc; font-weight:600;" title="Search query in Claude 3.5 Sonnet">🟣 Claude 3.5 ↗</button>
@@ -988,6 +988,6 @@ if (document.readyState === 'loading') {
 </div>
 
 <!-- Load Scripts with Versioned Cache Buster -->
-<script src="app.js?v=4.4.1"></script>
+<script src="app.js?v=4.4.4"></script>
 </body>
 </html>
