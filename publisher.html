@@ -2263,32 +2263,40 @@ async function generateAiPlaybook() {
 
   const platform = document.getElementById("platform").value || "VMware";
 
-  try {
-    const res = await fetch("/api/ai/generate-playbook", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ topic, platform })
-    });
+  const endpoints = [
+    '/api/ai/generate-playbook',
+    'https://ais-pre-xxmatxyjoqmammxyts4ks3-51267175700.asia-southeast1.run.app/api/ai/generate-playbook'
+  ];
 
-    if (res.ok) {
-      const data = await res.json();
-      if (data.title) document.getElementById("title").value = data.title;
-      if (data.category) document.getElementById("category").value = data.category;
-      if (data.content) {
-        document.getElementById("content").value = data.content;
-        const canvas = document.getElementById("onenoteCanvas");
-        if (canvas) canvas.innerHTML = data.content;
-        updateLivePreview();
+  for (const ep of endpoints) {
+    try {
+      const res = await fetch(ep, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ topic, platform })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data.title) document.getElementById("title").value = data.title;
+        if (data.category) document.getElementById("category").value = data.category;
+        if (data.content) {
+          document.getElementById("content").value = data.content;
+          const canvas = document.getElementById("onenoteCanvas");
+          if (canvas) canvas.innerHTML = data.content;
+          updateLivePreview();
+        }
+        showToast("AI playbook drafted successfully with Gemini!", "success");
+        btn.disabled = false;
+        btn.textContent = "✨ Draft Playbook with Gemini";
+        return;
       }
-      showToast("AI playbook drafted successfully with Gemini!", "success");
-      return;
+    } catch (err) {
+      console.warn(`Playbook endpoint (${ep}) offline:`, err);
     }
-  } catch (err) {
-    console.warn("Server AI route offline, using in-app diagnostic generator:", err);
-  } finally {
-    btn.disabled = false;
-    btn.textContent = "✨ Draft Playbook with Gemini";
   }
+  btn.disabled = false;
+  btn.textContent = "✨ Draft Playbook with Gemini";
 
   // Client-Side Intelligent Playbook Generation (works on GitHub Pages without server)
   const draftTitle = topic.length > 5 ? topic.charAt(0).toUpperCase() + topic.slice(1) : `${platform}: Diagnostic & Remediation Playbook`;

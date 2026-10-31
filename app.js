@@ -58,6 +58,25 @@ function showToast(msg, type = 'info') {
 }
 window.showToast = showToast;
 
+// Live Cloud AI Backend Endpoint (Enables real Gemini AI on GitHub Pages & static hosts)
+const CLOUD_API_BACKEND = 'https://ais-pre-xxmatxyjoqmammxyts4ks3-51267175700.asia-southeast1.run.app';
+
+function getApiEndpoint(path) {
+  const host = (typeof window !== 'undefined' && window.location) ? window.location.hostname : '';
+  if (!host || host === 'localhost' || host === '127.0.0.1' || host.includes('.run.app')) {
+    return path;
+  }
+  try {
+    const custom = localStorage.getItem('sysadminiq_api_backend');
+    if (custom && custom.trim()) {
+      return custom.trim().replace(/\/+$/, '') + path;
+    }
+  } catch (e) {}
+  return `${CLOUD_API_BACKEND}${path}`;
+}
+window.getApiEndpoint = getApiEndpoint;
+window.CLOUD_API_BACKEND = CLOUD_API_BACKEND;
+
 const LOCAL_KEY = 'sysAdminIQKB_v420';
 const LEGACY_KEY = 'vmwareTroubleshootingKB_v23';
 const PREVIOUS_KEY = 'systemAdminTroubleshootingKB_v25';
@@ -2334,41 +2353,52 @@ async function submitAiQuery() {
     detectedPlatform = 'Microsoft Azure';
   }
 
-  // 1. Attempt server-side Multi-Model AI API with 25s timeout guard
-  try {
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 25000);
-    const res = await fetch('/api/ai/diagnose', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ prompt: query, platform: detectedPlatform, model: selectedAi }),
-      signal: controller.signal
-    });
-    clearTimeout(timeoutId);
+  // 1. Attempt server-side Multi-Model AI API with fallback to Live Cloud AI Backend
+  let apiSuccess = false;
+  const endpointsToTry = [
+    getApiEndpoint('/api/ai/diagnose'),
+    `${CLOUD_API_BACKEND}/api/ai/diagnose`
+  ].filter((v, i, a) => a.indexOf(v) === i);
 
-    if (res.ok) {
-      const data = await res.json();
-      if (data && data.response && data.response.trim() && data.response !== 'No diagnosis generated.') {
-        lastAiSolution = data.response;
-        if (outContent) outContent.innerHTML = formatArticleContent(lastAiSolution);
-        return;
+  for (const endpoint of endpointsToTry) {
+    try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 25000);
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: query, platform: detectedPlatform, model: selectedAi }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.response && data.response.trim() && data.response !== 'No diagnosis generated.') {
+          lastAiSolution = data.response;
+          if (outContent) outContent.innerHTML = formatArticleContent(lastAiSolution);
+          apiSuccess = true;
+          break;
+        }
       }
-    }
-  } catch (err) {
-    console.warn('Backend server AI route offline or timed out, using high-fidelity in-app diagnostic knowledge engine:', err);
-  } finally {
-    if (runBtn) {
-      runBtn.disabled = false;
-      const shortNames = {
-        gemini: 'Google Gemini',
-        chatgpt: 'ChatGPT 4o',
-        claude: 'Claude 3.5 Sonnet',
-        perplexity: 'Perplexity',
-        deepseek: 'DeepSeek'
-      };
-      runBtn.textContent = `⚡ Troubleshoot Incident with ${shortNames[selectedAi] || 'AI'}`;
+    } catch (err) {
+      console.warn(`AI endpoint (${endpoint}) offline or unreachable:`, err?.message || err);
     }
   }
+
+  if (runBtn) {
+    runBtn.disabled = false;
+    const shortNames = {
+      gemini: 'Google Gemini',
+      chatgpt: 'ChatGPT 4o',
+      claude: 'Claude 3.5 Sonnet',
+      perplexity: 'Perplexity',
+      deepseek: 'DeepSeek'
+    };
+    runBtn.textContent = `⚡ Troubleshoot Incident with ${shortNames[selectedAi] || 'AI'}`;
+  }
+
+  if (apiSuccess) return;
 
   // 2. High-Fidelity In-App Diagnostic Knowledge Engine (Offline & Static Resilient)
   lastAiSolution = generateInAppAiDiagnosis(query, detectedPlatform, selectedAi);
@@ -2395,18 +2425,28 @@ async function submitAiFollowUp() {
   loadingBubble.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
   let reply = '';
-  try {
-    const res = await fetch('/api/ai/diagnose', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ followUp: q, history: lastAiSolution, model: selectedAi })
-    });
-    if (res.ok) {
-      const data = await res.json();
-      reply = data.response;
+  const endpointsToTry = [
+    getApiEndpoint('/api/ai/diagnose'),
+    `${CLOUD_API_BACKEND}/api/ai/diagnose`
+  ].filter((v, i, a) => a.indexOf(v) === i);
+
+  for (const endpoint of endpointsToTry) {
+    try {
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ followUp: q, history: lastAiSolution, model: selectedAi })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.response) {
+          reply = data.response;
+          break;
+        }
+      }
+    } catch (err) {
+      console.warn(`Follow-up endpoint (${endpoint}) error:`, err?.message || err);
     }
-  } catch (err) {
-    console.warn('Backend follow-up route error:', err);
   }
 
   if (!reply) {
