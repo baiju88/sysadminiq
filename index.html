@@ -551,107 +551,6 @@ if (document.readyState === 'loading') {
           </button>
         </div>
 
-        <!-- Suggested Troubleshooting Prompts: VMware, Windows, Linux, Cisco UCS, AWS, Azure, and Custom Prompts -->
-        <div class="prompt-select-bar">
-          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
-            <div style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing:0.04em;">
-              Suggested Troubleshooting Prompts & Scenarios (Dropdowns & Categories)
-            </div>
-            <div style="display:flex; gap:6px;">
-              <button type="button" class="btn-chip" onclick="saveCurrentAsCustomPrompt()" title="Save whatever is typed in the incident description box as a reusable Custom Prompt">
-                💾 Save as Custom Prompt
-              </button>
-              <button type="button" class="btn-chip" onclick="clearCustomPrompts()" title="Reset saved custom prompts" style="color:#f87171;">
-                🗑️ Reset Custom
-              </button>
-            </div>
-          </div>
-
-          <!-- Multi-Platform Dropdown Selector -->
-          <div class="prompt-select-top">
-            <select id="troubleshootingPromptDropdown" class="prompt-select" onchange="onSelectTroubleshootingPrompt(this.value)">
-              <option value="">-- Choose a Suggested Troubleshooting Prompt (VMware, Windows, Linux, Cisco UCS, AWS, Azure, Custom) --</option>
-              
-              <optgroup label="🔴 VMware vSphere & vSAN">
-                <option value="VMware ESXi host PSOD with NOT_IMPLEMENTED in vmkernel. Analyze root cause, coredump extraction and recovery steps.">🔴 VMware: ESXi host PSOD NOT_IMPLEMENTED vmkernel crash</option>
-                <option value="VMware vSAN: Disk group degraded due to physical drive permanent error. Run health check and trigger non-disruptive disk rebuild.">🔴 VMware: vSAN disk group degraded & storage rebuild</option>
-                <option value="VMware vCenter: VCSA 8.0 services failed to start (vmware-vpxd crash) due to PostgreSQL /storage/seat 100% disk full.">🔴 VMware: vCenter VCSA vmware-vpxd crash (/storage/seat 100% full)</option>
-                <option value="VMware VM stun & snapshot consolidation failure: Locked file .vmdk by backup proxy. Force unlock and snapshot consolidation without downtime.">🔴 VMware: VM stun & locked .vmdk snapshot consolidation failure</option>
-                <option value="VMware vSphere DVS: Virtual machine lost network connectivity after vMotion. Check VLAN trunking and physical uplinks.">🔴 VMware: DVS virtual switch packet drop after vMotion</option>
-              </optgroup>
-
-              <optgroup label="🪟 Windows Server & Active Directory">
-                <option value="Windows Server: Kerberos Pre-Authentication Failure Event ID 4771 with Failure Code 0x18. Remediate account lockouts.">🪟 Windows: Kerberos Event ID 4771 Failure Code 0x18 (Account Lockout)</option>
-                <option value="Active Directory: Domain Controller replication error 8453 (Replication access was denied). Check RPC dynamic ports and ACL permissions.">🪟 Windows: AD DC replication error 8453 (Access Denied / RPC)</option>
-                <option value="Windows DFS-R: Replication backlog accumulating and staging folder quota exceeded. Clear dirty shutdown state and reseed.">🪟 Windows: DFS-R replication backlog & staging folder quota</option>
-                <option value="Hyper-V: VSS backup writer failure Event ID 8193 with 0x800423f3. Troubleshoot shadow copy storage and restart Volume Shadow Copy.">🪟 Windows: Hyper-V VSS writer failure 0x800423f3 shadow copy</option>
-                <option value="Windows DNS Server: DNS server fails to scavenge stale resource records. Remediate aging settings and tombstone replication.">🪟 Windows: DNS server failing to scavenge stale records</option>
-              </optgroup>
-
-              <optgroup label="🐧 Enterprise Linux & Kernel">
-                <option value="Linux: System high iowait with kswapd0 100% CPU. Diagnose memory pressure, vm.dirty_ratio, and NVMe disk bottleneck.">🐧 Linux: kswapd0 100% CPU, memory pressure & high iowait</option>
-                <option value="Linux systemd-oomd: Critical production process terminated by kernel OOM killer. Inspect cgroup memory limit and dmesg traces.">🐧 Linux: Kernel OOM-killer killed critical production daemon</option>
-                <option value="Linux Filesystem: XFS / EXT4 metadata corruption forced read-only remount. Perform emergency xfs_repair / fsck with journal rollback.">🐧 Linux: Filesystem forced read-only remount (XFS/EXT4 corruption)</option>
-                <option value="Linux Kernel Panic: NMI watchdog bug: soft lockup - CPU#4 stuck for 23s! Identify offending driver and tune kernel scheduler.">🐧 Linux: Kernel panic NMI watchdog soft lockup CPU stuck</option>
-                <option value="Linux LVM: Thin-pool metadata space exhausted (100% full) causing frozen writes. Extend metadata pool safely.">🐧 Linux: LVM thin-pool metadata 100% full (frozen I/O writes)</option>
-              </optgroup>
-
-              <optgroup label="🌉 Cisco UCS & Fabric Interconnect">
-                <option value="Cisco UCS Manager: Fabric Interconnect Subordinate cluster state degraded. Check VIP failover and Ethernet uplink.">🌉 Cisco UCS: FI Subordinate Degraded Cluster state & VIP failover</option>
-                <option value="Cisco UCS: Blade Server chassis thermal critical alarm & DIMM correctable ECC error limit reached. Diagnostic policy and replacement.">🌉 Cisco UCS: Blade DIMM ECC correctable error threshold & thermal alarm</option>
-                <option value="Cisco UCS: vNIC / vHBA fabric failover not occurring during primary FI reboot. Verify pinning and uplink trunking.">🌉 Cisco UCS: vNIC/vHBA failover dropped during FI reboot</option>
-                <option value="Cisco UCS: Service Profile association failed with 'out-of-compute-resources'. Check vNIC templates and pool availability.">🌉 Cisco UCS: Service Profile association failure (out of compute resources)</option>
-                <option value="Cisco UCS Chassis: Power supply redundancy lost in Chassis 1. Diagnose PSU input AC feed failure and power budgeting.">🌉 Cisco UCS: Chassis power supply redundancy lost (PSU AC fault)</option>
-              </optgroup>
-
-              <optgroup label="☁️ AWS Cloud Infrastructure">
-                <option value="AWS EC2: Instance reachability 1/2 Status Check failed after kernel update. Attach EBS root volume to rescue instance and restore GRUB.">☁️ AWS: EC2 1/2 Status Check failed (kernel panic / GRUB rescue)</option>
-                <option value="AWS EBS: io2 volume experiencing severe IOPS throttling with 100% volume queue length. Remediate burst balance and Provisioned IOPS.">☁️ AWS: EBS volume IOPS throttling & 100% queue length latency</option>
-                <option value="AWS Lambda: Lambda cold start timeouts with VPC ENI attachment delays. Diagnose subnets, security group limits, and NAT Gateway saturation.">☁️ AWS: Lambda VPC ENI cold start timeout & NAT Gateway saturation</option>
-                <option value="AWS ALB: Application Load Balancer throwing 502 Bad Gateway. Inspect target group health checks, keep-alive headers, and backend connection drops.">☁️ AWS: ALB 502 Bad Gateway (target group connection drop)</option>
-                <option value="AWS S3: AccessDenied (403) on cross-account IAM role assuming with KMS Customer Managed Key. Verify KMS Key Policy and Bucket Policy.">☁️ AWS: S3 403 AccessDenied with cross-account KMS Key Policy</option>
-              </optgroup>
-
-              <optgroup label="🔷 Microsoft Azure Cloud">
-                <option value="Azure VM: Windows/Linux VM completely unreachable via Bastion and RDP. Remediate Network Security Group rule conflict and Azure Serial Console rescue.">🔷 Azure: VM unreachable via Bastion/RDP (NSG lock & Serial Console)</option>
-                <option value="Azure Disk: Premium SSD OS disk hitting max IOPS burst limit causing SQL Server high write latency. Upgrade to Azure Elastic SAN / Ultra Disk.">🔷 Azure: Premium SSD OS disk IOPS burst exhausted (SQL latency)</option>
-                <option value="Azure AD Connect: Directory synchronization error 'InvalidSoftMatch' / duplicate UPN conflict. Remediate cloud anchor and SMTP matching.">🔷 Azure: Azure AD Connect sync error InvalidSoftMatch (UPN conflict)</option>
-                <option value="Azure Kubernetes Service (AKS): Cluster nodes stuck in NotReady status due to container runtime disk pressure. Drain node and cleanup rootfs.">🔷 Azure: AKS NodeNotReady due to container runtime disk pressure</option>
-                <option value="Azure ExpressRoute: Dedicated peering BGP session state dropped to Connect/Active. Troubleshoot primary/secondary circuit MSEE failover.">🔷 Azure: ExpressRoute BGP peering session dropped (MSEE failover)</option>
-              </optgroup>
-
-              <optgroup label="🛠️ Enterprise IT Scenarios">
-                <option value="Multi-tier disaster recovery failover test: SAN replication consistency group split, DNS redirection, and VM boot ordering validation.">🛠️ Scenario: Multi-tier DR failover test & SAN replication split</option>
-                <option value="Ransomware quarantine incident: Network segmentation isolate infected VLAN, revoke compromised Kerberos tickets, and trigger immutable snapshot restore.">🛠️ Scenario: Ransomware VLAN quarantine & immutable backup recovery</option>
-                <option value="SSL/TLS certificate chain expiration emergency renewal: Wildcard certificate expired on reverse proxy and load balancers.">🛠️ Scenario: Emergency wildcard SSL/TLS certificate renewal</option>
-                <option value="SAN Fibre Channel storage path flapping: Host HBAs dropping LUNs due to CRC bit errors on SFP+ transceiver.">🛠️ Scenario: FC SAN storage path flapping & SFP CRC bit errors</option>
-              </optgroup>
-
-              <optgroup label="⭐ My Saved Custom Prompts" id="customPromptsOptgroup">
-                <!-- Dynamically populated from localStorage -->
-              </optgroup>
-            </select>
-          </div>
-
-          <!-- Quick Platform Filter Pills -->
-          <div class="prompt-filter-pills" id="promptFilterPills">
-            <span style="font-size:11px; color:#64748b; font-weight:700;">FILTER BY:</span>
-            <button type="button" class="prompt-pill active" onclick="filterPromptCategory('all', this)">All Platforms</button>
-            <button type="button" class="prompt-pill" onclick="filterPromptCategory('VMware', this)">🔴 VMware</button>
-            <button type="button" class="prompt-pill" onclick="filterPromptCategory('Windows', this)">🪟 Windows</button>
-            <button type="button" class="prompt-pill" onclick="filterPromptCategory('Linux', this)">🐧 Linux</button>
-            <button type="button" class="prompt-pill" onclick="filterPromptCategory('Cisco UCS', this)">🌉 Cisco UCS</button>
-            <button type="button" class="prompt-pill" onclick="filterPromptCategory('AWS', this)">☁️ AWS</button>
-            <button type="button" class="prompt-pill" onclick="filterPromptCategory('Azure', this)">🔷 Azure</button>
-            <button type="button" class="prompt-pill" onclick="filterPromptCategory('Custom', this)">⭐ Custom</button>
-          </div>
-        </div>
-
-        <!-- Dynamic Quick Incident Prompt Chips Grid -->
-        <div class="ai-prompts-grid" id="aiPromptsGrid">
-          <!-- Dynamically populated and filtered by filterPromptCategory() -->
-        </div>
-
         <!-- Single Dedicated Full-Width Incident / Problem Column (No platform selection required) -->
         <div class="ai-incident-column" style="margin-bottom:12px;">
           <label for="aiPromptInput" style="display:block; font-size:12px; font-weight:700; color:#94a3b8; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.04em;">
@@ -988,6 +887,6 @@ if (document.readyState === 'loading') {
 </div>
 
 <!-- Load Scripts with Versioned Cache Buster -->
-<script src="app.js?v=4.4.4"></script>
+<script src="app.js?v=4.4.5"></script>
 </body>
 </html>
