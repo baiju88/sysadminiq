@@ -666,9 +666,12 @@ if (document.readyState === 'loading') {
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:center;">
             <button id="runAiBtn" class="primary" onclick="submitAiQuery()">
               ✨ Troubleshoot Incident In-Webpage
+            </button>
+            <button id="searchAiToolBtn" class="primary" onclick="searchSelectedAiTool()" style="background:linear-gradient(135deg, #1e40af, #7c3aed); border-color:#818cf8; color:#ffffff; font-weight:700;" title="Search query directly on the selected AI tool (Claude, ChatGPT, Perplexity, DeepSeek, Google)">
+              🚀 Search in <span id="searchSelectedAiName">Google Gemini & Web</span> ↗
             </button>
             <button id="copyPromptBtn" class="secondary" onclick="copyEngineeredPrompt()" title="Copy prompt with engineered sysadmin context">
               📋 Copy Prompt
@@ -687,7 +690,7 @@ if (document.readyState === 'loading') {
             <span id="aiOutputIcon">🤖</span>
             <span id="aiOutputTitle">AI Diagnostic Solution & Actionable Playbook</span>
           </h2>
-          <div style="display:flex; gap:8px;">
+          <div style="display:flex; gap:8px; flex-wrap:wrap;">
             <button class="secondary" onclick="copyAiOutput()" style="padding:4px 10px; font-size:11px;">
               📋 Copy Solution
             </button>
@@ -696,6 +699,22 @@ if (document.readyState === 'loading') {
             </button>
           </div>
         </div>
+
+        <!-- Cross-Engine AI Query Bar (Direct 1-Click Search) -->
+        <div class="ai-cross-search-bar" style="margin-bottom:14px; padding:10px 14px; background:rgba(30,41,59,0.7); border:1px solid rgba(255,255,255,0.08); border-radius:8px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+          <div style="font-size:12px; color:#cbd5e1; display:flex; align-items:center; gap:6px;">
+            <span>🌐</span>
+            <b>Search this incident directly in external AI tools:</b>
+          </div>
+          <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            <button type="button" class="btn-chip" onclick="searchSelectedAiTool('claude')" style="border-color:#a855f7; color:#c084fc; font-weight:600;" title="Search query in Claude 3.5 Sonnet">🟣 Claude 3.5 ↗</button>
+            <button type="button" class="btn-chip" onclick="searchSelectedAiTool('chatgpt')" style="border-color:#10b981; color:#34d399; font-weight:600;" title="Search query in ChatGPT 4o">🟢 ChatGPT ↗</button>
+            <button type="button" class="btn-chip" onclick="searchSelectedAiTool('perplexity')" style="border-color:#0284c7; color:#38bdf8; font-weight:600;" title="Search query with Perplexity Web Grounding">🔵 Perplexity ↗</button>
+            <button type="button" class="btn-chip" onclick="searchSelectedAiTool('deepseek')" style="border-color:#ef4444; color:#f87171; font-weight:600;" title="Search query with DeepSeek Reasoning">🔴 DeepSeek ↗</button>
+            <button type="button" class="btn-chip" onclick="searchSelectedAiTool('gemini')" style="border-color:#f59e0b; color:#fbbf24; font-weight:600;" title="Search query on Google Web">✨ Google ↗</button>
+          </div>
+        </div>
+
         <div id="aiOutputContent" class="article-detail" style="background:var(--bg-card); padding:20px; border-radius:8px; border:1px solid var(--border); color:var(--text-primary);"></div>
 
         <!-- Interactive In-Page Follow-Ups -->
@@ -963,6 +982,9 @@ if (document.readyState === 'loading') {
       SysAdminIQ In-App Document Inspection
     </div>
   </div>
+<!-- Toast Notification -->
+<div id="toast" class="toast">
+  <span id="toastMsg">Notification</span>
 </div>
 
 <!-- Load Scripts -->

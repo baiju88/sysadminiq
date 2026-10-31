@@ -2715,3 +2715,68 @@ table.onenote-table tr:nth-child(even) td {
   border-color: #bfdbfe !important;
 }
 
+/* ==========================================================================
+   Toast Notification System (Floating & Non-Blocking)
+   ========================================================================== */
+.toast {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  background: var(--bg-card, #0f172a);
+  border: 1px solid var(--border, #1e293b);
+  padding: 12px 18px;
+  border-radius: 8px;
+  color: var(--text-primary, #f8fafc);
+  font-size: 13px;
+  font-weight: 500;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
+  transform: translateY(80px);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 440px;
+  line-height: 1.45;
+}
+
+.toast.show {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.toast.success {
+  border-color: #10b981;
+  border-left: 4px solid #10b981;
+}
+
+.toast.error {
+  border-color: #ef4444;
+  border-left: 4px solid #ef4444;
+}
+
+.toast.warning {
+  border-color: #f59e0b;
+  border-left: 4px solid #f59e0b;
+}
+
+.toast.info {
+  border-color: #3b82f6;
+  border-left: 4px solid #3b82f6;
+}
+
+[data-theme="light"] .toast {
+  background: #ffffff !important;
+  color: #0f172a !important;
+  border: 1px solid #cbd5e1 !important;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.15), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+}
+
+[data-theme="light"] .toast.success { border-left: 4px solid #10b981 !important; }
+[data-theme="light"] .toast.error { border-left: 4px solid #ef4444 !important; }
+[data-theme="light"] .toast.warning { border-left: 4px solid #f59e0b !important; }
+[data-theme="light"] .toast.info { border-left: 4px solid #3b82f6 !important; }
+

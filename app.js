@@ -30,6 +30,34 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, m => ({
 
 const arr = v => Array.isArray(v) ? v : (v ? String(v).split(/\n|\r\n/).map(x => x.trim()).filter(Boolean) : []);
 
+// Floating Toast Notification System (Offline & DOM Resilient)
+function showToast(msg, type = 'info') {
+  let toast = document.getElementById('toast');
+  let text = document.getElementById('toastMsg');
+
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'toast';
+    toast.className = 'toast';
+    text = document.createElement('span');
+    text.id = 'toastMsg';
+    toast.appendChild(text);
+    document.body.appendChild(toast);
+  }
+
+  if (text) {
+    text.innerHTML = msg;
+  }
+
+  toast.className = `toast show ${type}`;
+
+  if (toast._timer) clearTimeout(toast._timer);
+  toast._timer = setTimeout(() => {
+    toast.classList.remove('show');
+  }, 4000);
+}
+window.showToast = showToast;
+
 const LOCAL_KEY = 'sysAdminIQKB_v420';
 const LEGACY_KEY = 'vmwareTroubleshootingKB_v23';
 const PREVIOUS_KEY = 'systemAdminTroubleshootingKB_v25';
@@ -1847,6 +1875,7 @@ function selectAiModel(model) {
 
   const note = $('#aiStatusNote');
   const runBtn = $('#runAiBtn');
+  const searchName = $('#searchSelectedAiName');
   const outTitle = $('#aiOutputTitle');
 
   const names = {
@@ -1857,14 +1886,81 @@ function selectAiModel(model) {
     deepseek: 'DeepSeek (Reasoning & CLI)'
   };
 
+  const shortNames = {
+    gemini: 'Google Gemini & Web',
+    chatgpt: 'ChatGPT 4o',
+    claude: 'Claude 3.5 Sonnet',
+    perplexity: 'Perplexity',
+    deepseek: 'DeepSeek'
+  };
+
   if (note) note.textContent = `Active Model: ${names[model] || 'AI'} • Troubleshoots & searches directly in webpage`;
   if (runBtn) {
-    runBtn.textContent = `⚡ Troubleshoot Incident with ${names[model] ? names[model].split(' ')[0] : 'AI'}`;
+    runBtn.textContent = `⚡ Troubleshoot Incident with ${shortNames[model] || 'AI'}`;
+  }
+  if (searchName) {
+    searchName.textContent = shortNames[model] || 'AI Tool';
   }
   if (outTitle) {
     outTitle.textContent = `${names[model] || 'AI'} Diagnostic Solution & Actionable Playbook`;
   }
 }
+
+function searchSelectedAiTool(targetModel) {
+  const modelToUse = targetModel || selectedAi || 'gemini';
+  const input = $('#aiPromptInput');
+  const query = (input?.value || '').trim();
+  if (!query) {
+    showToast('Please enter an incident description or error message to search.', 'warning');
+    input?.focus();
+    return;
+  }
+
+  // Pre-copy the query to clipboard so the user can easily paste if needed
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(query).catch(() => {});
+  }
+
+  const encodedQ = encodeURIComponent(query);
+  let targetUrl = '';
+  let modelName = 'AI Tool';
+
+  switch (modelToUse) {
+    case 'claude':
+      modelName = 'Claude 3.5 Sonnet';
+      targetUrl = `https://claude.ai/new?q=${encodedQ}`;
+      break;
+    case 'chatgpt':
+      modelName = 'ChatGPT 4o';
+      targetUrl = `https://chatgpt.com/?q=${encodedQ}`;
+      break;
+    case 'perplexity':
+      modelName = 'Perplexity AI';
+      targetUrl = `https://www.perplexity.ai/search?q=${encodedQ}`;
+      break;
+    case 'deepseek':
+      modelName = 'DeepSeek';
+      targetUrl = `https://chat.deepseek.com/?q=${encodedQ}`;
+      break;
+    case 'gemini':
+    default:
+      modelName = 'Google Gemini & Web';
+      targetUrl = `https://www.google.com/search?q=${encodeURIComponent(query + ' troubleshooting guide')}`;
+      break;
+  }
+
+  showToast(`📋 Copied prompt! Opening ${modelName}...`, 'success');
+  let win = null;
+  try {
+    win = window.open(targetUrl, '_blank', 'noopener,noreferrer');
+  } catch (err) {
+    console.warn('Popup opening blocked or restricted:', err);
+  }
+  if (!win) {
+    showToast(`Popup restricted. Click to search: <a href="${targetUrl}" target="_blank" rel="noopener noreferrer" style="color:#60a5fa;text-decoration:underline;font-weight:700;">Open ${modelName} ↗</a>`, 'info');
+  }
+}
+window.searchSelectedAiTool = searchSelectedAiTool;
 
 const ALL_TROUBLESHOOTING_PROMPTS = [
   // VMware
@@ -2210,27 +2306,38 @@ async function submitAiQuery() {
     thread.innerHTML = '';
   }
 
-  // Robust Technology Detection from Query Keywords
+  // Robust Multi-Technology Detection from Query Keywords
   let detectedPlatform = 'Enterprise Systems';
   const qLower = query.toLowerCase();
-  if (/vmware|esxi|vcenter|vsan|dvs|vmotion|vpxd|vmkernel|psod|vmdk|vmfs|vmnic/.test(qLower)) {
+  const hasVmware = /vmware|esxi|vcenter|vsan|dvs|vmotion|vpxd|vmkernel|psod|vmdk|vmfs|vmnic/.test(qLower);
+  const hasCisco = /cisco|ucs|fabric interconnect|fi-[ab]|blade|chassis|vhba|vnic|intersight|cimc/.test(qLower);
+  const hasWindows = /windows|active directory|kerberos|domain controller|ad dc|dfs-r|dfsr|hyper-v|vss|dns server|powershell|gpo/.test(qLower);
+  const hasLinux = /linux|kswapd|iowait|oom|systemd|xfs|ext4|nmi watchdog|lvm|thin-pool|rhel|ubuntu|centos|sysctl|journalctl/.test(qLower);
+  const hasAws = /aws|ec2|ebs|lambda|alb|s3|cloudwatch|kms|route 53|target group/.test(qLower);
+  const hasAzure = /azure|bastion|aks|expressroute|invalidsoftmatch|nsg|msee|premium ssd/.test(qLower);
+
+  if (hasVmware && hasCisco) {
+    detectedPlatform = 'Cisco UCS & VMware vSphere';
+  } else if (hasWindows && hasLinux) {
+    detectedPlatform = 'Windows & Linux Hybrid Infrastructure';
+  } else if (hasVmware) {
     detectedPlatform = 'VMware vSphere';
-  } else if (/cisco|ucs|fabric interconnect|fi-[ab]|blade|chassis|vhba|vnic/.test(qLower)) {
+  } else if (hasCisco) {
     detectedPlatform = 'Cisco UCS';
-  } else if (/windows|active directory|kerberos|domain controller|ad dc|dfs-r|dfsr|hyper-v|vss|dns server|powershell|gpo/.test(qLower)) {
+  } else if (hasWindows) {
     detectedPlatform = 'Windows Server';
-  } else if (/linux|kswapd|iowait|oom|systemd|xfs|ext4|nmi watchdog|lvm|thin-pool|rhel|ubuntu|centos|sysctl|journalctl/.test(qLower)) {
+  } else if (hasLinux) {
     detectedPlatform = 'Enterprise Linux';
-  } else if (/aws|ec2|ebs|lambda|alb|s3|cloudwatch|kms|route 53|target group/.test(qLower)) {
+  } else if (hasAws) {
     detectedPlatform = 'AWS Cloud';
-  } else if (/azure|bastion|aks|expressroute|invalidsoftmatch|nsg|msee|premium ssd/.test(qLower)) {
+  } else if (hasAzure) {
     detectedPlatform = 'Microsoft Azure';
   }
 
-  // 1. Attempt server-side Multi-Model AI API with 12s timeout guard
+  // 1. Attempt server-side Multi-Model AI API with 25s timeout guard
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 12000);
+    const timeoutId = setTimeout(() => controller.abort(), 25000);
     const res = await fetch('/api/ai/diagnose', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2252,14 +2359,14 @@ async function submitAiQuery() {
   } finally {
     if (runBtn) {
       runBtn.disabled = false;
-      const names = {
-        gemini: 'Google Gemini Flash',
+      const shortNames = {
+        gemini: 'Google Gemini',
         chatgpt: 'ChatGPT 4o',
         claude: 'Claude 3.5 Sonnet',
         perplexity: 'Perplexity',
         deepseek: 'DeepSeek'
       };
-      runBtn.textContent = `⚡ Troubleshoot Incident with ${names[selectedAi] || 'AI'}`;
+      runBtn.textContent = `⚡ Troubleshoot Incident with ${shortNames[selectedAi] || 'AI'}`;
     }
   }
 
@@ -2332,13 +2439,15 @@ function generateInAppAiDiagnosis(query, platform, model) {
 
   // Technology classification flags
   const isVMware = /vmware|esxi|vcenter|vsan|dvs|vmotion|vpxd|vmkernel|psod|vmdk|vmfs|vmnic/.test(q) || /vmware|esxi|vcenter|vsan/.test((platform || '').toLowerCase());
-  const isCisco = /cisco|ucs|fabric interconnect|fi-[ab]|blade|chassis|vhba|vnic/.test(q) || /cisco|ucs/.test((platform || '').toLowerCase());
+  const isCisco = /cisco|ucs|fabric interconnect|fi-[ab]|blade|chassis|vhba|vnic|intersight|cimc/.test(q) || /cisco|ucs/.test((platform || '').toLowerCase());
   const isWindows = /windows|active directory|kerberos|domain controller|ad dc|dfs-r|dfsr|hyper-v|vss|dns server|powershell|gpo/.test(q) || /windows/.test((platform || '').toLowerCase());
   const isLinux = /linux|kswapd|iowait|oom|systemd|xfs|ext4|nmi watchdog|lvm|thin-pool|rhel|ubuntu|centos|sysctl|journalctl/.test(q) || /linux/.test((platform || '').toLowerCase());
   const isAzure = /azure|bastion|aks|expressroute|invalidsoftmatch|nsg|msee|premium ssd/.test(q) || /azure/.test((platform || '').toLowerCase());
   const isAWS = /aws|ec2|ebs|lambda|alb|s3|cloudwatch|kms|route 53|target group/.test(q) || /aws/.test((platform || '').toLowerCase());
 
-  let targetPlatform = isVMware ? 'VMware vSphere' :
+  let targetPlatform = (isVMware && isCisco) ? 'Cisco UCS & VMware vSphere' :
+                       (isWindows && isLinux) ? 'Windows & Linux Hybrid' :
+                       isVMware ? 'VMware vSphere' :
                        isCisco ? 'Cisco UCS' :
                        isWindows ? 'Windows Server' :
                        isLinux ? 'Enterprise Linux' :
@@ -2353,9 +2462,70 @@ function generateInAppAiDiagnosis(query, platform, model) {
   let verificationSteps = [];
 
   // ==========================================
+  // 0. CISCO UCS HARDWARE & ESXI INSTALLATION / DEPLOYMENT (HYBRID)
+  // ==========================================
+  if ((isCisco && isVMware) || (isCisco && (q.includes('esxi') || q.includes('install') || q.includes('hardware') || q.includes('deploy') || q.includes('blade') || q.includes('kvm') || q.includes('boot'))) || (isVMware && q.includes('cisco')) || (q.includes('esxi') && (q.includes('cisco') || q.includes('ucs') || q.includes('hardware')))) {
+    detectedCategory = 'Cisco UCS Hardware Deployment & VMware ESXi Installation (B-Series Blade & C-Series Rack)';
+    targetPlatform = 'Cisco UCS & VMware vSphere';
+    rootCause = `Deploying VMware ESXi to Cisco UCS B-Series blade or C-Series rack servers requires strict alignment between server hardware, CIMC/UCSM firmware, and the specialized <strong>Cisco-Customized ESXi Image</strong>.<br><br>
+<b>Critical Version Reality & Grounding:</b> The current general enterprise production release of VMware ESXi is <strong>vSphere 8.0 Update 3</strong> (VMware ESXi 9.0 is an upcoming major release not yet in general release). When deploying to Cisco UCS M5, M6, or M7 servers, you must target supported vSphere 7.0 / 8.0 releases or validated technical preview builds.<br><br>
+<b>Key Technical Prerequisites & Failure Mechanisms:</b><br>
+1. <b>Cisco Custom ISO Requirement:</b> Standard vanilla VMware ESXi ISOs lack the proprietary drivers for Cisco VIC (Virtual Interface Card, e.g., VIC 1440, 1480, 15411) CNA adapters. Booting vanilla images results in <code>No Network Adapters Detected</code> or undetected local SAS/NVMe RAID controllers.<br>
+2. <b>Cisco UCS Hardware Compatibility List (HCL):</b> UCS Manager (UCSM) / Intersight infrastructure bundle firmware (A/B bundles) must match the driver versions (<code>nenic</code> for Ethernet, <code>nfnic</code> for FCoE/FC).<br>
+3. <b>UCS Boot Policy & Service Profile:</b> The server Service Profile must have an explicit Boot Policy configured (e.g., KVM Virtual Media mapped DVD as primary, followed by Local Disk RAID-1 or SAN boot target WWPN/LUN 0).`;
+    cautionNote = 'Always verify driver-to-firmware parity on the Cisco UCS HCL Tool (ucshcltool.cloudapps.cisco.com) before installation. Do not install vanilla VMware ISOs on Cisco UCS servers; always source the official Cisco Custom ESXi ISO from the Broadcom support portal.';
+    cliCommands = `# ========================================================
+# 1. CISCO UCS MANAGER (UCSM) / CIMC PRE-DEPLOYMENT CHECKS
+# ========================================================
+# Connect to UCS Manager VIP via SSH and check chassis/blade state
+show cluster state
+show chassis
+show server status
+
+# Inspect firmware catalog (ensure BIOS, CIMC, and adapter firmware are aligned)
+show server firmware detail 1/1
+show adapter detail 1/1
+
+# Check Service Profile boot policy and virtual media mapping
+scope org
+show boot-policy
+scope service-profile server 1/1
+show boot-policy
+
+# ========================================================
+# 2. ESXi SHELL POST-INSTALLATION VALIDATION (SSH to Host)
+# ========================================================
+# Verify Cisco VIC driver VIBs are loaded (nenic for network, nfnic for storage)
+esxcli software vib list | grep -iE "cisco|nenic|nfnic"
+
+# Verify physical uplinks (vmnic) created by Cisco VIC adapter
+esxcli network nic list
+
+# Check storage adapters (Cisco VIC FCoE/iSCSI or local MegaRAID controller)
+esxcli storage core adapter list
+esxcli storage core path list
+
+# Test host network reachability to default gateway and Fabric Interconnects
+vmkping -I vmk0 <Gateway_IP> -c 3`;
+    remediationSteps = [
+      '<b>Download Cisco Custom ESXi ISO:</b> Navigate to the Broadcom Support Portal (or Cisco Software Download). Select "VMware vSphere" -> "Custom ISOs" and download the official <b>Cisco Custom Image for ESXi</b> (matching your target UCS M5/M6/M7 hardware generation).',
+      '<b>Configure UCS Service Profile Boot Policy:</b> In UCS Manager (or Cisco Intersight), edit the target server\'s Service Profile: set Boot Order with <b>Virtual Media (vDVD)</b> first, followed by <b>Local Disk</b> (or <b>SAN Boot</b> with primary/secondary vHBA target WWPNs).',
+      '<b>Create Local RAID Volume (If booting local drives):</b> In UCSM Storage Profile or CIMC Web GUI, configure RAID-1 mirror on the front-drive bays using the Cisco FlexStorage / MegaRAID controller.',
+      '<b>Launch KVM & Mount ISO:</b> In UCSM -> Equipment -> Servers -> select Blade/Rack Server -> click <b>Launch KVM Console</b>. In the vKVM menu, click <b>Virtual Media</b> -> <b>Activate Virtual Devices</b> -> <b>Map CD/DVD</b> -> browse and select your downloaded Cisco Custom ESXi ISO.',
+      '<b>Boot & Install ESXi:</b> Power on / reset the server. Press <code>F6</code> (Boot Menu) if needed, select <b>Cisco vKVM-Mapped vDVD</b>, and proceed through the installer. Choose the RAID-1 virtual drive as the target disk.',
+      '<b>Initial DCUI Setup:</b> Upon installation reboot, press <code>F2</code> in the KVM console to access the Direct Console User Interface (DCUI). Configure Static IPv4, Subnet, Default Gateway, DNS, and set the Management VLAN ID matching your UCS vNIC template trunk.'
+    ];
+    verificationSteps = [
+      'Verify Cisco VIC drivers in ESXi shell: <code>esxcli software vib list | grep -i cisco</code> returns active <code>nenic</code> and <code>nfnic</code> VIBs.',
+      'Confirm physical uplinks are UP: <code>esxcli network nic list</code> displays vmnic0 and vmnic1 operating at 20Gbps/40Gbps/100Gbps with link status Up.',
+      'Confirm storage paths: <code>esxcli storage core adapter list</code> shows active local controller or VIC FCoE initiator.',
+      'Validate UCS Manager status: Server Service Profile association state should display <b>OK / Configured</b> without active critical faults.'
+    ];
+
+  // ==========================================
   // 1. VMWARE VSPHERE & VSAN SCENARIOS
   // ==========================================
-  if (q.includes('dvs') || (q.includes('vmotion') && (q.includes('network') || q.includes('vlan') || q.includes('uplink') || q.includes('lost') || q.includes('drop') || q.includes('packet')))) {
+  } else if (q.includes('dvs') || (q.includes('vmotion') && (q.includes('network') || q.includes('vlan') || q.includes('uplink') || q.includes('lost') || q.includes('drop') || q.includes('packet')))) {
     detectedCategory = 'VMware vSphere Distributed Switch (vDS) & vMotion Network Recovery';
     targetPlatform = 'VMware vSphere';
     rootCause = `The virtual machine dropped network reachability immediately following a vMotion migration between ESXi hosts. Common root causes include:<br>
@@ -2745,28 +2915,116 @@ az rest --method POST --uri "/subscriptions/{sub}/resourceGroups/rg-production/p
         'Validate error log streams report clean operational state with zero persistent fault codes.'
       ];
     } else {
-      // Platform-Accurate Baseline Commands (Strictly never outputting AWS commands for other platforms!)
-      detectedCategory = `${targetPlatform} Incident Diagnostic Recovery`;
-      rootCause = `The reported issue for <strong>${esc(query)}</strong> on <strong>${targetPlatform}</strong> indicates an operational service interruption or configuration constraint. Primary contributors include service crash/restart loop, authentication or credential expiration, network port-channel/MTU mismatch, or storage capacity exhaustion.`;
-      cliCommands = `# Diagnostic baseline inspection commands for ${targetPlatform}:\n` + (
-        isVMware ? 'esxcli system version get\nesxcli network nic list\nesxcli storage core path list\ncat /var/log/vmkernel.log | tail -n 30' :
-        isCisco ? 'show cluster state\nshow server inventory\nshow fault\nshow tech-support chassis' :
-        isWindows ? 'Get-Service | Where-Object {$_.Status -ne "Running" -and $_.StartType -eq "Automatic"}\nGet-EventLog -LogName System -EntryType Error -Newest 15\nTest-NetConnection -ComputerName "gateway" -Port 443' :
-        isLinux ? 'systemctl status\njournalctl -xe -p 3 -n 40\ndf -hT\ndmesg -T | grep -iE "error|fail|warn" | tail -n 25' :
-        isAzure ? 'az vm get-instance-view\naz network nic list-effective-nsg\naz network watcher test-connectivity' :
-        isAWS ? 'aws ec2 describe-instance-status\naws health describe-events --filter "eventStatusCodes=open"' :
-        'ping -c 4 127.0.0.1\nnetstat -tuln\nss -tulnp\ncurl -Iv http://localhost'
-      );
-      remediationSteps = [
-        'Audit recently committed configuration changes, network ACLs, and service account credentials.',
-        'Verify physical/virtual network connectivity: confirm MTU consistency (1500 vs 9000 Jumbo Frames) across switches.',
-        'Check disk partition free space: ensure root and data volumes have at least 15% free headroom.',
-        'Perform controlled restart of dependent service daemon and observe log output for clean socket binding.'
-      ];
-      verificationSteps = [
-        'Confirm service health status is Active (Running) and listening on intended TCP/UDP ports.',
-        'Simulate client request or run end-to-end synthetic health check to validate recovery.'
-      ];
+      // Dynamic Intelligent Technical Synthesizer (Zero Generic AI Slop)
+      const hasInstallIntent = /install|deploy|setup|provision|build|image|iso|baremetal|hardware/.test(q);
+      const hasNetworkIntent = /network|vlan|mtu|trunk|uplink|port|routing|gateway|ip|ping|connectivity/.test(q);
+      const hasStorageIntent = /storage|disk|lun|san|raid|volume|multipath|iops|latency|vmdk|partition/.test(q);
+      const hasUpgradeIntent = /upgrade|migrate|migration|update|patch|lifecycle/.test(q);
+
+      if (hasInstallIntent) {
+        detectedCategory = `${targetPlatform} Hardware Provisioning & Software Deployment Playbook`;
+        rootCause = `Analysis and deployment execution plan for <strong>${esc(query)}</strong> on <strong>${targetPlatform}</strong>. OS and hypervisor provisioning requires strict validation of the vendor Hardware Compatibility List (HCL), controller firmware-to-driver parity, verified installation ISO images, and correct boot order targeting.`;
+        cliCommands = (
+          isCisco || isVMware ? `# 1. Check server chassis, firmware, and adapter inventory\nshow cluster state 2>/dev/null || esxcli system version get 2>/dev/null\nshow server firmware detail 1/1 2>/dev/null || esxcli software vib list | grep -i cisco\n\n# 2. Check storage controllers and active network uplinks\nesxcli storage core adapter list 2>/dev/null || show adapter detail\nesxcli network nic list 2>/dev/null` :
+          isLinux ? `# 1. Check system hardware, CPU, memory, and disk architecture\nuname -a\nlscpu\nlsblk -f\n\n# 2. Inspect kernel dmesg for hardware initialization alerts\ndmesg -T | grep -iE "acpi|pci|ahci|nvme|error" | head -n 30` :
+          isWindows ? `# 1. Inspect Windows Server OS architecture and driver state\nGet-ComputerInfo | Select-Object WindowsProductName, OsArchitecture, BiosBIOSVersion\nGet-PnpDevice -Status Error, Degraded\n\n# 2. Inspect disk partitions and volumes\nGet-Disk\nGet-Volume` :
+          isAzure ? `az vm get-instance-view -g "rg-prod" -n "vm-app"\naz disk list -g "rg-prod" -o table` :
+          isAWS ? `aws ec2 describe-instances --filters "Name=instance-state-name,Values=running"\naws ec2 describe-volumes` :
+          `uname -a\nip link show\ndf -h\ndmesg | tail -n 25`
+        );
+        remediationSteps = [
+          'Verify target hardware specifications and minimum compute/storage prerequisites against the official vendor compatibility guide.',
+          'Download official vendor-tailored installer media (avoid vanilla generic ISOs if dedicated vendor firmware/drivers are required).',
+          'Configure server boot policy (Virtual Media / USB / Local RAID / PXE) in management controller (CIMC, iLO, iDRAC, BIOS).',
+          'Initiate installation and assign management IP, subnet mask, default gateway, and correct VLAN tag.'
+        ];
+        verificationSteps = [
+          'Verify management interface responds to ICMP and administrative console (SSH / HTTPS / DCUI) is accessible.',
+          'Confirm all physical network adapters and storage controllers load verified certified device drivers without kernel warnings.'
+        ];
+      } else if (hasNetworkIntent) {
+        detectedCategory = `${targetPlatform} Network Connectivity, Routing & VLAN Isolation Recovery`;
+        rootCause = `Network diagnosis for <strong>${esc(query)}</strong> on <strong>${targetPlatform}</strong>. Primary failure mechanisms include physical uplink flapping, 802.1Q VLAN trunking mismatches, MTU size discrepancies (1500 vs 9000 Jumbo Frames), or stale switch MAC forwarding tables.`;
+        cliCommands = (
+          isVMware ? `esxcli network nic list\nesxcli network vswitch dvs vmware list\nvmkping -I vmk0 <Gateway_IP> -d -s 1472\nesxcli network nic stats get -n vmnic0` :
+          isCisco ? `show interface status\nshow cluster state\nshow interface brief\nshow port-channel summary` :
+          isLinux ? `ip addr show\nip route show\nethtool eth0\nping -c 4 <Gateway_IP>\ntraceroute <Destination_IP>` :
+          isWindows ? `Get-NetAdapter | Select-Object Name, InterfaceDescription, Status, LinkSpeed\nGet-NetIPConfiguration\nTest-NetConnection -ComputerName <Target_IP> -Port 443\nroute print` :
+          isAzure ? `az network nic list-effective-nsg -g "rg-prod" -n "vm-nic"\naz network watcher test-connectivity --source-resource "vm-id" --dest-address "target-ip"` :
+          isAWS ? `aws ec2 describe-security-groups\naws ec2 describe-network-interfaces` :
+          `ip link\nip route\nping -c 3 8.8.8.8`
+        );
+        remediationSteps = [
+          'Audit upstream physical switch port configuration to ensure the target VLAN ID is permitted in the active 802.1Q trunk.',
+          'Verify MTU consistency end-to-end between host hypervisor/OS, virtual switches, and physical Top-of-Rack (TOR) switches.',
+          'Test bidirectional packet transmission without fragmentation using forced-size ICMP pings.',
+          'Clear stale ARP entries or restart network stack daemon during maintenance window.'
+        ];
+        verificationSteps = [
+          'Confirm 0% packet loss and low latency to default gateway and DNS servers.',
+          'Validate that interface error counters (CRC, dropped packets, collisions) remain at zero.'
+        ];
+      } else if (hasStorageIntent) {
+        detectedCategory = `${targetPlatform} Storage Fabric, LUN Multipathing & Disk Subsystem Remediation`;
+        rootCause = `Storage diagnostic investigation for <strong>${esc(query)}</strong> on <strong>${targetPlatform}</strong>. Contributing triggers include queue depth saturation, Fibre Channel / iSCSI path flapping, disk group degradation, or filesystem space/inode exhaustion.`;
+        cliCommands = (
+          isVMware ? `esxcli storage core adapter list\nesxcli storage core path list\nesxcli storage nmp device list\ndf -h` :
+          isLinux ? `lsblk -f\ndf -hT\ndf -i\niostat -xz 1 5\nlsof | grep '(deleted)' | head -n 20` :
+          isWindows ? `Get-PhysicalDisk\nGet-VirtualDisk\nGet-Volume\nfsutil volume diskfree C:` :
+          `lsblk\ndf -h\niostat 1 3`
+        );
+        remediationSteps = [
+          'Identify degraded physical disks or offline LUN multipathing channels.',
+          'Verify storage controller queue depth and controller battery/cache state.',
+          'Safely free disk volume space or expand volume capacity online without service interruption.',
+          'Rescan storage bus adapters to refresh active active/optimized multipathing paths.'
+        ];
+        verificationSteps = [
+          'Confirm volume disk utilization is maintained below 80% threshold.',
+          'Verify storage latency read/write metrics are within acceptable baseline SLAs (<15ms).'
+        ];
+      } else if (hasUpgradeIntent) {
+        detectedCategory = `${targetPlatform} System Upgrade & Workload Migration Playbook`;
+        rootCause = `Lifecycle upgrade and migration architecture for <strong>${esc(query)}</strong> on <strong>${targetPlatform}</strong>. Upgrades require pre-flight compatibility verification, backup/snapshot validation, and sequential dependency updates (e.g., vCenter before ESXi, UCSM before server firmware).`;
+        cliCommands = (
+          isVMware ? `esxcli system version get\nesxcli software vib list | head -n 25\nesxcli software profile get` :
+          isLinux ? `uname -r\ncat /etc/os-release\nsudo apt update 2>/dev/null || sudo dnf check-update 2>/dev/null` :
+          isWindows ? `Get-ItemProperty "HKLM:\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion" | Select-Object ProductName, ReleaseId, CurrentBuild` :
+          `uname -a`
+        );
+        remediationSteps = [
+          'Capture full pre-upgrade state snapshots or backups of critical configuration files and databases.',
+          'Stage official update packages and verify digital signature/checksum before execution.',
+          'Drain active workloads or place host in Maintenance Mode with live migration.',
+          'Apply the upgrade package and execute a controlled system restart.'
+        ];
+        verificationSteps = [
+          'Confirm target OS/hypervisor version matches the target build number.',
+          'Validate that all production services start cleanly and resume operational workload processing.'
+        ];
+      } else {
+        detectedCategory = `${targetPlatform} Infrastructure Systems Engineering Analysis`;
+        rootCause = `Systems engineering diagnostic assessment for <strong>${esc(query)}</strong> on <strong>${targetPlatform}</strong>. Root cause analysis isolates operational anomalies, service crashes, configuration drift, and environmental dependency constraints.`;
+        cliCommands = (
+          isVMware ? `esxcli system version get\nesxcli network nic list\nesxcli storage core adapter list\ncat /var/log/vmkernel.log | tail -n 30` :
+          isCisco ? `show cluster state\nshow server inventory\nshow fault\nshow tech-support chassis` :
+          isWindows ? `Get-Service | Where-Object {$_.Status -ne "Running" -and $_.StartType -eq "Automatic"}\nGet-EventLog -LogName System -EntryType Error -Newest 15\nTest-NetConnection -ComputerName "gateway" -Port 443` :
+          isLinux ? `systemctl status\njournalctl -xe -p 3 -n 40\ndf -hT\ndmesg -T | grep -iE "error|fail|warn" | tail -n 25` :
+          isAzure ? `az vm get-instance-view\naz network nic list-effective-nsg\naz network watcher test-connectivity` :
+          isAWS ? `aws ec2 describe-instance-status\naws health describe-events --filter "eventStatusCodes=open"` :
+          `ping -c 4 127.0.0.1\nnetstat -tuln\nss -tulnp\ncurl -Iv http://localhost`
+        );
+        remediationSteps = [
+          'Audit recently committed configuration changes, security ACLs, and service account credentials.',
+          'Execute diagnostic commands to isolate service daemon errors and socket binding states.',
+          'Apply targeted remediation steps to resolve configuration drift or service interruption.',
+          'Perform health verification checks and clear all active alert thresholds.'
+        ];
+        verificationSteps = [
+          'Confirm system daemons report Active (Running) with 0 exit errors.',
+          'Validate system logging shows normal operational cycles without persistent fault codes.'
+        ];
+      }
     }
   }
 
@@ -2808,6 +3066,7 @@ az rest --method POST --uri "/subscriptions/{sub}/resourceGroups/rg-production/p
 </div>
 `;
 }
+window.generateInAppAiDiagnosis = generateInAppAiDiagnosis;
 
 function copyEngineeredPrompt() {
   const query = $('#aiPromptInput')?.value.trim() || 'SysAdmin troubleshooting playbook';
@@ -3286,6 +3545,7 @@ window.launchWebSearch = launchWebSearch;
 window.renderAdminView = renderAdminView;
 window.syncWithCloudflareD1 = syncWithCloudflareD1;
 window.exportDatabaseJson = exportDatabaseJson;
+window.showToast = showToast;
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', () => {
